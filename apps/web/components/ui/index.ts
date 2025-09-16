@@ -35,3 +35,41 @@ export {
   SkeletonTable
 } from './Loading';
 export type { LoadingProps } from './Loading';
+
+// Composants de navigation
+export {
+  Header,
+  Sidebar,
+  Breadcrumb,
+  UserMenu
+} from './Navigation';
+export type {
+  HeaderProps,
+  SidebarProps,
+  BreadcrumbProps,
+  UserMenuProps,
+  NavItem,
+  BreadcrumbItem
+} from './Navigation';
+
+// Composants de superposition
+export {
+  Modal,
+  ConfirmModal,
+  useModal
+} from './Modal';
+export type {
+  ModalProps,
+  ConfirmModalProps
+} from './Modal';
+
+// Composants de données
+export {
+  Table,
+  TableCard
+} from './Table';
+export type {
+  TableProps,
+  TableColumn,
+  TableCardProps
+} from './Table';
