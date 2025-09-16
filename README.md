@@ -58,11 +58,17 @@ npm run type-check    # Vérification TypeScript
 ## 📖 Prochaines Étapes
 
 1. ✅ Structure de base créée
-2. 🔄 Configuration Supabase
-3. 🔄 Authentification 
-4. 🔄 CRUD Événements
-5. 🔄 Système de messagerie
-6. 🔄 Interface marketplace
+2. ✅ Configuration mobile (Issue OUT-99)
+3. 🔄 Configuration Supabase
+4. 🔄 Authentification 
+5. 🔄 CRUD Événements
+6. 🔄 Système de messagerie
+7. 🔄 Interface marketplace
+
+## 📚 Documentation
+
+- [Configuration Mobile](./docs/MOBILE_SETUP.md) - Setup React Native + Expo
+- [Configuration Supabase](./docs/SUPABASE_SETUP.md) - Backend et base de données
 
 ---
 
