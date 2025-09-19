@@ -449,7 +449,7 @@ function Dashboard() {
 }
 
 export default function Home() {
-  const { user, loading } = useAuth();
+  const { user, loading, hasSeenOnboarding } = useAuth();
 
   if (loading) {
     return (
@@ -464,6 +464,21 @@ export default function Home() {
 
   if (user) {
     return <Dashboard />;
+  }
+
+  // Si l'utilisateur n'a pas vu l'onboarding, rediriger vers la page d'onboarding
+  if (!hasSeenOnboarding) {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/onboarding';
+    }
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner size="xl" className="mb-4" />
+          <p className="text-gray-600 text-lg">Préparation de votre découverte...</p>
+        </div>
+      </div>
+    );
   }
 
   return <LandingPage />;

@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  hasSeenOnboarding: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -17,10 +18,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
 
   const supabase = createClientSupabaseClient();
 
   useEffect(() => {
+    // Check if user has seen onboarding
+    const onboardingCompleted = localStorage.getItem('gemou2-onboarding-completed');
+    setHasSeenOnboarding(!!onboardingCompleted);
+
     // Get initial session
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -51,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     session,
     loading,
+    hasSeenOnboarding,
     signOut,
   };
 
