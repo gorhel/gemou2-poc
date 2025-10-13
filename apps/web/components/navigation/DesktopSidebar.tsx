@@ -16,7 +16,7 @@ const navigationItems: NavigationItem[] = [
     id: 'search',
     label: 'Rechercher',
     icon: '🔍',
-    path: '/search',
+    path: '/dashboard',
     color: 'text-blue-600'
   },
   {
