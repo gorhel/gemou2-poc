@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
 import { router } from 'expo-router';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../lib';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');

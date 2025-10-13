@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { router } from 'expo-router';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../lib';
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);

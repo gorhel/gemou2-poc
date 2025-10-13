@@ -1,0 +1,452 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  ActivityIndicator,
+  Platform,
+  Alert
+} from 'react-native';
+import { router } from 'expo-router';
+import { supabase } from '../lib';
+
+export default function CreateEventPage() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    date_time: '',
+    location: '',
+    max_participants: 4,
+    visibility: 'public' as 'public' | 'private' | 'invitation'
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (error || !user) {
+          router.replace('/login');
+          return;
+        }
+
+        setUser(user);
+      } catch (error) {
+        console.error('Error:', error);
+        router.replace('/login');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getUser();
+  }, []);
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.title.trim()) {
+      newErrors.title = 'Le titre est obligatoire';
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = 'La description est obligatoire';
+    }
+
+    if (!formData.date_time) {
+      newErrors.date_time = 'La date et heure sont obligatoires';
+    } else {
+      const eventDate = new Date(formData.date_time);
+      const now = new Date();
+      if (eventDate <= now) {
+        newErrors.date_time = 'La date doit être dans le futur';
+      }
+    }
+
+    if (!formData.location.trim()) {
+      newErrors.location = 'Le lieu est obligatoire';
+    }
+
+    if (formData.max_participants < 2) {
+      newErrors.max_participants = 'Minimum 2 participants';
+    }
+
+    if (formData.max_participants > 50) {
+      newErrors.max_participants = 'Maximum 50 participants';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm() || !user) return;
+
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .insert([
+          {
+            ...formData,
+            creator_id: user.id,
+            status: 'active',
+            current_participants: 1
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Ajouter le créateur comme participant
+      await supabase
+        .from('event_participants')
+        .insert({
+          event_id: data.id,
+          profile_id: user.id,
+          status: 'confirmed'
+        });
+
+      if (Platform.OS === 'web') {
+        router.push(`/events/${data.id}`);
+      } else {
+        Alert.alert(
+          'Succès !',
+          'Votre événement a été créé',
+          [{ text: 'OK', onPress: () => router.push(`/events/${data.id}`) }]
+        );
+      }
+    } catch (error: any) {
+      const message = error.message || 'Une erreur est survenue';
+      if (Platform.OS === 'web') {
+        alert(message);
+      } else {
+        Alert.alert('Erreur', message);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#3b82f6" />
+        <Text style={styles.loadingText}>Chargement...</Text>
+      </View>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Text style={styles.backBtnText}>← Retour</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Créer un événement</Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Nouvel événement 🎲</Text>
+
+        {/* Title */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Titre *</Text>
+          <TextInput
+            style={[styles.input, errors.title && styles.inputError]}
+            placeholder="Soirée jeux de société"
+            value={formData.title}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, title: text }))}
+          />
+          {errors.title && <Text style={styles.errorText}>{errors.title}</Text>}
+        </View>
+
+        {/* Description */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Description *</Text>
+          <TextInput
+            style={[styles.textArea, errors.description && styles.inputError]}
+            placeholder="Décrivez votre événement..."
+            value={formData.description}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
+            multiline
+            numberOfLines={4}
+            textAlignVertical="top"
+          />
+          {errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
+        </View>
+
+        {/* Date & Time */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Date et heure *</Text>
+          <TextInput
+            style={[styles.input, errors.date_time && styles.inputError]}
+            placeholder="2024-12-31 19:00"
+            value={formData.date_time}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, date_time: text }))}
+          />
+          <Text style={styles.helpText}>Format : AAAA-MM-JJ HH:MM</Text>
+          {errors.date_time && <Text style={styles.errorText}>{errors.date_time}</Text>}
+        </View>
+
+        {/* Location */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Lieu *</Text>
+          <TextInput
+            style={[styles.input, errors.location && styles.inputError]}
+            placeholder="Adresse de l'événement"
+            value={formData.location}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, location: text }))}
+          />
+          {errors.location && <Text style={styles.errorText}>{errors.location}</Text>}
+        </View>
+
+        {/* Max Participants */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Nombre maximum de participants *</Text>
+          <TextInput
+            style={[styles.input, errors.max_participants && styles.inputError]}
+            placeholder="4"
+            value={String(formData.max_participants)}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, max_participants: parseInt(text) || 4 }))}
+            keyboardType="number-pad"
+          />
+          <Text style={styles.helpText}>Entre 2 et 50 participants</Text>
+          {errors.max_participants && <Text style={styles.errorText}>{errors.max_participants}</Text>}
+        </View>
+
+        {/* Visibility */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Visibilité</Text>
+          <View style={styles.visibilityButtons}>
+            <TouchableOpacity
+              style={[
+                styles.visibilityButton,
+                formData.visibility === 'public' && styles.visibilityButtonActive
+              ]}
+              onPress={() => setFormData(prev => ({ ...prev, visibility: 'public' }))}
+            >
+              <Text style={[
+                styles.visibilityButtonText,
+                formData.visibility === 'public' && styles.visibilityButtonTextActive
+              ]}>
+                🌍 Public
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.visibilityButton,
+                formData.visibility === 'private' && styles.visibilityButtonActive
+              ]}
+              onPress={() => setFormData(prev => ({ ...prev, visibility: 'private' }))}
+            >
+              <Text style={[
+                styles.visibilityButtonText,
+                formData.visibility === 'private' && styles.visibilityButtonTextActive
+              ]}>
+                🔒 Privé
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Buttons */}
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => router.push('/dashboard')}
+            disabled={submitting}
+          >
+            <Text style={styles.cancelButtonText}>Annuler</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
+            onPress={handleSubmit}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.submitButtonText}>Créer l'événement</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f0f4f8',
+  },
+  contentContainer: {
+    paddingBottom: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f4f8',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#6b7280',
+  },
+  header: {
+    backgroundColor: 'white',
+    padding: 16,
+    paddingTop: Platform.select({ ios: 60, android: 16, web: 16 }),
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  backBtn: {
+    marginBottom: 12,
+  },
+  backBtnText: {
+    fontSize: 16,
+    color: '#3b82f6',
+    fontWeight: '500',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  card: {
+    backgroundColor: 'white',
+    margin: 16,
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: '#f9fafb',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#1f2937',
+  },
+  textArea: {
+    backgroundColor: '#f9fafb',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#1f2937',
+    minHeight: 100,
+  },
+  inputError: {
+    borderColor: '#ef4444',
+    backgroundColor: '#fef2f2',
+  },
+  errorText: {
+    fontSize: 12,
+    color: '#ef4444',
+    marginTop: 4,
+  },
+  helpText: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 4,
+  },
+  visibilityButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  visibilityButton: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+  },
+  visibilityButtonActive: {
+    backgroundColor: '#dbeafe',
+    borderColor: '#3b82f6',
+  },
+  visibilityButtonText: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  visibilityButtonTextActive: {
+    color: '#3b82f6',
+    fontWeight: '600',
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 24,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#6b7280',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  submitButton: {
+    flex: 1,
+    backgroundColor: '#3b82f6',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#9ca3af',
+  },
+  submitButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
+

@@ -1,7 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+
+// Fonction helper pour gérer le storage cross-platform
+const setStorageItem = async (key: string, value: string) => {
+  if (Platform.OS === 'web') {
+    localStorage.setItem(key, value);
+  } else {
+    await SecureStore.setItemAsync(key, value);
+  }
+};
 
 function OnboardingSlide({ title, description, emoji }: { title: string; description: string; emoji: string }) {
   return (
@@ -16,7 +25,7 @@ function OnboardingSlide({ title, description, emoji }: { title: string; descrip
 export default function OnboardingPage() {
   const handleComplete = async () => {
     // Marquer l'onboarding comme terminé
-    await SecureStore.setItemAsync('gemou2-onboarding-completed', 'true');
+    await setStorageItem('gemou2-onboarding-completed', 'true');
     
     // Rediriger vers la page de connexion
     router.replace('/login');
@@ -24,7 +33,7 @@ export default function OnboardingPage() {
 
   const handleSkip = async () => {
     // Marquer l'onboarding comme terminé même si skip
-    await SecureStore.setItemAsync('gemou2-onboarding-completed', 'true');
+    await setStorageItem('gemou2-onboarding-completed', 'true');
     
     // Rediriger vers la page de connexion
     router.replace('/login');

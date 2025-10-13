@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../lib';
 
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);

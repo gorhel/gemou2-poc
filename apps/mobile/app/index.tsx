@@ -1,9 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '../components/auth/AuthProvider';
 import AuthForm from '../components/auth/AuthForm';
+
+// Fonction helper pour gérer le storage cross-platform
+const getStorageItem = async (key: string): Promise<string | null> => {
+  if (Platform.OS === 'web') {
+    return localStorage.getItem(key);
+  } else {
+    return await SecureStore.getItemAsync(key);
+  }
+};
 
 function LandingPage() {
   return (
@@ -46,50 +55,16 @@ function LandingPage() {
 }
 
 function Dashboard() {
-  const { user, signOut } = useAuth();
+  // Rediriger directement vers le dashboard avec tabs
+  React.useEffect(() => {
+    router.replace('/(tabs)/dashboard');
+  }, []);
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.welcomeTitle}>
-            Bonjour {user?.user_metadata?.full_name || user?.email} ! 🎲
-          </Text>
-          <Text style={styles.welcomeSubtitle}>
-            Bienvenue dans votre espace Gémou2
-          </Text>
-          <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
-            <Text style={styles.signOutText}>Se déconnecter</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.dashboardGrid}>
-          <TouchableOpacity style={styles.dashboardCard}>
-            <Text style={styles.cardEmoji}>📅</Text>
-            <Text style={styles.cardTitle}>Mes Événements</Text>
-            <Text style={styles.cardText}>
-              Gérez vos événements et participations
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.dashboardCard}>
-            <Text style={styles.cardEmoji}>💬</Text>
-            <Text style={styles.cardTitle}>Messages</Text>
-            <Text style={styles.cardText}>
-              Discutez avec la communauté
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.dashboardCard}>
-            <Text style={styles.cardEmoji}>🛒</Text>
-            <Text style={styles.cardTitle}>Marketplace</Text>
-            <Text style={styles.cardText}>
-              Achetez et vendez des jeux
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ScrollView>
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator size="large" color="#3b82f6" />
+      <Text style={styles.loadingText}>Redirection...</Text>
+    </View>
   );
 }
 
@@ -102,7 +77,7 @@ export default function Home() {
     // Vérifier si l'utilisateur a vu l'onboarding
     const checkOnboarding = async () => {
       try {
-        const onboardingCompleted = await SecureStore.getItemAsync('gemou2-onboarding-completed');
+        const onboardingCompleted = await getStorageItem('gemou2-onboarding-completed');
         setHasSeenOnboarding(!!onboardingCompleted);
         
         // Si l'onboarding n'a pas été vu, rediriger

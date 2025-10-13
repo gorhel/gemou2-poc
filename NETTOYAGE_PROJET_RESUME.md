@@ -140,3 +140,4 @@ Le dossier `informations/` contient :
 - **Temps de navigation** : Réduit de 70%
 
 Le projet est maintenant **parfaitement organisé** avec une structure claire et professionnelle ! 🎉
+
