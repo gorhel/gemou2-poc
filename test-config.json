@@ -1,0 +1,144 @@
+{
+  "name": "Gémou2 - Tests de Composants",
+  "version": "1.0.0",
+  "description": "Configuration des tests automatisés pour vérifier la présence des composants",
+  "testSuites": {
+    "routes": {
+      "description": "Tests de présence des routes principales",
+      "enabled": true,
+      "routes": [
+        { "path": "", "name": "Landing Page", "required": true },
+        { "path": "login", "name": "Login", "required": true },
+        { "path": "register", "name": "Register", "required": true },
+        { "path": "dashboard", "name": "Dashboard", "required": true },
+        { "path": "profile", "name": "Profile", "required": true },
+        { "path": "events", "name": "Events", "required": true },
+        { "path": "community", "name": "Community", "required": true },
+        { "path": "create-event", "name": "Create Event", "required": true },
+        { "path": "search", "name": "Search", "required": true }
+      ]
+    },
+    "components": {
+      "description": "Tests de présence des composants UI",
+      "enabled": true,
+      "categories": {
+        "ui": [
+          { "file": "apps/web/components/ui/Button.tsx", "component": "Button", "critical": true },
+          { "file": "apps/web/components/ui/Card.tsx", "component": "Card", "critical": true },
+          { "file": "apps/web/components/ui/LoadingSpinner.tsx", "component": "LoadingSpinner", "critical": true },
+          { "file": "apps/web/components/ui/SmallPill.tsx", "component": "SmallPill", "critical": false },
+          { "file": "apps/web/components/ui/ResponsiveHeader.tsx", "component": "ResponsiveHeader", "critical": false }
+        ],
+        "business": [
+          { "file": "apps/web/components/events/EventsSlider.tsx", "component": "EventsSlider", "critical": true },
+          { "file": "apps/web/components/events/EventCard.tsx", "component": "EventCard", "critical": true },
+          { "file": "apps/web/components/events/CreateEventForm.tsx", "component": "CreateEventForm", "critical": true },
+          { "file": "apps/web/components/users/FriendsSlider.tsx", "component": "FriendsSlider", "critical": true },
+          { "file": "apps/web/components/users/FriendCard.tsx", "component": "FriendCard", "critical": true },
+          { "file": "apps/web/components/users/UserCard.tsx", "component": "UserCard", "critical": true }
+        ]
+      }
+    },
+    "hooks": {
+      "description": "Tests de présence des hooks personnalisés",
+      "enabled": true,
+      "hooks": [
+        { "file": "apps/web/hooks/useEventParticipantsCount.ts", "hook": "EventParticipantsCount", "critical": true },
+        { "file": "apps/web/hooks/useUsernameValidation.ts", "hook": "UsernameValidation", "critical": true }
+      ]
+    },
+    "functions": {
+      "description": "Tests de présence des fonctions critiques",
+      "enabled": true,
+      "functions": [
+        { "file": "apps/web/app/profile/page.tsx", "function": "fetchUserEvents", "description": "Récupération des événements utilisateur" },
+        { "file": "apps/web/app/profile/[username]/page.tsx", "function": "fetchUserProfile", "description": "Récupération du profil utilisateur" }
+      ]
+    },
+    "configuration": {
+      "description": "Tests de présence des fichiers de configuration",
+      "enabled": true,
+      "files": [
+        { "file": "apps/web/package.json", "critical": true },
+        { "file": "apps/web/next.config.js", "critical": true },
+        { "file": "apps/web/tailwind.config.js", "critical": true },
+        { "file": ".env.local", "critical": false }
+      ]
+    }
+  },
+  "routeSpecificTests": {
+    "dashboard": {
+      "components": [
+        { "component": "EventsSlider", "description": "Slider d'événements" },
+        { "component": "UsersRecommendations", "description": "Recommandations d'utilisateurs" },
+        { "component": "ResponsiveLayout", "description": "Layout responsive" }
+      ],
+      "functions": [],
+      "hooks": []
+    },
+    "profile": {
+      "components": [
+        { "component": "FriendsSlider", "description": "Slider d'amis" },
+        { "component": "Card", "description": "Composant Card" }
+      ],
+      "functions": [
+        { "function": "fetchUserEvents", "description": "Récupération des événements utilisateur" }
+      ],
+      "hooks": []
+    },
+    "profile/[username]": {
+      "components": [
+        { "component": "FriendsSlider", "description": "Slider d'amis" },
+        { "component": "SmallPill", "description": "Composant SmallPill pour les préférences" }
+      ],
+      "functions": [
+        { "function": "fetchUserProfile", "description": "Récupération du profil utilisateur" }
+      ],
+      "hooks": []
+    },
+    "events": {
+      "components": [
+        { "component": "EventCard", "description": "Carte d'événement" },
+        { "component": "ResponsiveLayout", "description": "Layout responsive" }
+      ],
+      "functions": [],
+      "hooks": []
+    },
+    "events/[id]": {
+      "components": [
+        { "component": "ParticipantCard", "description": "Carte de participant" }
+      ],
+      "functions": [],
+      "hooks": [
+        { "hook": "EventParticipantsCount", "description": "Hook de comptage des participants" }
+      ]
+    },
+    "create-event": {
+      "components": [
+        { "component": "CreateEventForm", "description": "Formulaire de création d'événement" },
+        { "component": "ResponsiveLayout", "description": "Layout responsive" }
+      ],
+      "functions": [],
+      "hooks": []
+    },
+    "community": {
+      "components": [
+        { "component": "UserCard", "description": "Carte d'utilisateur" },
+        { "component": "ResponsiveLayout", "description": "Layout responsive" }
+      ],
+      "functions": [],
+      "hooks": []
+    }
+  },
+  "performance": {
+    "timeout": 5000,
+    "parallel": true,
+    "maxConcurrent": 10
+  },
+  "output": {
+    "verbose": false,
+    "generateReport": true,
+    "reportFormat": "json",
+    "reportFile": "test-report.json"
+  }
+}

@@ -1,0 +1,463 @@
+{
+  "timestamp": "2025-10-07T15:20:24.959Z",
+  "summary": {
+    "total": 45,
+    "passed": 30,
+    "failed": 15,
+    "successRate": "66.7",
+    "duration": 13,
+    "averageDuration": "0.3"
+  },
+  "configuration": {
+    "verbose": false,
+    "timeout": 5000,
+    "parallel": true
+  },
+  "details": [
+    {
+      "success": true,
+      "message": "✓ Route  existe",
+      "route": "",
+      "description": "Page d'accueil (Landing)",
+      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/page.tsx",
+      "duration": 6,
+      "timestamp": "2025-10-07T15:20:24.952Z",
+      "index": 0
+    },
+    {
+      "success": true,
+      "message": "✓ Route login existe",
+      "route": "login",
+      "description": "Page de connexion",
+      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/login/page.tsx",
+      "duration": 7,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 1
+    },
+    {
+      "success": true,
+      "message": "✓ Route register existe",
+      "route": "register",
+      "description": "Page d'inscription",
+      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/register/page.tsx",
+      "duration": 7,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 2
+    },
+    {
+      "success": true,
+      "message": "✓ Route dashboard existe",
+      "route": "dashboard",
+      "description": "Tableau de bord",
+      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/dashboard/page.tsx",
+      "duration": 7,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 3
+    },
+    {
+      "success": true,
+      "message": "✓ Route profile existe",
+      "route": "profile",
+      "description": "Profil utilisateur",
+      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/profile/page.tsx",
+      "duration": 7,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 4
+    },
+    {
+      "success": true,
+      "message": "✓ Route events existe",
+      "route": "events",
+      "description": "Liste des événements",
+      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/events/page.tsx",
+      "duration": 7,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 5
+    },
+    {
+      "success": true,
+      "message": "✓ Route community existe",
+      "route": "community",
+      "description": "Communauté",
+      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/community/page.tsx",
+      "duration": 7,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 6
+    },
+    {
+      "success": true,
+      "message": "✓ Route create-event existe",
+      "route": "create-event",
+      "description": "Création d'événement",
+      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/create-event/page.tsx",
+      "duration": 7,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 7
+    },
+    {
+      "success": true,
+      "message": "✓ Route search existe",
+      "route": "search",
+      "description": "Recherche",
+      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/search/page.tsx",
+      "duration": 7,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 8
+    },
+    {
+      "success": true,
+      "message": "✓ Composant AuthForm trouvé",
+      "component": "AuthForm",
+      "description": "Formulaire d'authentification sur la page d'accueil",
+      "file": "apps/web/app/page.tsx",
+      "duration": 6,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 9
+    },
+    {
+      "success": true,
+      "message": "✓ Composant Header trouvé",
+      "component": "Header",
+      "description": "Header sur la page d'accueil",
+      "file": "apps/web/app/page.tsx",
+      "duration": 6,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 10
+    },
+    {
+      "success": true,
+      "message": "✓ Composant EventsSlider trouvé",
+      "component": "EventsSlider",
+      "description": "Slider d'événements sur le dashboard",
+      "file": "apps/web/app/dashboard/page.tsx",
+      "duration": 6,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 11
+    },
+    {
+      "success": true,
+      "message": "✓ Composant UsersRecommendations trouvé",
+      "component": "UsersRecommendations",
+      "description": "Recommandations d'utilisateurs sur le dashboard",
+      "file": "apps/web/app/dashboard/page.tsx",
+      "duration": 6,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 12
+    },
+    {
+      "success": true,
+      "message": "✓ Composant ResponsiveLayout trouvé",
+      "component": "ResponsiveLayout",
+      "description": "Layout responsive sur le dashboard",
+      "file": "apps/web/app/dashboard/page.tsx",
+      "duration": 6,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 13
+    },
+    {
+      "success": true,
+      "message": "✓ Composant FriendsSlider trouvé",
+      "component": "FriendsSlider",
+      "description": "Slider d'amis sur le profil",
+      "file": "apps/web/app/profile/page.tsx",
+      "duration": 6,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 14
+    },
+    {
+      "success": true,
+      "message": "✓ Composant Card trouvé",
+      "component": "Card",
+      "description": "Composant Card sur le profil",
+      "file": "apps/web/app/profile/page.tsx",
+      "duration": 5,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 15
+    },
+    {
+      "success": true,
+      "message": "✓ Fonction fetchUserEvents trouvée",
+      "function": "fetchUserEvents",
+      "description": "Fonction de récupération des événements utilisateur",
+      "file": "apps/web/app/profile/page.tsx",
+      "duration": 5,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 16
+    },
+    {
+      "success": true,
+      "message": "✓ Composant FriendsSlider trouvé",
+      "component": "FriendsSlider",
+      "description": "Slider d'amis sur le profil utilisateur",
+      "file": "apps/web/app/profile/[username]/page.tsx",
+      "duration": 5,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 17
+    },
+    {
+      "success": false,
+      "message": "✗ Composant SmallPill manquant (import: false, usage: false)",
+      "component": "SmallPill",
+      "description": "Composant SmallPill pour les préférences",
+      "file": "apps/web/app/profile/[username]/page.tsx",
+      "duration": 5,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 18
+    },
+    {
+      "success": true,
+      "message": "✓ Fonction fetchUserProfile trouvée",
+      "function": "fetchUserProfile",
+      "description": "Fonction de récupération du profil utilisateur",
+      "file": "apps/web/app/profile/[username]/page.tsx",
+      "duration": 5,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 19
+    },
+    {
+      "success": false,
+      "message": "✗ Composant EventCard manquant (import: false, usage: false)",
+      "component": "EventCard",
+      "description": "Carte d'événement sur la liste",
+      "file": "apps/web/app/events/page.tsx",
+      "duration": 5,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 20
+    },
+    {
+      "success": true,
+      "message": "✓ Composant ResponsiveLayout trouvé",
+      "component": "ResponsiveLayout",
+      "description": "Layout responsive sur les événements",
+      "file": "apps/web/app/events/page.tsx",
+      "duration": 4,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 21
+    },
+    {
+      "success": false,
+      "message": "✗ Composant ParticipantCard manquant (import: false, usage: false)",
+      "component": "ParticipantCard",
+      "description": "Carte de participant sur le détail événement",
+      "file": "apps/web/app/events/[id]/page.tsx",
+      "duration": 4,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 22
+    },
+    {
+      "success": true,
+      "message": "✓ Hook EventParticipantsCount trouvé",
+      "hook": "EventParticipantsCount",
+      "description": "Hook de comptage des participants",
+      "file": "apps/web/app/events/[id]/page.tsx",
+      "duration": 4,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 23
+    },
+    {
+      "success": true,
+      "message": "✓ Composant CreateEventForm trouvé",
+      "component": "CreateEventForm",
+      "description": "Formulaire de création d'événement",
+      "file": "apps/web/app/create-event/page.tsx",
+      "duration": 4,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 24
+    },
+    {
+      "success": true,
+      "message": "✓ Composant ResponsiveLayout trouvé",
+      "component": "ResponsiveLayout",
+      "description": "Layout responsive sur la création d'événement",
+      "file": "apps/web/app/create-event/page.tsx",
+      "duration": 4,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 25
+    },
+    {
+      "success": false,
+      "message": "✗ Composant UserCard manquant (import: false, usage: false)",
+      "component": "UserCard",
+      "description": "Carte d'utilisateur sur la communauté",
+      "file": "apps/web/app/community/page.tsx",
+      "duration": 4,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 26
+    },
+    {
+      "success": true,
+      "message": "✓ Composant ResponsiveLayout trouvé",
+      "component": "ResponsiveLayout",
+      "description": "Layout responsive sur la communauté",
+      "file": "apps/web/app/community/page.tsx",
+      "duration": 3,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 27
+    },
+    {
+      "success": false,
+      "message": "✗ Composant Button manquant (import: false, usage: false)",
+      "component": "Button",
+      "description": "Composant Button",
+      "file": "apps/web/components/ui/Button.tsx",
+      "duration": 3,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 28
+    },
+    {
+      "success": true,
+      "message": "✓ Composant Card trouvé",
+      "component": "Card",
+      "description": "Composant Card",
+      "file": "apps/web/components/ui/Card.tsx",
+      "duration": 3,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 29
+    },
+    {
+      "success": false,
+      "message": "Fichier non trouvé: apps/web/components/ui/LoadingSpinner.tsx",
+      "component": "LoadingSpinner",
+      "description": "Composant LoadingSpinner",
+      "duration": 3,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 30
+    },
+    {
+      "success": false,
+      "message": "✗ Composant SmallPill manquant (import: false, usage: true)",
+      "component": "SmallPill",
+      "description": "Composant SmallPill",
+      "file": "apps/web/components/ui/SmallPill.tsx",
+      "duration": 3,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 31
+    },
+    {
+      "success": false,
+      "message": "✗ Composant ResponsiveHeader manquant (import: false, usage: true)",
+      "component": "ResponsiveHeader",
+      "description": "Composant ResponsiveHeader",
+      "file": "apps/web/components/ui/ResponsiveHeader.tsx",
+      "duration": 2,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 32
+    },
+    {
+      "success": false,
+      "message": "✗ Composant EventsSlider manquant (import: false, usage: true)",
+      "component": "EventsSlider",
+      "description": "Slider d'événements",
+      "file": "apps/web/components/events/EventsSlider.tsx",
+      "duration": 2,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 33
+    },
+    {
+      "success": false,
+      "message": "✗ Composant EventCard manquant (import: false, usage: true)",
+      "component": "EventCard",
+      "description": "Carte d'événement",
+      "file": "apps/web/components/events/EventCard.tsx",
+      "duration": 2,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 34
+    },
+    {
+      "success": false,
+      "message": "✗ Composant CreateEventForm manquant (import: false, usage: true)",
+      "component": "CreateEventForm",
+      "description": "Formulaire de création d'événement",
+      "file": "apps/web/components/events/CreateEventForm.tsx",
+      "duration": 2,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 35
+    },
+    {
+      "success": false,
+      "message": "✗ Composant FriendsSlider manquant (import: false, usage: true)",
+      "component": "FriendsSlider",
+      "description": "Slider d'amis",
+      "file": "apps/web/components/users/FriendsSlider.tsx",
+      "duration": 1,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 36
+    },
+    {
+      "success": false,
+      "message": "✗ Composant FriendCard manquant (import: false, usage: true)",
+      "component": "FriendCard",
+      "description": "Carte d'ami",
+      "file": "apps/web/components/users/FriendCard.tsx",
+      "duration": 1,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 37
+    },
+    {
+      "success": false,
+      "message": "✗ Composant UserCard manquant (import: false, usage: true)",
+      "component": "UserCard",
+      "description": "Carte d'utilisateur",
+      "file": "apps/web/components/users/UserCard.tsx",
+      "duration": 1,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 38
+    },
+    {
+      "success": true,
+      "message": "✓ Hook EventParticipantsCount trouvé",
+      "hook": "EventParticipantsCount",
+      "description": "Hook de comptage des participants",
+      "file": "apps/web/hooks/useEventParticipantsCount.ts",
+      "duration": 1,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 39
+    },
+    {
+      "success": true,
+      "message": "✓ Hook UsernameValidation trouvé",
+      "hook": "UsernameValidation",
+      "description": "Hook de validation d'username",
+      "file": "apps/web/hooks/useUsernameValidation.ts",
+      "duration": 1,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 40
+    },
+    {
+      "success": true,
+      "message": "✓ Configuration package.json web existe",
+      "file": "apps/web/package.json",
+      "description": "Configuration package.json web",
+      "duration": 1,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 41
+    },
+    {
+      "success": true,
+      "message": "✓ Configuration Next.js existe",
+      "file": "apps/web/next.config.js",
+      "description": "Configuration Next.js",
+      "duration": 1,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 42
+    },
+    {
+      "success": true,
+      "message": "✓ Configuration Tailwind existe",
+      "file": "apps/web/tailwind.config.js",
+      "description": "Configuration Tailwind",
+      "duration": 1,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 43
+    },
+    {
+      "success": false,
+      "message": "✗ Variables d'environnement manquant",
+      "file": ".env.local",
+      "description": "Variables d'environnement",
+      "duration": 1,
+      "timestamp": "2025-10-07T15:20:24.953Z",
+      "index": 44
+    }
+  ]
+}

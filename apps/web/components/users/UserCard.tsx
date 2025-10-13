@@ -12,6 +12,7 @@ interface User {
   avatar_url?: string;
   email?: string;
   created_at: string;
+  city: string;
 }
 
 interface UserCardProps {
@@ -79,13 +80,13 @@ export default function UserCard({ user, onViewProfile }: UserCardProps) {
 
   return (
     <Card 
-      className="h-full hover:shadow-lg transition-shadow duration-200 cursor-pointer group w-32"
+      className="h-full duration-200 cursor-pointer group w-64"
       onClick={handleClick}
     >
       <CardContent className="p-4 flex flex-col items-center text-center space-y-3">
         {/* Photo de profil circulaire */}
         <div className="relative">
-          <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+          <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
             {user.avatar_url ? (
               <img
                 src={user.avatar_url}
@@ -98,7 +99,7 @@ export default function UserCard({ user, onViewProfile }: UserCardProps) {
                 }}
               />
             ) : null}
-            <div className={`w-full h-full flex items-center justify-center text-white font-bold text-lg ${user.avatar_url ? 'hidden' : ''}`}
+            <div className={`w-full h-full flex items-center justify-center text-white text-lg font-bold text-gray-900 mb-1 ${user.avatar_url ? 'hidden' : ''}`}
                  style={{ backgroundColor: `hsl(${user.id.charCodeAt(0) * 137.5 % 360}, 70%, 50%)` }}>
               {getInitials(user.full_name || 'Utilisateur sans nom')}
             </div>
@@ -114,12 +115,29 @@ export default function UserCard({ user, onViewProfile }: UserCardProps) {
 
         {/* Nom centré */}
         <div className="space-y-1">
-          <h3 className="font-semibold text-sm line-clamp-1 group-hover:text-blue-600 transition-colors">
-            {user.full_name || 'Utilisateur sans nom'}
-          </h3>
-          <p className="text-xs text-gray-500">
-            @{user.username || 'sans_pseudo'}
-          </p>
+
+          {isBusiness &&(
+            <h3 className="font-semibold text-lg font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
+              {user.full_name || 'Utilisateur sans nom'}
+            </h3>
+          )}
+          {!isBusiness && (
+            <h3 className="font-semibold text-lg font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
+              @{user.username || 'Utilisateur sans nom'}
+            </h3>
+          )}
+          
+          {isBusiness && (
+            <p className="text-xs text-gray-500">
+              📍{user.city || 'pas_de_ville'}
+            </p>
+          )}
+          
+          {!isBusiness && (
+            <p className="text-xs text-gray-500">
+              📍{user.city || 'pas_de_ville'}
+            </p>
+          )}
         </div>
 
         {/* Préférences de jeu en petite police grise */}

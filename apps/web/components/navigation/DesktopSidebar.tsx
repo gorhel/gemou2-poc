@@ -71,13 +71,16 @@ export default function DesktopSidebar({ className = '' }: DesktopSidebarProps) 
     <div className={`hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:left-0 bg-white border-r border-gray-200 shadow-lg ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-center p-6 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
+        <a 
+          href="/dashboard" 
+          className="flex items-center space-x-3 hover:opacity-80 transition-opacity cursor-pointer"
+        >
           <div className="text-3xl">🎲</div>
           <div>
             <h1 className="text-xl font-bold text-gray-900">Gémou2</h1>
             <p className="text-sm text-gray-500">Jeux de société</p>
           </div>
-        </div>
+        </a>
       </div>
 
       {/* Navigation */}
@@ -121,7 +124,12 @@ export default function DesktopSidebar({ className = '' }: DesktopSidebarProps) 
       <div className="p-6 border-t border-gray-200">
         <div className="text-center">
           <div className="text-sm text-gray-500 mb-2">
-            <div className="font-medium text-gray-700">Gémou2</div>
+            <a 
+              href="/dashboard" 
+              className="font-medium text-gray-700 hover:text-primary-600 transition-colors cursor-pointer"
+            >
+              Gémou2
+            </a>
             <div>Version 1.0.0</div>
           </div>
           <div className="text-xs text-gray-400">

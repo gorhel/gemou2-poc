@@ -47,9 +47,12 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Logo */}
         <div className="flex items-center">
           {logo || (
-            <div className="text-2xl font-bold text-primary-600">
-              Gémou2
-            </div>
+            <a 
+              href="/dashboard" 
+              className="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors cursor-pointer"
+            >
+              🎲 Gémou2
+            </a>
           )}
         </div>
 
@@ -173,9 +176,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <aside className={`${sidebarClasses} fixed left-0 top-0 h-full z-50`}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <div className="text-xl font-bold text-primary-600">
-            Gémou2
-          </div>
+          <a 
+            href="/dashboard" 
+            className="text-xl font-bold text-primary-600 hover:text-primary-700 transition-colors cursor-pointer"
+          >
+            🎲 Gémou2
+          </a>
           {onToggle && (
             <button
               onClick={onToggle}

@@ -1,0 +1,260 @@
+{
+  "timestamp": "2025-10-07T15:19:50.838Z",
+  "type": "permissions",
+  "summary": {
+    "total": 17,
+    "passed": 13,
+    "failed": 4,
+    "successRate": "76.5",
+    "duration": 6,
+    "averageDuration": "0.4"
+  },
+  "securityIssues": [
+    {
+      "success": false,
+      "message": "✗ Contrôles d'amitié manquants (friendship: true, conditional: false)",
+      "file": "apps/web/components/users/FriendsSlider.tsx",
+      "description": "FriendsSlider - Contrôles d'amitié",
+      "hasFriendshipCheck": true,
+      "hasConditionalDisplay": false,
+      "duration": 1,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 6
+    },
+    {
+      "success": false,
+      "message": "✗ Contrôles RLS manquants (auth: false, where: false, security: false)",
+      "file": "apps/web/app/dashboard/page.tsx",
+      "description": "Dashboard - Contrôles RLS",
+      "hasAuthUID": false,
+      "hasWhereClause": false,
+      "hasSecurityCheck": false,
+      "duration": 1,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 10
+    },
+    {
+      "success": false,
+      "message": "✗ Contrôles de propriétaire manquants (creator: true, logic: false)",
+      "file": "apps/web/app/profile/page.tsx",
+      "description": "Profil - Contrôles de propriétaire",
+      "hasCreatorCheck": true,
+      "hasOwnershipLogic": false,
+      "duration": 1,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 11
+    },
+    {
+      "success": false,
+      "message": "✗ Contrôles de propriétaire manquants (creator: true, logic: false)",
+      "file": "apps/web/app/events/[id]/page.tsx",
+      "description": "Détail événement - Contrôles de propriétaire",
+      "hasCreatorCheck": true,
+      "hasOwnershipLogic": false,
+      "duration": 1,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 13
+    }
+  ],
+  "configuration": {
+    "verbose": false,
+    "timeout": 3000,
+    "parallel": true
+  },
+  "details": [
+    {
+      "success": true,
+      "message": "✓ Contrôles d'authentification présents",
+      "file": "apps/web/app/dashboard/page.tsx",
+      "description": "Dashboard - Contrôles d'authentification",
+      "hasAuthCheck": true,
+      "hasRedirect": true,
+      "duration": 2,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 0
+    },
+    {
+      "success": true,
+      "message": "✓ Contrôles d'authentification présents",
+      "file": "apps/web/app/profile/page.tsx",
+      "description": "Profil - Contrôles d'authentification",
+      "hasAuthCheck": true,
+      "hasRedirect": true,
+      "duration": 2,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 1
+    },
+    {
+      "success": true,
+      "message": "✓ Contrôles d'authentification présents",
+      "file": "apps/web/app/events/[id]/page.tsx",
+      "description": "Détail événement - Contrôles d'authentification",
+      "hasAuthCheck": true,
+      "hasRedirect": true,
+      "duration": 2,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 2
+    },
+    {
+      "success": true,
+      "message": "✓ Contrôles d'authentification présents",
+      "file": "apps/web/app/create-event/page.tsx",
+      "description": "Création événement - Contrôles d'authentification",
+      "hasAuthCheck": true,
+      "hasRedirect": true,
+      "duration": 2,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 3
+    },
+    {
+      "success": true,
+      "message": "✓ Contrôles d'authentification présents",
+      "file": "apps/web/app/community/page.tsx",
+      "description": "Communauté - Contrôles d'authentification",
+      "hasAuthCheck": true,
+      "hasRedirect": true,
+      "duration": 1,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 4
+    },
+    {
+      "success": true,
+      "message": "✓ Contrôles d'amitié présents",
+      "file": "apps/web/app/profile/[username]/page.tsx",
+      "description": "Profil utilisateur - Contrôles d'amitié",
+      "hasFriendshipCheck": true,
+      "hasConditionalDisplay": true,
+      "duration": 1,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 5
+    },
+    {
+      "success": false,
+      "message": "✗ Contrôles d'amitié manquants (friendship: true, conditional: false)",
+      "file": "apps/web/components/users/FriendsSlider.tsx",
+      "description": "FriendsSlider - Contrôles d'amitié",
+      "hasFriendshipCheck": true,
+      "hasConditionalDisplay": false,
+      "duration": 1,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 6
+    },
+    {
+      "success": true,
+      "message": "✓ Contrôles RLS présents",
+      "file": "apps/web/app/profile/page.tsx",
+      "description": "Profil - Contrôles RLS",
+      "hasAuthUID": true,
+      "hasWhereClause": true,
+      "hasSecurityCheck": true,
+      "duration": 1,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 7
+    },
+    {
+      "success": true,
+      "message": "✓ Contrôles RLS présents",
+      "file": "apps/web/app/profile/[username]/page.tsx",
+      "description": "Profil utilisateur - Contrôles RLS",
+      "hasAuthUID": true,
+      "hasWhereClause": true,
+      "hasSecurityCheck": true,
+      "duration": 1,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 8
+    },
+    {
+      "success": true,
+      "message": "✓ Contrôles RLS présents",
+      "file": "apps/web/components/users/FriendsSlider.tsx",
+      "description": "FriendsSlider - Contrôles RLS",
+      "hasAuthUID": true,
+      "hasWhereClause": true,
+      "hasSecurityCheck": true,
+      "duration": 1,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 9
+    },
+    {
+      "success": false,
+      "message": "✗ Contrôles RLS manquants (auth: false, where: false, security: false)",
+      "file": "apps/web/app/dashboard/page.tsx",
+      "description": "Dashboard - Contrôles RLS",
+      "hasAuthUID": false,
+      "hasWhereClause": false,
+      "hasSecurityCheck": false,
+      "duration": 1,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 10
+    },
+    {
+      "success": false,
+      "message": "✗ Contrôles de propriétaire manquants (creator: true, logic: false)",
+      "file": "apps/web/app/profile/page.tsx",
+      "description": "Profil - Contrôles de propriétaire",
+      "hasCreatorCheck": true,
+      "hasOwnershipLogic": false,
+      "duration": 1,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 11
+    },
+    {
+      "success": true,
+      "message": "✓ Contrôles de propriétaire présents",
+      "file": "apps/web/app/profile/[username]/page.tsx",
+      "description": "Profil utilisateur - Contrôles de propriétaire",
+      "hasCreatorCheck": true,
+      "hasOwnershipLogic": true,
+      "duration": 1,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 12
+    },
+    {
+      "success": false,
+      "message": "✗ Contrôles de propriétaire manquants (creator: true, logic: false)",
+      "file": "apps/web/app/events/[id]/page.tsx",
+      "description": "Détail événement - Contrôles de propriétaire",
+      "hasCreatorCheck": true,
+      "hasOwnershipLogic": false,
+      "duration": 1,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 13
+    },
+    {
+      "success": true,
+      "message": "✓ Gestion d'erreur appropriée",
+      "file": "apps/web/app/profile/[username]/page.tsx",
+      "description": "Profil utilisateur - Gestion d'erreur",
+      "hasTryCatch": true,
+      "hasErrorState": true,
+      "hasUserFriendlyMessages": true,
+      "duration": 0,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 14
+    },
+    {
+      "success": true,
+      "message": "✓ Gestion d'erreur appropriée",
+      "file": "apps/web/components/users/FriendsSlider.tsx",
+      "description": "FriendsSlider - Gestion d'erreur",
+      "hasTryCatch": true,
+      "hasErrorState": true,
+      "hasUserFriendlyMessages": true,
+      "duration": 0,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 15
+    },
+    {
+      "success": true,
+      "message": "✓ Gestion d'erreur appropriée",
+      "file": "apps/web/app/events/[id]/page.tsx",
+      "description": "Détail événement - Gestion d'erreur",
+      "hasTryCatch": true,
+      "hasErrorState": true,
+      "hasUserFriendlyMessages": true,
+      "duration": 0,
+      "timestamp": "2025-10-07T15:19:50.834Z",
+      "index": 16
+    }
+  ]
+}
