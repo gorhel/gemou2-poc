@@ -10,7 +10,8 @@ import {
   ActivityIndicator,
   Platform,
   Alert,
-  RefreshControl
+  RefreshControl,
+  Image
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '../../../lib';
@@ -163,6 +164,16 @@ export default function EventDetailsPage() {
     loadEvent();
   };
 
+  const getInitials = (name: string) => {
+    if (!name) return '??';
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -234,10 +245,31 @@ export default function EventDetailsPage() {
 
           {creator && (
             <View style={styles.metaItem}>
-              <Text style={styles.metaEmoji}>👤</Text>
-              <Text style={styles.metaText}>
-                Organisé par {creator.full_name || creator.username}
-              </Text>
+              <View style={styles.organizerContainer}>
+                <View style={styles.organizerAvatar}>
+                  {creator.avatar_url ? (
+                    <Image
+                      source={{ uri: creator.avatar_url }}
+                      style={styles.avatarImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View 
+                      style={[
+                        styles.avatarFallback,
+                        { backgroundColor: `hsl(${creator.id.charCodeAt(0) * 137.5 % 360}, 70%, 50%)` }
+                      ]}
+                    >
+                      <Text style={styles.avatarInitials}>
+                        {getInitials(creator.full_name || creator.username)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.metaText}>
+                  Organisé par {creator.full_name || creator.username}
+                </Text>
+              </View>
             </View>
           )}
         </View>
@@ -255,7 +287,26 @@ export default function EventDetailsPage() {
             </Text>
             {participants.map((participant) => (
               <View key={participant.id} style={styles.participantCard}>
-                <Text style={styles.participantEmoji}>👤</Text>
+                <View style={styles.participantAvatar}>
+                  {participant.profiles?.avatar_url ? (
+                    <Image
+                      source={{ uri: participant.profiles.avatar_url }}
+                      style={styles.participantAvatarImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View 
+                      style={[
+                        styles.participantAvatarFallback,
+                        { backgroundColor: `hsl(${participant.profiles?.id?.charCodeAt(0) * 137.5 % 360 || 200}, 70%, 50%)` }
+                      ]}
+                    >
+                      <Text style={styles.participantAvatarInitials}>
+                        {getInitials(participant.profiles?.full_name || participant.profiles?.username || 'U')}
+                      </Text>
+                    </View>
+                  )}
+                </View>
                 <View style={styles.participantInfo}>
                   <Text style={styles.participantName}>
                     {participant.profiles?.full_name || participant.profiles?.username || 'Utilisateur'}
@@ -392,6 +443,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
+  organizerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  organizerAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 12,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarFallback: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarInitials: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
   metaEmoji: {
     fontSize: 20,
     marginRight: 12,
@@ -447,9 +524,27 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },
-  participantEmoji: {
-    fontSize: 24,
+  participantAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  participantAvatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  participantAvatarFallback: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  participantAvatarInitials: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   participantInfo: {
     flex: 1,

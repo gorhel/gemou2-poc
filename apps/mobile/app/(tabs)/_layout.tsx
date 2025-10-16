@@ -32,7 +32,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="events"
+        name="events/index"
         options={{
           title: 'Events',
           tabBarIcon: ({ color, size }) => (
@@ -59,12 +59,35 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="profile/index"
         options={{
           title: 'Profil',
           tabBarIcon: ({ color, size }) => (
             <span style={{ fontSize: size }}>👤</span>
           ),
+        }}
+      />
+
+      {/* Routes masquées du menu mais avec menu visible */}
+      <Tabs.Screen
+        name="events/[id]"
+        options={{
+          href: null, // Masquer du menu
+          title: 'Détails événement',
+        }}
+      />
+      <Tabs.Screen
+        name="search"
+        options={{
+          href: null, // Masquer du menu
+          title: 'Recherche',
+        }}
+      />
+      <Tabs.Screen
+        name="create-event"
+        options={{
+          href: null, // Masquer du menu
+          title: 'Créer un événement',
         }}
       />
     </Tabs>
