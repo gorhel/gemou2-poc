@@ -79,6 +79,13 @@ export default function RegisterPage() {
       newErrors.email = 'L\'email est requis';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'L\'email n\'est pas valide';
+    } else {
+      // Vérifier les domaines invalides
+      const invalidDomains = ['example.com', 'test.com', 'localhost'];
+      const domain = formData.email.split('@')[1];
+      if (invalidDomains.includes(domain)) {
+        newErrors.email = 'Veuillez utiliser une adresse email valide (Gmail, Yahoo, etc.)';
+      }
     }
 
     if (!formData.password) {
@@ -119,8 +126,12 @@ export default function RegisterPage() {
       });
 
       if (error) {
-        if (error.message.includes('User already registered')) {
+        if (error.message.includes('Email address') && error.message.includes('invalid')) {
+          setGeneralError('Veuillez utiliser une adresse email valide (Gmail, Yahoo, etc.)');
+        } else if (error.message.includes('User already registered')) {
           setGeneralError('Un compte existe déjà avec cet email');
+        } else if (error.message.includes('Password should be at least')) {
+          setGeneralError('Le mot de passe doit contenir au moins 6 caractères');
         } else {
           setGeneralError(error.message);
         }
