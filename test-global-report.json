@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-10-07T15:19:50.841Z",
+  "timestamp": "2025-10-21T00:58:22.606Z",
   "type": "global",
   "summary": {
     "total": 2,
     "passed": 0,
     "failed": 2,
     "successRate": "0.0",
-    "duration": 75,
+    "duration": 80,
     "configuration": {
       "verbose": false,
       "components": true,
@@ -29,13 +29,13 @@
     {
       "script": "Tests des Composants",
       "success": false,
-      "duration": 44,
+      "duration": 52,
       "code": 1
     },
     {
       "script": "Tests des Permissions",
       "success": false,
-      "duration": 31,
+      "duration": 27,
       "code": 1
     }
   ]

@@ -210,7 +210,7 @@ export default function MarketplacePage() {
               >
                 <View style={styles.itemHeader}>
                   <Text style={styles.itemEmoji}>{getTypeEmoji(item.type)}</Text>
-                  <View style={styles.itemTypebadge}>
+                  <View style={styles.itemTypeBadge}>
                     <Text style={styles.itemTypeBadgeText}>
                       {getTypeLabel(item.type)}
                     </Text>

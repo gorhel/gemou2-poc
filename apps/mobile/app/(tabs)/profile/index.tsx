@@ -14,9 +14,12 @@ import {
 import { router } from 'expo-router';
 import { supabase } from '../../../lib';
 
+type TabType = 'informations' | 'privacy' | 'account';
+
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<TabType>('informations');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({
@@ -116,6 +119,33 @@ export default function ProfilePage() {
 
         <Text style={styles.fullName}>{profile.full_name || 'Utilisateur'}</Text>
         <Text style={styles.username}>@{profile.username || 'username'}</Text>
+
+              {/* Navigation Tabs */}
+        <View style={styles.tabsContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsScroll}>
+            {[
+              { key: 'informations', label: 'Mes infos' },
+              { key: 'privacy', label: 'Ma confidentialité' },
+              { key: 'account', label: 'Mon compte' }
+            ].map((tab) => (
+              <TouchableOpacity
+                key={tab.key}
+                style={[
+                  styles.tab,
+                  activeTab === tab.key && styles.activeTab
+                ]}
+                onPress={() => setActiveTab(tab.key as TabType)}
+              >
+                <Text style={[
+                  styles.tabText,
+                  activeTab === tab.key && styles.activeTabText
+                ]}>
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
         
         {profile.bio && (
           <Text style={styles.bio}>{profile.bio}</Text>
@@ -308,6 +338,33 @@ const styles = StyleSheet.create({
   },
   signOutText: {
     color: '#dc2626',
+  },
+  tabsContainer: {
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  tabsScroll: {
+    paddingHorizontal: 16,
+  },
+  tab: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginRight: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  activeTab: {
+    borderBottomColor: '#3b82f6',
+  },
+  tabText: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  activeTabText: {
+    color: '#3b82f6',
+    fontWeight: '600',
   },
 });
 

@@ -545,8 +545,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   userAvatar: {
-    width: 128,
-    height: 128,
+    width: 96,
+    height: 96,
     borderRadius: '50%',
     backgroundColor: '#3b82f6',
     justifyContent: 'center',

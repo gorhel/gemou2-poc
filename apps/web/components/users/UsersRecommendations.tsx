@@ -40,7 +40,7 @@ export default function UsersRecommendations() {
         .not('username', 'is', null) // Exclure les profils sans username
         .not('full_name', 'is', null) // Exclure les profils sans nom
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(20);
 
       if (error) {
         throw error;

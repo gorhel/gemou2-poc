@@ -11,7 +11,7 @@ interface UserTag {
   tags: {
     id: string;
     name: string;
-  };
+  } | null;
 }
 
 interface UserPreferencesProps {
@@ -51,7 +51,7 @@ export default function UserPreferences({ userId, isOwnProfile = false }: UserPr
         throw fetchError;
       }
 
-      setTags(data || []);
+      setTags((data as unknown as UserTag[]) || []);
     } catch (err: any) {
       console.error('Error fetching user tags:', err);
       setError('Erreur lors du chargement des préférences');
