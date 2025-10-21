@@ -7,6 +7,8 @@ export interface BoardGame {
   minPlayers: number;
   maxPlayers: number;
   playingTime: number;
+  minPlaytime?: number;
+  maxPlaytime?: number;
   minAge: number;
   description: string;
   image: string;
@@ -19,7 +21,7 @@ export interface BoardGame {
   averageRating: number;
   usersRated: number;
   rank: number;
-  complexity: number;
+  complexity: number | string;
 }
 
 export interface BoardGameSearchResult {

@@ -8,16 +8,17 @@ interface User {
   id: string;
   username: string;
   full_name: string;
-  bio: string;
+  bio?: string;
   avatar_url?: string;
   email?: string;
-  created_at: string;
-  city: string;
+  created_at?: string;
+  city?: string;
 }
 
 interface UserCardProps {
   user: User;
   onViewProfile?: (user: User) => void;
+  onSendMessage?: (userId: string) => void;
 }
 
 export default function UserCard({ user, onViewProfile }: UserCardProps) {

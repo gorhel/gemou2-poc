@@ -18,8 +18,8 @@ npm run dev:mobile   # Mobile app avec Expo
 
 ## 🏗️ Architecture
 
-- **Frontend Mobile**: React Native + Expo Router
-- **Frontend Web**: Next.js 14 + Tailwind CSS  
+- **Frontend Mobile**: React Native 0.81 + Expo 54 + React 19
+- **Frontend Web**: Next.js 15 + React 19 + Tailwind CSS  
 - **Backend**: Supabase (BaaS)
 - **Database**: PostgreSQL
 - **Deploy**: Vercel (Web) + EAS (Mobile)
@@ -65,10 +65,17 @@ npm run type-check    # Vérification TypeScript
 
 ## 📖 Documentation
 
+### Documentation Complète
+📚 **[Index de toute la documentation](./documentation/INDEX.md)** - 43+ guides et rapports
+
+### Documents Essentiels
+- 🚀 [Démarrer ici](./documentation/START_HERE.md) - Guide de démarrage
+- 🛠️ [Stack Technique](./documentation/STACK_TECHNIQUE.md) - Architecture complète
+- ⭐ [Rapport Final Migration](./documentation/RAPPORT_FINAL_CORRECTIONS.md) - Migration React 19
+
+### Guides de Setup
 - [Configuration Mobile](./docs/MOBILE_SETUP.md) - Setup React Native + Expo
 - [Configuration Supabase](./docs/SUPABASE_SETUP.md) - Backend et base de données
-- [Issue OUT-144](./OUT-144-onboarding-default-route.md) - Route onboarding par défaut
-- [Issue OUT-132](./OUT-132-login-page-US-AUTH-008.md) - Page de connexion
 
 ## 🌐 Routes Disponibles
 

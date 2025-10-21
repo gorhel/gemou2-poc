@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react';
+
 // Interface de validation des pseudonymes
 export interface UsernameValidation {
   minLength: 3;
@@ -109,9 +111,9 @@ export function generateUsernameSuggestions(baseUsername: string): string[] {
 
 // Hook de debounce
 export function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = React.useState<T>(value);
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay);

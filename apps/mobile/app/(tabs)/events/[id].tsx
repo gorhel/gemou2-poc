@@ -26,6 +26,7 @@ interface Event {
   current_participants: number;
   status: string;
   creator_id: string;
+  image_url: string;
 }
 
 export default function EventDetailsPage() {
@@ -164,6 +165,17 @@ export default function EventDetailsPage() {
     loadEvent();
   };
 
+  const formatDate = (dateTime: string) => {
+    const d = new Date(dateTime);
+    
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = d.toLocaleString('fr-FR', { month: 'long' });
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    
+    return `${day} ${month}, ${hours}:${minutes}`;
+  };
+
   const getInitials = (name: string) => {
     if (!name) return '??';
     return name
@@ -214,36 +226,24 @@ export default function EventDetailsPage() {
 
       {/* Event Details */}
       <View style={styles.content}>
+
+      <View style={styles.eventImageContainer}>
+          {event.image_url ? (
+            <Image
+              source={{ uri: event.image_url }}
+              style={styles.eventImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <Text style={styles.eventImagePlaceholder}>📅</Text>
+          )}
+        </View>
+
+
         <Text style={styles.title}>{event.title}</Text>
         
         <View style={styles.metaContainer}>
-          <View style={styles.metaItem}>
-            <Text style={styles.metaEmoji}>📅</Text>
-            <Text style={styles.metaText}>
-              {new Date(event.event_date).toLocaleDateString('fr-FR', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </Text>
-          </View>
-
-          <View style={styles.metaItem}>
-            <Text style={styles.metaEmoji}>📍</Text>
-            <Text style={styles.metaText}>{event.location}</Text>
-          </View>
-
-          <View style={styles.metaItem}>
-            <Text style={styles.metaEmoji}>👥</Text>
-            <Text style={styles.metaText}>
-              {participants.length}/{event.max_participants} participants
-            </Text>
-          </View>
-
-          {creator && (
+        {creator && (
             <View style={styles.metaItem}>
               <View style={styles.organizerContainer}>
                 <View style={styles.organizerAvatar}>
@@ -272,12 +272,105 @@ export default function EventDetailsPage() {
               </View>
             </View>
           )}
+
+          <View style={styles.separator} />
+
+          <View style={styles.metaItem}>
+            <Text style={styles.metaEmoji}>📍</Text>
+            <Text style={styles.metaText}>{event.location}</Text>
+          </View>
+
+          <View style={styles.separator} />
+
+          <View style={styles.metaItem}>
+            <Text style={styles.metaEmoji}>📅</Text>
+            <Text style={styles.metaText}>
+              {formatDate(event.event_date)}
+            </Text>
+          </View>
+
+          <View style={styles.separator} />
+
+          <View style={styles.metaItem}>
+            <Text style={styles.metaEmoji}>👥</Text>
+            <Text style={styles.metaText}>
+              {participants.length}/{event.max_participants} participants
+            </Text>
+          </View>
+
+          <View style={styles.separator} />
+
+          <View style={styles.metaItem}>
+            <Text style={styles.metaEmoji}>💰​🫰​</Text>
+            <Text style={styles.metaText}>Gratuit</Text>
+          </View>
         </View>
+
+        <View style={styles.separator} />
 
         <View style={styles.descriptionContainer}>
           <Text style={styles.descriptionTitle}>Description</Text>
           <Text style={styles.description}>{event.description}</Text>
         </View>
+
+        <View style={styles.separator} />
+
+        <View style={styles.descriptionContainer}>
+            <Text style={styles.descriptionTitle}>Jeux</Text>
+            <TouchableOpacity 
+              style={styles.gameCard}
+              // onPress={() => router.push(`/games/${gameId}`)} // TODO: Implémenter la navigation vers le jeu
+            >
+              <View style={styles.gameInfo}>
+                <Text style={styles.gameTitle}>7 Wonders</Text>
+                <Text style={styles.gameCategory}>Jeu de stratégie</Text>
+              </View>
+              
+              <View style={styles.gameImageContainer}>
+                <Image
+                  source={{ uri: event.image_url }}
+                  style={styles.gameImage}
+                  resizeMode="cover"
+                />
+                
+              </View>
+              <View style={styles.arrowContainer}>
+                  <Text style={styles.arrow}>›</Text>
+                </View>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.separator} />
+
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.descriptionTitle}>Tag.s événement et jeu</Text>
+            <View style={styles.badgesContainer}>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Default</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Dark</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Red</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Green</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={[styles.badgeText]}>Yellow</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Indigo</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Purple</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Pink</Text>
+              </View>
+            </View>
+          </View>
 
         {/* Participants */}
         {participants.length > 0 && (
@@ -403,7 +496,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   header: {
-    backgroundColor: 'white',
     padding: 16,
     paddingTop: Platform.select({ ios: 60, android: 16, web: 16 }),
     borderBottomWidth: 1,
@@ -419,7 +511,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   content: {
-    padding: 20,
+    padding: 0,
   },
   title: {
     fontSize: 28,
@@ -428,14 +520,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   metaContainer: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     elevation: 2,
   },
   metaItem: {
@@ -470,7 +557,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   metaEmoji: {
-    fontSize: 20,
+    fontSize: 36,
     marginRight: 12,
   },
   metaText: {
@@ -479,14 +566,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   descriptionContainer: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     elevation: 2,
   },
   descriptionTitle: {
@@ -501,14 +583,9 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   participantsContainer: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     elevation: 2,
   },
   participantsTitle: {
@@ -590,6 +667,102 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#92400e',
+  },
+  eventImageContainer: {
+    width: '100%',
+    height: 200,
+    overflow: 'hidden',
+    backgroundColor: '#E0E0E0'
+  },
+  eventImage: {
+    width: '100%',
+    height: '100%',
+  },
+  eventImagePlaceholder: {
+    fontSize: 24,
+    color: '#6b7280',
+  },
+  gameCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    elevation: 3,
+  },
+  gameInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  
+  gameTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  
+  gameCategory: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  
+  gameImageContainer: {
+    position: 'relative',
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    backgroundColor: '#2C3E50',
+    overflow: 'hidden',
+  },
+  
+  gameImage: {
+    width: '100%',
+    height: '100%',
+  },
+  
+  arrowContainer: {
+    position: 'absolute',
+    right: 4,
+    top: '50%',
+    transform: [{ translateY: -12 }],
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  arrow: {
+    fontSize: 40,
+    color: '#1F2937',
+    fontWeight: 'bold',
+  },
+  badgesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginVertical: 12,
+  },
+  
+  badge: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    backgroundColor: '#3b82f6',
+  },
+  
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 10,
   },
 });
 

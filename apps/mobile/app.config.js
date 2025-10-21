@@ -28,7 +28,13 @@ export default {
     web: {
       bundler: "metro",
       output: "static", // Pour génération de site statique
-      favicon: "./assets/favicon.png"
+      favicon: "./assets/favicon.png",
+      // Configuration SEO
+      meta: {
+        title: "Gémou2 - Communauté de passionnés de jeux de société",
+        description: "Trouvez des joueurs, organisez des événements et partagez votre passion pour les jeux de société",
+        keywords: "jeux de société, board games, communauté, événements, marketplace"
+      }
     },
     
     // Expo Router

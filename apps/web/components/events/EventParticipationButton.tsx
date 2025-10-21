@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Button } from '../ui/Button';
+import { Button, ButtonProps } from '../ui/Button';
 import { useEventParticipation } from '../../hooks/useEventParticipation';
 
 interface EventParticipationButtonProps {
@@ -10,8 +10,8 @@ interface EventParticipationButtonProps {
   isFull: boolean;
   onSuccess?: () => void;
   onError?: (error: string) => void;
-  size?: 'sm' | 'md' | 'lg';
-  variant?: 'default' | 'outline' | 'ghost';
+  size?: ButtonProps['size'];
+  variant?: ButtonProps['variant'];
   className?: string;
 }
 
