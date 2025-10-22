@@ -97,3 +97,5 @@ export default function GameCard({ game, onViewDetails }: GameCardProps) {
   );
 }
 
+
+

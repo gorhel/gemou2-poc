@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagnostic Create-Trade</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #00ff00;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+        }
+        .error { color: #ff0000; }
+        .success { color: #00ff00; }
+        .warning { color: #ffaa00; }
+        button {
+            background: #00ff00;
+            color: #1e1e1e;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        pre {
+            background: #000;
+            padding: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnostic de la page /create-trade</h1>
+    
+    <div class="section">
+        <h2>Instructions</h2>
+        <ol>
+            <li>Ouvrez la page <code>/create-trade</code> dans un autre onglet</li>
+            <li>Ouvrez la console (F12) sur cette page</li>
+            <li>Copiez-collez ce code complet dans la console</li>
+            <li>Appuyez sur Entrée</li>
+            <li>Copiez le résultat et partagez-le</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>📋 Code à copier-coller dans la console</h2>
+        <button onclick="copyCode()">📋 Copier le code</button>
+        <pre id="code">
+// DIAGNOSTIC COMPLET DE LA PAGE CREATE-TRADE
+console.log('🔍 ========================================');
+console.log('🔍 DIAGNOSTIC CREATE-TRADE');
+console.log('🔍 ========================================');
+
+const diagnostic = {
+    timestamp: new Date().toISOString(),
+    url: window.location.href,
+    
+    // 1. Informations de base
+    pageInfo: {
+        title: document.title,
+        bodyLength: document.body.innerHTML.length,
+        textContent: document.body.textContent.substring(0, 200).trim(),
+    },
+    
+    // 2. Éléments DOM
+    elements: {
+        totalDivs: document.querySelectorAll('div').length,
+        totalInputs: document.querySelectorAll('input').length,
+        totalLabels: document.querySelectorAll('label').length,
+        totalButtons: document.querySelectorAll('button').length,
+        totalForms: document.querySelectorAll('form').length,
+        h1Text: document.querySelector('h1')?.textContent,
+        h2Texts: Array.from(document.querySelectorAll('h2')).map(h => h.textContent),
+    },
+    
+    // 3. Composants React (chercher des attributs data-*)
+    reactComponents: {
+        hasDataReactRoot: !!document.querySelector('[data-reactroot]'),
+        hasNextData: !!document.querySelector('#__next'),
+        nextContent: document.querySelector('#__next')?.innerHTML?.length || 0,
+    },
+    
+    // 4. Authentification
+    auth: {
+        hasSupabaseSession: !!localStorage.getItem('supabase.auth.token'),
+        hasAnyLocalStorage: Object.keys(localStorage).length,
+        localStorageKeys: Object.keys(localStorage),
+    },
+    
+    // 5. Recherche de composants spécifiques
+    marketplace: {
+        hasImageUpload: !!document.querySelector('[class*="Image"]'),
+        hasInputFile: !!document.querySelector('input[type="file"]'),
+        hasGameSelect: !!document.querySelector('[class*="Game"]'),
+        hasLocationAuto: !!document.querySelector('[class*="Location"]'),
+    },
+    
+    // 6. Texte visible
+    visibleText: {
+        hasRetour: document.body.textContent.includes('Retour'),
+        hasCreer: document.body.textContent.includes('Créer'),
+        hasAnnonce: document.body.textContent.includes('annonce'),
+        hasVente: document.body.textContent.includes('Vente'),
+        hasEchange: document.body.textContent.includes('Échange'),
+        hasChargement: document.body.textContent.includes('Chargement'),
+        fullText: document.body.textContent.substring(0, 500),
+    },
+    
+    // 7. Erreurs JavaScript
+    errors: {
+        hasReactErrors: !!window.__REACT_ERROR__,
+        consoleErrors: 'Vérifiez la console pour les erreurs en rouge',
+    }
+};
+
+console.log('📊 RÉSULTAT DU DIAGNOSTIC:');
+console.log(JSON.stringify(diagnostic, null, 2));
+
+console.log('');
+console.log('🎯 ANALYSE RAPIDE:');
+
+// Analyse automatique
+if (diagnostic.elements.totalLabels === 0) {
+    console.log('❌ PROBLÈME: Aucun label trouvé - Le formulaire ne se charge pas');
+}
+
+if (diagnostic.visibleText.hasChargement) {
+    console.log('⚠️  La page est bloquée en état "Chargement..."');
+}
+
+if (!diagnostic.auth.hasSupabaseSession) {
+    console.log('❌ PROBLÈME: Pas de session Supabase - Vous n\'êtes probablement pas connecté');
+    console.log('   → Allez sur /login et connectez-vous');
+}
+
+if (diagnostic.reactComponents.nextContent === 0) {
+    console.log('❌ PROBLÈME: Next.js n\'a pas rendu de contenu');
+}
+
+if (diagnostic.elements.totalInputs > 0) {
+    console.log('✅ Des inputs sont présents (' + diagnostic.elements.totalInputs + ')');
+}
+
+if (diagnostic.elements.totalLabels > 0) {
+    console.log('✅ Des labels sont présents (' + diagnostic.elements.totalLabels + ')');
+}
+
+console.log('');
+console.log('🔍 ========================================');
+console.log('Copiez TOUT ce qui est au-dessus et partagez-le');
+console.log('🔍 ========================================');
+
+// Retourner le diagnostic pour pouvoir le copier
+diagnostic;
+        </pre>
+    </div>
+
+    <div class="section">
+        <h2>✅ Après avoir exécuté le code</h2>
+        <ol>
+            <li>Copiez TOUT le résultat de la console</li>
+            <li>Collez-le dans votre réponse</li>
+            <li>Cela me permettra de diagnostiquer précisément le problème</li>
+        </ol>
+    </div>
+
+    <script>
+        function copyCode() {
+            const code = document.getElementById('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('✅ Code copié ! Collez-le dans la console de la page /create-trade');
+            });
+        }
+    </script>
+</body>
+</html>
+
+
