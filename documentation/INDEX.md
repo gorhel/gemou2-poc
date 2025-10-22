@@ -148,3 +148,5 @@ Bienvenue dans la documentation complète du projet Gemou2 !
 
 **💡 Conseil** : Commencez par [START_HERE.md](./START_HERE.md) si c'est votre première fois sur le projet !
 
+
+

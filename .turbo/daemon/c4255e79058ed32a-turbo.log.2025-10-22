@@ -1,0 +1,36 @@
+2025-10-22T05:19:03.115373Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf(".github/workflows/mobile-tests.yml"), AnchoredSystemPathBuf("apps/mobile/__tests__/setup/helpers/render.tsx"), AnchoredSystemPathBuf("apps/mobile/__tests__/setup/helpers/test-utils.tsx"), AnchoredSystemPathBuf("apps/mobile/__tests__/setup/mocks/data.ts"), AnchoredSystemPathBuf("apps/mobile/__tests__/unit/components/ui/Button.test.tsx"), AnchoredSystemPathBuf("apps/mobile/jest.setup.js"), AnchoredSystemPathBuf("apps/mobile/utils/validation.ts"), AnchoredSystemPathBuf("apps/mobile/__tests__/unit/components/ui/Card.test.tsx"), AnchoredSystemPathBuf("apps/mobile/jest.config.js"), AnchoredSystemPathBuf("apps/mobile/__tests__/setup/mocks/supabase.ts"), AnchoredSystemPathBuf("apps/mobile/__tests__/unit/components/auth/AuthProvider.test.tsx"), AnchoredSystemPathBuf("apps/mobile/README_TESTS.md"), AnchoredSystemPathBuf("apps/mobile/__tests__/unit/utils/validation.test.ts"), AnchoredSystemPathBuf("apps/mobile/__tests__/integration/auth-flow.test.tsx"), AnchoredSystemPathBuf("apps/mobile/package.json"), AnchoredSystemPathBuf("apps/mobile/__tests__/unit/components/ui/Input.test.tsx")}
+2025-10-22T05:19:03.117859Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }, WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-22T05:19:03.191799Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-22T05:19:03.193050Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf(".turbo/daemon/c4255e79058ed32a-turbo.log.2025-10-21"), AnchoredSystemPathBuf(".turbo/daemon/c4255e79058ed32a-turbo.log.2025-10-22")}
+2025-10-22T05:19:03.193057Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-22T05:19:38.594292Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/.gitignore")}
+2025-10-22T05:19:38.594319Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-22T05:20:43.695181Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/TESTS_IMPLEMENTATION_SUMMARY.md")}
+2025-10-22T05:20:43.695222Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-22T05:21:54.496651Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("TESTS_COMPLETE_SETUP.md")}
+2025-10-22T05:21:54.496728Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-22T05:31:08.711874Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/jest.setup.js")}
+2025-10-22T05:31:08.712581Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-22T05:31:24.300797Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/jest.setup.js")}
+2025-10-22T05:31:24.300822Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-22T05:35:18.272005Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/TESTS_STATUS_AND_NEXT_STEPS.md")}
+2025-10-22T05:35:18.272999Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-22T05:52:03.163607Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/.gitignore"), AnchoredSystemPathBuf("apps/mobile/jest.setup.js"), AnchoredSystemPathBuf("apps/mobile/TESTS_STATUS_AND_NEXT_STEPS.md"), AnchoredSystemPathBuf("apps/mobile/TESTS_IMPLEMENTATION_SUMMARY.md"), AnchoredSystemPathBuf("TESTS_COMPLETE_SETUP.md")}
+2025-10-22T05:52:03.167161Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }, WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-22T05:52:03.255630Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-22T05:57:13.581390Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/INSTALLATION_FINALE_TESTS.md")}
+2025-10-22T05:57:13.619763Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-22T05:57:13.795618Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/INSTALLATION_FINALE_TESTS.md")}
+2025-10-22T05:57:13.795626Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-22T05:57:13.795678Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-22T05:58:03.447956Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/INSTALLATION_FINALE_TESTS.md")}
+2025-10-22T05:58:03.448268Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-22T05:58:03.461333Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-22T07:26:17.159873Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/coverage")}
+2025-10-22T07:26:17.161188Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-22T07:26:17.314827Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-22T07:29:47.255518Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/TESTS_STATUS_AND_NEXT_STEPS.md")}
+2025-10-22T07:29:47.256027Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-22T07:29:47.289124Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-22T11:07:16.589955Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf(".turbo/cookies/1.cookie"), AnchoredSystemPathBuf(".turbo/cookies/.turbo-cookie")}
+2025-10-22T11:07:16.589964Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))

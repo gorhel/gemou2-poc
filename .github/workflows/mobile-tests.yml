@@ -1,0 +1,137 @@
+name: Mobile Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'apps/mobile/**'
+      - '.github/workflows/mobile-tests.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'apps/mobile/**'
+      - '.github/workflows/mobile-tests.yml'
+
+jobs:
+  test:
+    name: Tests Unitaires & Intégration
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: 📥 Checkout du code
+        uses: actions/checkout@v4
+
+      - name: 🏗 Configuration Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Installation des dépendances (root)
+        run: npm ci
+
+      - name: 📦 Installation des dépendances (mobile)
+        working-directory: ./apps/mobile
+        run: npm ci --legacy-peer-deps
+
+      - name: 🔍 Vérification du linter
+        working-directory: ./apps/mobile
+        run: npm run lint || true
+
+      - name: 🔍 Vérification TypeScript
+        working-directory: ./apps/mobile
+        run: npm run type-check
+
+      - name: 🧪 Exécution des tests
+        working-directory: ./apps/mobile
+        run: npm run test:ci
+
+      - name: 📊 Upload de la couverture vers Codecov
+        if: matrix.node-version == '20.x'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./apps/mobile/coverage/coverage-final.json
+          flags: mobile
+          name: mobile-tests
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: 💬 Commentaire de couverture sur PR
+        if: github.event_name == 'pull_request' && matrix.node-version == '20.x'
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: ./apps/mobile/coverage/lcov.info
+          title: Couverture de tests - Mobile
+
+      - name: 📈 Résumé des tests
+        if: always()
+        run: |
+          echo "## 📊 Résumé des tests" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Node.js: ${{ matrix.node-version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 📱 Application: Mobile (React Native/Expo)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🎯 Objectif de couverture: 80%" >> $GITHUB_STEP_SUMMARY
+
+  quality:
+    name: Vérification de la qualité du code
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: 📥 Checkout du code
+        uses: actions/checkout@v4
+
+      - name: 🏗 Configuration Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: 📦 Installation des dépendances
+        working-directory: ./apps/mobile
+        run: npm ci --legacy-peer-deps
+
+      - name: 🧪 Tests avec couverture complète
+        working-directory: ./apps/mobile
+        run: npm run test:coverage
+
+      - name: ✅ Vérification des seuils de couverture
+        working-directory: ./apps/mobile
+        run: |
+          echo "Vérification des seuils de couverture à 80%"
+          npm run test:coverage -- --coverageThreshold='{"global":{"branches":80,"functions":80,"lines":80,"statements":80}}'
+
+      - name: 📊 Génération du badge de couverture
+        if: github.ref == 'refs/heads/main'
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          jacoco-csv-file: ./apps/mobile/coverage/coverage-summary.json
+          badges-directory: ./badges
+          generate-branches-badge: true
+          generate-summary: true
+
+  notify:
+    name: Notification des résultats
+    runs-on: ubuntu-latest
+    needs: [test, quality]
+    if: always()
+
+    steps:
+      - name: 📢 Notification de succès
+        if: ${{ needs.test.result == 'success' && needs.quality.result == 'success' }}
+        run: |
+          echo "✅ Tous les tests sont passés avec succès !"
+          echo "🎉 La qualité du code est conforme aux standards"
+
+      - name: ⚠️ Notification d'échec
+        if: ${{ needs.test.result == 'failure' || needs.quality.result == 'failure' }}
+        run: |
+          echo "❌ Des tests ont échoué ou la qualité du code n'est pas conforme"
+          exit 1
+
+
