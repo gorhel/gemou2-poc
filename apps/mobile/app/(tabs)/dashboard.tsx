@@ -11,6 +11,7 @@ import {
   Platform,
   Dimensions,
   Image,
+  ImageBackground,
   RefreshControl
 } from 'react-native';
 import { router } from 'expo-router';
@@ -53,10 +54,16 @@ interface MarketplaceItem {
 interface BoardGame {
   id: string;
   name: string;
-  image_url?: string;
-  min_players?: number;
-  max_players?: number;
-  play_time?: string;
+  description?: string;
+  thumbnail?: string;
+  image?: string;
+  minPlayers?: number;
+  maxPlayers?: number;
+  minPlaytime?: number;
+  maxPlaytime?: number;
+  complexity?: string;
+  categories?: string[];
+  mechanics?: string[];
 }
 
 export default function DashboardPage() {
@@ -173,11 +180,48 @@ export default function DashboardPage() {
   const loadGames = async () => {
     try {
       setGamesLoading(true);
-      // Simuler des jeux populaires pour le moment
-      // TODO: Connecter à l'API BoardGameGeek
-      setGames([]);
+      
+      // Récupérer des jeux depuis la table games
+      const { data, error } = await supabase
+        .from('games')
+        .select('*')
+        .limit(50);
+
+      if (error) {
+        console.error('Error loading games:', error);
+        setGames([]);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        setGames([]);
+        return;
+      }
+
+      // Mélanger aléatoirement et prendre 8 jeux
+      const shuffled = [...data].sort(() => Math.random() - 0.5);
+      const randomGames = shuffled.slice(0, 8);
+
+      // Convertir au format BoardGame
+      const convertedGames = randomGames.map((game: any) => ({
+        id: game.id,
+        name: game.name,
+        description: game.description || 'Aucune description disponible',
+        thumbnail: game.photo_url || 'https://via.placeholder.com/300',
+        image: game.photo_url || 'https://via.placeholder.com/300',
+        minPlayers: game.min_players || 1,
+        maxPlayers: game.max_players || 4,
+        minPlaytime: game.duration_min || undefined,
+        maxPlaytime: game.duration_min || undefined,
+        complexity: game.data?.complexity || 'N/A',
+        categories: game.data?.categories || [],
+        mechanics: game.data?.mechanics || [],
+      }));
+
+      setGames(convertedGames);
     } catch (error) {
       console.error('Error loading games:', error);
+      setGames([]);
     } finally {
       setGamesLoading(false);
     }
@@ -388,7 +432,76 @@ export default function DashboardPage() {
                       )}
           </View>
 
+      {/* Games Recommendations */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>🎮 Recommandations de jeux</Text>
+          <TouchableOpacity onPress={() => loadGames()}>
+            <Text style={styles.seeAllText}>Actualiser</Text>
+          </TouchableOpacity>
+        </View>
 
+        {gamesLoading ? (
+          <ActivityIndicator color="#3b82f6" style={{ marginVertical: 20 }} />
+        ) : games.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyEmoji}>🎲</Text>
+            <Text style={styles.emptyText}>Aucun jeu disponible</Text>
+          </View>
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScrollGames}>
+            {games.map((game) => (
+              <View key={game.id} style={styles.gameCardWrapper}>
+                <TouchableOpacity
+                  onPress={() => router.push(`/games/${game.id}`)}
+                  activeOpacity={0.9}
+                  style={styles.gameCard}
+                >
+                  <ImageBackground
+                    source={{ uri: game.thumbnail || game.image || 'https://via.placeholder.com/300' }}
+                    style={styles.gameImageBackground}
+                    resizeMode="cover"
+                  >
+                    {/* Overlay sombre */}
+                    <View style={styles.gameOverlay} />
+
+                    {/* Contenu en bas */}
+                    <View style={styles.gameContent}>
+                      {/* Nom du jeu */}
+                      <Text style={styles.gameName} numberOfLines={2}>
+                        {game.name}
+                      </Text>
+                      
+                      {/* Catégorie */}
+                      {game.categories && game.categories.length > 0 && (
+                        <Text style={styles.gameCategory} numberOfLines={1}>
+                          {game.categories[0]}
+                        </Text>
+                      )}
+                      
+                      {/* Informations supplémentaires */}
+                      <View style={styles.gameInfo}>
+                        <Text style={styles.gameInfoText}>
+                          {game.minPlayers === game.maxPlayers 
+                            ? `${game.minPlayers} joueur${game.minPlayers > 1 ? 's' : ''}`
+                            : `${game.minPlayers}-${game.maxPlayers} joueurs`}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Indicateur de complexité */}
+                    {game.complexity && game.complexity !== 'N/A' && (
+                      <View style={styles.complexityBadge}>
+                        <Text style={styles.complexityText}>{game.complexity}/5</Text>
+                      </View>
+                    )}
+                  </ImageBackground>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        )}
+      </View>
 
       {/* Spacer for bottom tab bar */}
       <View style={{ height: 20 }} />
@@ -645,5 +758,70 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
     color: '#6b7280',
+  },
+  horizontalScrollGames: {
+    marginBottom: 16,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 4,
+  },
+  gameCardWrapper: {
+    width: 176,
+    height: 100,
+    marginBottom: 16,
+    marginLeft: 20,
+  },
+  gameCard: {
+    aspectRatio: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 3,
+    height: 100,
+  },
+  gameImageBackground: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  gameOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  gameContent: {
+    padding: 12,
+    zIndex: 1,
+  },
+  gameName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 4,
+  },
+  gameCategory: {
+    fontSize: 12,
+    color: '#d1d5db',
+    marginBottom: 4,
+  },
+  gameInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  gameInfoText: {
+    fontSize: 11,
+    color: '#9ca3af',
+  },
+  complexityBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    zIndex: 2,
+  },
+  complexityText: {
+    color: 'white',
+    fontSize: 11,
+    fontWeight: '600',
   },
 });
