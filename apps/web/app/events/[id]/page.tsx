@@ -8,7 +8,7 @@ import { useEventParticipantsCount } from '../../../hooks/useEventParticipantsCo
 import { Button } from '../../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
 import { LoadingSpinner } from '../../../components/ui/Loading';
-import { ResponsiveLayout } from '../../../components/layout';
+import { ResponsiveLayout, PageHeader, PageFooter } from '../../../components/layout';
 
 interface Event {
   id: string;
@@ -473,8 +473,15 @@ export default function EventPageOptimized() {
 
   return (
     <ResponsiveLayout>
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50">
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex flex-col">
+        <PageHeader
+          icon="🎲"
+          title={event?.title || 'Détail de l\'événement'}
+          subtitle={event ? `${formatDate(event.date_time)} • ${event.location}` : ''}
+          showBackButton
+        />
+        
+        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-1">
           {/* Header de l'événement */}
           <Card className="mb-8">
             <CardHeader>
@@ -813,6 +820,8 @@ export default function EventPageOptimized() {
             </Card>
           )}
         </div>
+
+        <PageFooter />
       </div>
     </ResponsiveLayout>
   );

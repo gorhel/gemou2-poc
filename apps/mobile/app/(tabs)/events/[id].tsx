@@ -267,49 +267,56 @@ export default function EventDetailsPage() {
                   )}
                 </View>
                 <Text style={styles.metaText}>
-                  Organisé par {creator.full_name || creator.username}
+                <span style={{ fontWeight:700 }}>Hôte</span> 
+                <br /> 
+                Organisé par {creator.full_name || creator.username}
                 </Text>
               </View>
             </View>
           )}
 
-          <View style={styles.separator} />
-
           <View style={styles.metaItem}>
             <Text style={styles.metaEmoji}>📍</Text>
-            <Text style={styles.metaText}>{event.location}</Text>
+            <Text style={styles.metaText}>
+            <span style={{ fontWeight:700 }}>Lieu de l'événement</span> 
+            <br />
+              {event.location}
+              </Text>
           </View>
-
-          <View style={styles.separator} />
 
           <View style={styles.metaItem}>
             <Text style={styles.metaEmoji}>📅</Text>
             <Text style={styles.metaText}>
+            <span style={{ fontWeight:700 }}>Horaire</span> 
+            <br />
               {formatDate(event.event_date)}
             </Text>
           </View>
 
-          <View style={styles.separator} />
 
           <View style={styles.metaItem}>
             <Text style={styles.metaEmoji}>👥</Text>
+            
             <Text style={styles.metaText}>
+            <span style={{ fontWeight:700 }}>Capacité</span> 
+            <br />
               {participants.length}/{event.max_participants} participants
             </Text>
           </View>
 
-          <View style={styles.separator} />
-
           <View style={styles.metaItem}>
-            <Text style={styles.metaEmoji}>💰​🫰​</Text>
-            <Text style={styles.metaText}>Gratuit</Text>
+            <Text style={styles.metaEmoji}>💰​​</Text>
+            <Text style={styles.metaText}>
+            <span style={{ fontWeight:700 }}>Coût</span> 
+            <br />
+              Gratuit</Text>
           </View>
         </View>
 
         <View style={styles.separator} />
 
         <View style={styles.descriptionContainer}>
-          <Text style={styles.descriptionTitle}>Description</Text>
+          <Text style={styles.descriptionTitle}>Description de l'événement</Text>
           <Text style={styles.description}>{event.description}</Text>
         </View>
 
@@ -346,16 +353,16 @@ export default function EventDetailsPage() {
             <Text style={styles.descriptionTitle}>Tag.s événement et jeu</Text>
             <View style={styles.badgesContainer}>
               <View style={[styles.badge]}>
-                <Text style={styles.badgeText}>Default</Text>
+                <Text style={styles.badgeText}>Familial</Text>
               </View>
               <View style={[styles.badge]}>
-                <Text style={styles.badgeText}>Dark</Text>
+                <Text style={styles.badgeText}>Narratif</Text>
               </View>
               <View style={[styles.badge]}>
-                <Text style={styles.badgeText}>Red</Text>
+                <Text style={styles.badgeText}>Pas de nourriture</Text>
               </View>
               <View style={[styles.badge]}>
-                <Text style={styles.badgeText}>Green</Text>
+                <Text style={styles.badgeText}>Strategie</Text>
               </View>
               <View style={[styles.badge]}>
                 <Text style={[styles.badgeText]}>Yellow</Text>
@@ -453,7 +460,7 @@ export default function EventDetailsPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f4f8',
+    backgroundColor: 'white',
   },
   loadingContainer: {
     flex: 1,
@@ -517,26 +524,25 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 20,
+    padding: 16,
   },
   metaContainer: {
     borderRadius: 12,
     padding: 16,
-    marginBottom: 20,
     elevation: 2,
   },
   metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 5,
   },
   organizerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   organizerAvatar: {
-    width: 32,
-    height: 32,
+    width: 56,
+    height: 56,
     borderRadius: 16,
     marginRight: 12,
     overflow: 'hidden',
@@ -557,18 +563,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   metaEmoji: {
-    fontSize: 36,
+    fontSize: 38,
     marginRight: 12,
+    borderRadius:10,
+    backgroundColor: '#F0F2F5',
+    width: 56,
+    height: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    display: 'flex',
   },
   metaText: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#4b5563',
     flex: 1,
   },
   descriptionContainer: {
     borderRadius: 12,
     padding: 16,
-    marginBottom: 20,
     elevation: 2,
   },
   descriptionTitle: {
@@ -578,14 +591,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   description: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#4b5563',
     lineHeight: 22,
+    textAlign: 'justify',
   },
   participantsContainer: {
     borderRadius: 12,
     padding: 16,
-    marginBottom: 20,
     elevation: 2,
   },
   participantsTitle: {

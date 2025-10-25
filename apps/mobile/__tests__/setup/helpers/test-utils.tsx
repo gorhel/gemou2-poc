@@ -50,3 +50,5 @@ export const isElementVisible = (element: any): boolean => {
 };
 
 
+
+

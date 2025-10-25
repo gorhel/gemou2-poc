@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClientSupabaseClient } from '../../lib/supabase-client';
 import { Button, Card, CardHeader, CardTitle, CardContent, LoadingSpinner } from '../../components/ui';
 import { EventsList } from '../../components/events';
-import ResponsiveLayout from '../../components/layout/ResponsiveLayout';
+import { ResponsiveLayout, PageHeader, PageFooter } from '../../components/layout';
 
 export default function EventsPage() {
   const router = useRouter();
@@ -54,28 +54,26 @@ export default function EventsPage() {
 
   return (
     <ResponsiveLayout>
-      <div className="bg-gradient-to-br from-primary-50 to-secondary-50">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-6">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">🎲 Événements</h1>
-                <p className="text-gray-600">Découvrez et participez aux événements de jeux de société</p>
-              </div>
-              <Button onClick={() => router.push('/create')} className="bg-green-600 hover:bg-green-700">
-                Créer un événement
-              </Button>
-            </div>
-          </div>
-        </div>
+      <div className="bg-gradient-to-br from-primary-50 to-secondary-50 min-h-screen flex flex-col">
+        <PageHeader
+          icon="🎲"
+          title="Événements"
+          subtitle="Découvrez et participez aux événements de jeux de société"
+          actions={
+            <Button onClick={() => router.push('/create')} className="bg-green-600 hover:bg-green-700">
+              Créer un événement
+            </Button>
+          }
+        />
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 flex-1">
           <div className="px-4 py-6 sm:px-0">
             <EventsList />
           </div>
         </div>
+
+        <PageFooter />
       </div>
     </ResponsiveLayout>
   );

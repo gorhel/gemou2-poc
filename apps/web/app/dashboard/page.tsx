@@ -8,7 +8,7 @@ import { EventsSlider } from '../../components/events';
 import { GamesRecommendations } from '../../components/games';
 import { UsersRecommendations } from '../../components/users';
 import { MarketplaceListings } from '../../components/marketplace';
-import { ResponsiveLayout } from '../../components/layout';
+import { ResponsiveLayout, PageHeader, PageFooter } from '../../components/layout';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -70,21 +70,16 @@ export default function DashboardPage() {
 
   return (
     <ResponsiveLayout>
-      <div className="bg-gradient-to-br from-primary-50 to-secondary-50">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-6">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
-                <p className="text-gray-600">Bienvenue, {user.email}</p>
-              </div>
-              <Button onClick={handleLogout} variant="outline">
-                Se déconnecter
-              </Button>
-            </div>
-          </div>
-        </div>
+      <div className="bg-gradient-to-br from-primary-50 to-secondary-50 min-h-screen flex flex-col">
+        <PageHeader
+          title="Tableau de bord"
+          subtitle={`Bienvenue, ${user.email}`}
+          actions={
+            <Button onClick={handleLogout} variant="outline">
+              Se déconnecter
+            </Button>
+          }
+        />
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -160,6 +155,8 @@ export default function DashboardPage() {
               </div>
           </div>
         </div>
+
+        <PageFooter />
       </div>
     </ResponsiveLayout>
   );
