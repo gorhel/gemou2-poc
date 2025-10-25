@@ -54,3 +54,5 @@ echo "🚀 Pour démarrer l'application mobile :"
 echo "   cd apps/mobile && npm run dev:web"
 echo ""
 
+
+

@@ -7,7 +7,7 @@ import { createClientSupabaseClient } from '../../../lib/supabase-client';
 import { Button } from '../../../components/ui/Button';
 import { Card, CardContent } from '../../../components/ui/Card';
 import { LoadingSpinner } from '../../../components/ui/Loading';
-import { ResponsiveLayout } from '../../../components/layout';
+import { ResponsiveLayout, PageHeader, PageFooter } from '../../../components/layout';
 
 // Type pour les jeux de la base de données
 interface Game {
@@ -122,22 +122,16 @@ export default function GameDetailsPage() {
 
   return (
     <ResponsiveLayout>
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50">
-        {/* Header avec breadcrumb */}
-        <div className="bg-white border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center space-x-2 text-sm">
-              <Link href="/dashboard" className="text-gray-500 hover:text-gray-700">
-                Tableau de bord
-              </Link>
-              <span className="text-gray-400">/</span>
-              <span className="text-gray-900 font-medium">Détails du jeu</span>
-            </div>
-          </div>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex flex-col">
+        <PageHeader
+          icon="🎮"
+          title={game?.name || 'Détail du jeu'}
+          subtitle={game?.data?.yearPublished ? `Publié en ${game.data.yearPublished}` : ''}
+          showBackButton
+        />
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-1">
           <div className="space-y-6">
             {/* En-tête avec image et info principales */}
             <Card>
@@ -223,19 +217,16 @@ export default function GameDetailsPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex flex-wrap gap-3">
-                      <Button onClick={() => router.back()} variant="outline">
-                        ← Retour
-                      </Button>
-                      {game.bgg_id && (
+                    {game.bgg_id && (
+                      <div className="flex flex-wrap gap-3">
                         <Button
                           onClick={() => window.open(`https://boardgamegeek.com/boardgame/${game.bgg_id}`, '_blank')}
                           variant="default"
                         >
                           Voir sur BoardGameGeek →
                         </Button>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -343,6 +334,8 @@ export default function GameDetailsPage() {
             )}
           </div>
         </div>
+
+        <PageFooter />
       </div>
     </ResponsiveLayout>
   );

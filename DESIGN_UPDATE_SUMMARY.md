@@ -200,3 +200,5 @@ Utilisation d'émojis pour une meilleure lisibilité :
 
 Les pages de jeux s'intègrent maintenant parfaitement dans l'écosystème visuel de Gémou2 !
 
+
+

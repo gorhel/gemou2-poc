@@ -279,3 +279,5 @@ Pour toute question ou problème, consultez :
 - Documentation Next.js : https://nextjs.org/docs
 - Schéma de la base de données : `/supabase/migrations/`
 
+
+

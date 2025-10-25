@@ -58,3 +58,5 @@ Consultez `documentation/FIX_REACT_HOOKS_ERROR.md` pour plus de détails.
 
 **Une fois les commandes exécutées, l'erreur "Invalid hook call" sera résolue !** 🎉
 
+
+

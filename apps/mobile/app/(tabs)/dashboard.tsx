@@ -185,7 +185,7 @@ export default function DashboardPage() {
       const { data, error } = await supabase
         .from('games')
         .select('*')
-        .limit(50);
+        .limit(10);
 
       if (error) {
         console.error('Error loading games:', error);

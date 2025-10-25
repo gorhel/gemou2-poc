@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClientSupabaseClient } from '../../../lib/supabase-client';
 import { Button, Card, CardContent, LoadingSpinner } from '../../../components/ui';
-import ResponsiveLayout from '../../../components/layout/ResponsiveLayout';
+import { ResponsiveLayout, PageHeader, PageFooter } from '../../../components/layout';
 import {
   MarketplaceItemEnriched,
   CONDITION_LABELS,
@@ -146,19 +146,15 @@ export default function TradePage() {
 
   return (
     <ResponsiveLayout>
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Bouton retour */}
-          <button
-            onClick={() => router.back()}
-            className="text-primary-600 hover:text-primary-700 flex items-center mb-6"
-          >
-            <svg className="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Retour
-          </button>
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex flex-col">
+        <PageHeader
+          icon="🛒"
+          title={item?.game_name || 'Détail de l\'annonce'}
+          subtitle={item ? `${TYPE_LABELS[item.type]} • ${formatPrice(item.price, item.type)}` : ''}
+          showBackButton
+        />
 
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Colonne principale */}
             <div className="lg:col-span-2 space-y-6">
@@ -373,6 +369,8 @@ export default function TradePage() {
             </div>
           </div>
         </div>
+
+        <PageFooter />
       </div>
     </ResponsiveLayout>
   );
