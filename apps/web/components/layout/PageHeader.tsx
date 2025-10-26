@@ -67,7 +67,7 @@ export default function PageHeader({
                 className="flex-shrink-0"
                 aria-label="Retour"
               >
-                <span className="hidden sm:inline">← Retour jjkk</span>
+                <span className="hidden sm:inline">← Retour</span>
                 <span className="sm:hidden">←</span>
                 <span className="sm:hidden">
                   {pageIcons[pathname] ? (
@@ -88,7 +88,7 @@ export default function PageHeader({
             <div className="min-w-0 flex-1">
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2 truncate">
                 {icon && <span className="flex-shrink-0">{icon}</span>}
-                <span className="truncate">{title}ddddd</span>
+                <span className="truncate">{title}</span>
               </h1>
               {subtitle && (
                 <p className="text-sm sm:text-base text-gray-600 mt-1 line-clamp-2">

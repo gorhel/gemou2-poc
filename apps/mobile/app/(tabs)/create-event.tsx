@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -11,14 +11,14 @@ import {
   ActivityIndicator,
   Platform,
   Alert
-} from 'react-native';
-import { router } from 'expo-router';
-import { supabase } from '../lib';
+} from 'react-native'
+import { router } from 'expo-router'
+import { supabase } from '../../lib'
 
 export default function CreateEventPage() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -26,72 +26,72 @@ export default function CreateEventPage() {
     location: '',
     max_participants: 4,
     visibility: 'public' as 'public' | 'private' | 'invitation'
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  })
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     const getUser = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const { data: { user }, error } = await supabase.auth.getUser()
         
         if (error || !user) {
-          router.replace('/login');
-          return;
+          router.replace('/login')
+          return
         }
 
-        setUser(user);
+        setUser(user)
       } catch (error) {
-        console.error('Error:', error);
-        router.replace('/login');
+        console.error('Error:', error)
+        router.replace('/login')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    getUser();
-  }, []);
+    getUser()
+  }, [])
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: Record<string, string> = {}
 
     if (!formData.title.trim()) {
-      newErrors.title = 'Le titre est obligatoire';
+      newErrors.title = 'Le titre est obligatoire'
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = 'La description est obligatoire';
+      newErrors.description = 'La description est obligatoire'
     }
 
     if (!formData.date_time) {
-      newErrors.date_time = 'La date et heure sont obligatoires';
+      newErrors.date_time = 'La date et heure sont obligatoires'
     } else {
-      const eventDate = new Date(formData.date_time);
-      const now = new Date();
+      const eventDate = new Date(formData.date_time)
+      const now = new Date()
       if (eventDate <= now) {
-        newErrors.date_time = 'La date doit être dans le futur';
+        newErrors.date_time = 'La date doit être dans le futur'
       }
     }
 
     if (!formData.location.trim()) {
-      newErrors.location = 'Le lieu est obligatoire';
+      newErrors.location = 'Le lieu est obligatoire'
     }
 
     if (formData.max_participants < 2) {
-      newErrors.max_participants = 'Minimum 2 participants';
+      newErrors.max_participants = 'Minimum 2 participants'
     }
 
     if (formData.max_participants > 50) {
-      newErrors.max_participants = 'Maximum 50 participants';
+      newErrors.max_participants = 'Maximum 50 participants'
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async () => {
-    if (!validateForm() || !user) return;
+    if (!validateForm() || !user) return
 
-    setSubmitting(true);
+    setSubmitting(true)
     try {
       const { data, error } = await supabase
         .from('events')
@@ -104,9 +104,9 @@ export default function CreateEventPage() {
           }
         ])
         .select()
-        .single();
+        .single()
 
-      if (error) throw error;
+      if (error) throw error
 
       // Ajouter le créateur comme participant
       await supabase
@@ -115,28 +115,28 @@ export default function CreateEventPage() {
           event_id: data.id,
           profile_id: user.id,
           status: 'confirmed'
-        });
+        })
 
       if (Platform.OS === 'web') {
-        router.push(`/events/${data.id}`);
+        router.push(`/events/${data.id}`)
       } else {
         Alert.alert(
           'Succès !',
           'Votre événement a été créé',
           [{ text: 'OK', onPress: () => router.push(`/events/${data.id}`) }]
-        );
+        )
       }
     } catch (error: any) {
-      const message = error.message || 'Une erreur est survenue';
+      const message = error.message || 'Une erreur est survenue'
       if (Platform.OS === 'web') {
-        alert(message);
+        alert(message)
       } else {
-        Alert.alert('Erreur', message);
+        Alert.alert('Erreur', message)
       }
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -144,11 +144,11 @@ export default function CreateEventPage() {
         <ActivityIndicator size="large" color="#3b82f6" />
         <Text style={styles.loadingText}>Chargement...</Text>
       </View>
-    );
+    )
   }
 
   if (!user) {
-    return null;
+    return null
   }
 
   return (
@@ -289,7 +289,7 @@ export default function CreateEventPage() {
         </View>
       </View>
     </ScrollView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -448,5 +448,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-});
+})
 

@@ -33,7 +33,7 @@ export default function RootLayout() {
           options={{ headerShown: false }} 
         />
 
-        {/* Routes protégées sans tabs */}
+        {/* Routes protégées avec tabs */}
         <Stack.Screen 
           name="create-event" 
           options={{ title: 'Créer un événement', headerShown: false }} 
@@ -44,12 +44,18 @@ export default function RootLayout() {
         />
         <Stack.Screen 
           name="trade/[id]" 
-          options={{ title: 'Détail annonce', headerShown: false }} 
+          options={{ title: 'Détail annonce', headerShown: true }} 
         />
         <Stack.Screen 
           name="profile/[username]" 
           options={{ title: 'Profil', headerShown: false }} 
         />
+
+        {/* Routes protégées sans tabs */}
+        
+
+        {/* Routes protégées sans tabs */}
+        
 
         {/* Routes admin */}
         <Stack.Screen 
