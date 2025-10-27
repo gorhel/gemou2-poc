@@ -25,7 +25,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: 'Accueil',
+          title: 'Accueilz',
           tabBarIcon: ({ color, size }) => (
             <span style={{ fontSize: size }}>🏠</span>
           ),

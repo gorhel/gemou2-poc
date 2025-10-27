@@ -1,20 +1,19 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   Platform,
-  RefreshControl,
-  TextInput
-} from 'react-native';
-import { router } from 'expo-router';
-import { supabase } from '../../lib';
-import { TopHeader } from '../../components/TopHeader';
+  TextInput,
+  ScrollView
+} from 'react-native'
+import { router } from 'expo-router'
+import { supabase } from '../../lib'
+import { PageLayout } from '../../components/layout'
 
 interface MarketplaceItem {
   id: string;
@@ -114,16 +113,7 @@ export default function MarketplacePage() {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-
-      <View style={{ flex: 1 }}>
-        <TopHeader />  {/* Auto-configuration ! */}
-        <ScrollView>
-          {/* Contenu */}
-        </ScrollView>
-      </View>
-
+    <PageLayout showHeader={true} refreshing={refreshing} onRefresh={onRefresh}>
       {/* Search */}
       <View style={styles.searchContainer}>
         <TextInput
@@ -174,12 +164,7 @@ export default function MarketplacePage() {
       </ScrollView>
 
       {/* Items List */}
-      <ScrollView
-        style={styles.scrollView}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
+      <View style={styles.itemsContainer}>
         {filteredItems.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>🛒</Text>
@@ -226,16 +211,12 @@ export default function MarketplacePage() {
             ))}
           </View>
         )}
-      </ScrollView>
-    </View>
-  );
+      </View>
+    </PageLayout>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f4f8',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -318,8 +299,8 @@ const styles = StyleSheet.create({
     color: '#3b82f6',
     fontWeight: 'bold',
   },
-  scrollView: {
-    flex: 1,
+  itemsContainer: {
+    flex: 1
   },
   itemsList: {
     padding: 16,

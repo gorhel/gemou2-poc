@@ -1,20 +1,19 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   Platform,
-  RefreshControl,
-  TextInput
-} from 'react-native';
-import { router } from 'expo-router';
-import { supabase } from '../../lib';
-import { TopHeader } from '../../components/TopHeader';
+  TextInput,
+  ScrollView
+} from 'react-native'
+import { router } from 'expo-router'
+import { supabase } from '../../lib'
+import { PageLayout } from '../../components/layout'
 
 export default function CommunityPage() {
   const [user, setUser] = useState<any>(null);
@@ -77,11 +76,7 @@ export default function CommunityPage() {
   }
 
   return (
-    <View style={styles.container}>
-      
-      <TopHeader /> 
-      {/* Header */}
-
+    <PageLayout showHeader={true} refreshing={refreshing} onRefresh={onRefresh}>
       {/* Search */}
       <View style={styles.searchContainer}>
         <TextInput
@@ -93,12 +88,7 @@ export default function CommunityPage() {
       </View>
 
       {/* Users List */}
-      <ScrollView
-        style={styles.scrollView}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
+      <View style={styles.usersContainer}>
         {filteredUsers.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>👥</Text>
@@ -136,16 +126,12 @@ export default function CommunityPage() {
             ))}
           </View>
         )}
-      </ScrollView>
-    </View>
-  );
+      </View>
+    </PageLayout>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f4f8',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',

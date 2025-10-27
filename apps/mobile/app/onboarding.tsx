@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
-import { router } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
+import React from 'react'
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native'
+import { router } from 'expo-router'
+import * as SecureStore from 'expo-secure-store'
+import { PageLayout } from '../components/layout'
 
 // Fonction helper pour gérer le storage cross-platform
 const setStorageItem = async (key: string, value: string) => {
@@ -64,7 +65,7 @@ export default function OnboardingPage() {
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <PageLayout showHeader={false} scrollEnabled={true} showFooter={true}>
         {slides.map((slide, index) => (
           <OnboardingSlide
             key={index}
@@ -73,28 +74,25 @@ export default function OnboardingPage() {
             emoji={slide.emoji}
           />
         ))}
-      </ScrollView>
-      
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-          <Text style={styles.skipButtonText}>Passer</Text>
-        </TouchableOpacity>
         
-        <TouchableOpacity style={styles.completeButton} onPress={handleComplete}>
-          <Text style={styles.completeButtonText}>Commencer l'aventure</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.footer}>
+          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+            <Text style={styles.skipButtonText}>Passer</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.completeButton} onPress={handleComplete}>
+            <Text style={styles.completeButtonText}>Commencer l'aventure</Text>
+          </TouchableOpacity>
+        </View>
+      </PageLayout>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  scrollView: {
-    flex: 1,
+    backgroundColor: '#f8fafc'
   },
   slide: {
     flex: 1,
