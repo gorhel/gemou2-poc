@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../../lib';
+import { TopHeader } from '../../components/TopHeader';
 
 interface MarketplaceItem {
   id: string;
@@ -115,19 +116,12 @@ export default function MarketplacePage() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>🛒 Marketplace</Text>
-          <Text style={styles.headerSubtitle}>
-            Achetez, vendez et échangez
-          </Text>
-        </View>
-        <TouchableOpacity
-          style={styles.createButton}
-          onPress={() => router.push('/create-trade')}
-        >
-          <Text style={styles.createButtonText}>+ Annonce</Text>
-        </TouchableOpacity>
+
+      <View style={{ flex: 1 }}>
+        <TopHeader />  {/* Auto-configuration ! */}
+        <ScrollView>
+          {/* Contenu */}
+        </ScrollView>
       </View>
 
       {/* Search */}

@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -11,14 +11,14 @@ import {
   ActivityIndicator,
   Platform,
   Alert
-} from 'react-native';
-import { router } from 'expo-router';
-import { supabase } from '../lib';
+} from 'react-native'
+import { router } from 'expo-router'
+import { supabase } from '../../lib'
 
 export default function CreateTradePage() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     type: 'sale' as 'sale' | 'exchange' | 'donation',
     title: '',
@@ -27,62 +27,62 @@ export default function CreateTradePage() {
     price: '',
     location_city: '',
     wanted_game: ''
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  })
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     const getUser = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const { data: { user }, error } = await supabase.auth.getUser()
         
         if (error || !user) {
-          router.replace('/login');
-          return;
+          router.replace('/login')
+          return
         }
 
-        setUser(user);
+        setUser(user)
       } catch (error) {
-        console.error('Error:', error);
-        router.replace('/login');
+        console.error('Error:', error)
+        router.replace('/login')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    getUser();
-  }, []);
+    getUser()
+  }, [])
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: Record<string, string> = {}
 
     if (!formData.title.trim()) {
-      newErrors.title = 'Le titre est obligatoire';
+      newErrors.title = 'Le titre est obligatoire'
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = 'La description est obligatoire';
+      newErrors.description = 'La description est obligatoire'
     }
 
     if (!formData.location_city.trim()) {
-      newErrors.location_city = 'La ville est obligatoire';
+      newErrors.location_city = 'La ville est obligatoire'
     }
 
     if (formData.type === 'sale' && !formData.price) {
-      newErrors.price = 'Le prix est obligatoire pour une vente';
+      newErrors.price = 'Le prix est obligatoire pour une vente'
     }
 
     if (formData.type === 'exchange' && !formData.wanted_game.trim()) {
-      newErrors.wanted_game = 'Indiquez le jeu souhaité en échange';
+      newErrors.wanted_game = 'Indiquez le jeu souhaité en échange'
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async () => {
-    if (!validateForm() || !user) return;
+    if (!validateForm() || !user) return
 
-    setSubmitting(true);
+    setSubmitting(true)
     try {
       const itemData = {
         user_id: user.id,
@@ -95,36 +95,36 @@ export default function CreateTradePage() {
         wanted_game: formData.type === 'exchange' ? formData.wanted_game : null,
         status: 'active',
         images: []
-      };
+      }
 
       const { data, error } = await supabase
         .from('marketplace_items')
         .insert([itemData])
         .select()
-        .single();
+        .single()
 
-      if (error) throw error;
+      if (error) throw error
 
       if (Platform.OS === 'web') {
-        router.push(`/trade/${data.id}`);
+        router.push(`/trade/${data.id}`)
       } else {
         Alert.alert(
           'Succès !',
           'Votre annonce a été publiée',
           [{ text: 'OK', onPress: () => router.push('/marketplace') }]
-        );
+        )
       }
     } catch (error: any) {
-      const message = error.message || 'Une erreur est survenue';
+      const message = error.message || 'Une erreur est survenue'
       if (Platform.OS === 'web') {
-        alert(message);
+        alert(message)
       } else {
-        Alert.alert('Erreur', message);
+        Alert.alert('Erreur', message)
       }
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -132,11 +132,11 @@ export default function CreateTradePage() {
         <ActivityIndicator size="large" color="#3b82f6" />
         <Text style={styles.loadingText}>Chargement...</Text>
       </View>
-    );
+    )
   }
 
   if (!user) {
-    return null;
+    return null
   }
 
   return (
@@ -288,7 +288,7 @@ export default function CreateTradePage() {
         </View>
       </View>
     </ScrollView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -463,5 +463,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-});
+})
 

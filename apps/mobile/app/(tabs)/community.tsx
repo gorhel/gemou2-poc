@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../../lib';
+import { TopHeader } from '../../components/TopHeader';
 
 export default function CommunityPage() {
   const [user, setUser] = useState<any>(null);
@@ -77,13 +78,9 @@ export default function CommunityPage() {
 
   return (
     <View style={styles.container}>
+      
+      <TopHeader /> 
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>💬 Communauté</Text>
-        <Text style={styles.headerSubtitle}>
-          Découvrez les joueurs près de chez vous
-        </Text>
-      </View>
 
       {/* Search */}
       <View style={styles.searchContainer}>

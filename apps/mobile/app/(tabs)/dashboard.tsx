@@ -12,10 +12,12 @@ import {
   Dimensions,
   Image,
   ImageBackground,
-  RefreshControl
+  RefreshControl,
+  TextInput
 } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../../lib';
+import { TopHeader } from '../../components/TopHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -255,30 +257,32 @@ export default function DashboardPage() {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Tableau de bord</Text>
-          <Text style={styles.headerSubtitle}>Bienvenue, {user.email}</Text>
-        </View>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-          <Text style={styles.logoutText}>Déconnexion</Text>
-        </TouchableOpacity>
-      </View>
+    <View style={styles.container}>
+      {/* Top Header */}
+      <TopHeader 
+        dynamicSubtitle={`Bonjour, ${user.username}`}
+        actionHandlers={{
+          'logout': handleLogout
+        }}
+      />
 
-      {/* Welcome Section */}
-      <View style={styles.welcomeCard}>
-        <Text style={styles.welcomeTitle}>🎲 Bienvenue sur Gémou2 !</Text>
-        <Text style={styles.welcomeText}>
-          Découvrez les événements, rencontrez des joueurs et explorez de nouveaux jeux.
+      <ScrollView
+        style={styles.scrollContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* Search Bar */}
+      <TouchableOpacity 
+        style={styles.searchBar}
+        onPress={() => router.push('/search')}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.searchIcon}>🔍</Text>
+        <Text style={styles.searchPlaceholder}>
+          Recherche un événement, un joueur, une annonce ou un jeu
         </Text>
-      </View>
+      </TouchableOpacity>
       
 
       {/* Events Section */}
@@ -503,9 +507,10 @@ export default function DashboardPage() {
         )}
       </View>
 
-      {/* Spacer for bottom tab bar */}
-      <View style={{ height: 20 }} />
-    </ScrollView>
+        {/* Spacer for bottom tab bar */}
+        <View style={{ height: 20 }} />
+      </ScrollView>
+    </View>
   );
 }
 
@@ -513,6 +518,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f0f4f8',
+  },
+  scrollContainer: {
+    flex: 1,
   },
   loadingContainer: {
     flex: 1,
@@ -525,61 +533,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6b7280',
   },
-  header: {
-    backgroundColor: 'white',
-    padding: 20,
-    paddingTop: Platform.select({ ios: 60, android: 20, web: 20 }),
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 4,
-  },
-  logoutButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 8,
-  },
-  logoutText: {
-    color: '#6b7280',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  welcomeCard: {
+  searchBar: {
     margin: 16,
-    padding: 20,
+    marginTop: 12,
+    marginBottom: 12,
+    padding: 16,
     backgroundColor: 'white',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#dbeafe',
+    borderColor: '#e5e7eb',
+    flexDirection: 'row',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
   },
-  welcomeTitle: {
+  searchIcon: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 8,
+    marginRight: 12,
   },
-  welcomeText: {
-    fontSize: 14,
-    color: '#6b7280',
-    lineHeight: 20,
+  searchPlaceholder: {
+    flex: 1,
+    fontSize: 15,
+    color: '#9ca3af',
   },
   section: {
     marginTop: 8,

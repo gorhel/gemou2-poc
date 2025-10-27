@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../../lib';
+import { TopHeader } from '../../components/TopHeader';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
@@ -104,6 +105,8 @@ export default function ProfilePage() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
+      <TopHeader /> 
+      {/* Header */}
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.avatarContainer}>

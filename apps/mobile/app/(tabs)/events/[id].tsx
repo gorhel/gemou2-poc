@@ -15,12 +15,13 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '../../../lib';
+import { TopHeader } from '../../../components/TopHeader';
 
 interface Event {
   id: string;
   title: string;
   description: string;
-  event_date: string;
+  date_time: string;
   location: string;
   max_participants: number;
   current_participants: number;
@@ -166,14 +167,22 @@ export default function EventDetailsPage() {
   };
 
   const formatDate = (dateTime: string) => {
+    if (!dateTime) return 'Date non définie';
+    
     const d = new Date(dateTime);
     
+    // Vérifier si la date est valide
+    if (isNaN(d.getTime())) {
+      return 'Date invalide';
+    }
+    
+    const dayOfWeek = d.toLocaleString('fr-FR', { weekday: 'long' });
     const day = String(d.getDate()).padStart(2, '0');
     const month = d.toLocaleString('fr-FR', { month: 'long' });
     const hours = String(d.getHours()).padStart(2, '0');
     const minutes = String(d.getMinutes()).padStart(2, '0');
     
-    return `${day} ${month}, ${hours}:${minutes}`;
+    return `${dayOfWeek} ${day} ${month}, ${hours}:${minutes}`;
   };
 
   const getInitials = (name: string) => {
@@ -218,10 +227,11 @@ export default function EventDetailsPage() {
       }
     >
       {/* Header avec bouton retour */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>← Retour</Text>
-        </TouchableOpacity>
+      <View style={{ flex: 1 }}>
+        <TopHeader />  {/* Auto-configuration ! */}
+        <ScrollView>
+          {/* Contenu */}
+        </ScrollView>
       </View>
 
       {/* Event Details */}
@@ -269,7 +279,7 @@ export default function EventDetailsPage() {
                 <Text style={styles.metaText}>
                 <span style={{ fontWeight:700 }}>Hôte</span> 
                 <br /> 
-                Organisé par {creator.full_name || creator.username}
+                Organisé par {isCreator ? 'vous' : creator.full_name || creator.username}
                 </Text>
               </View>
             </View>
@@ -289,7 +299,7 @@ export default function EventDetailsPage() {
             <Text style={styles.metaText}>
             <span style={{ fontWeight:700 }}>Horaire</span> 
             <br />
-              {formatDate(event.event_date)}
+              {formatDate(event.date_time)}
             </Text>
           </View>
 
@@ -425,6 +435,16 @@ export default function EventDetailsPage() {
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
           {!isCreator && (
+
+          <View style={styles.creatorBadge}>
+            <TouchableOpacity
+            style={styles.GroupContactButton}
+            onPress={() => router.push('/')}> {/* // déclencher la conversation avec les participants TODO: implémenter la conversation avec les participants */}
+              <Text style={styles.creatorBadgeText}>
+                Contacter l'hôte
+              </Text>
+            </TouchableOpacity> 
+            
             <TouchableOpacity
               style={[
                 styles.participateButton,
@@ -442,14 +462,43 @@ export default function EventDetailsPage() {
                 </Text>
               )}
             </TouchableOpacity>
+          </View>
           )}
+          
 
           {isCreator && (
+
+            
             <View style={styles.creatorBadge}>
-              <Text style={styles.creatorBadgeText}>
-                ⭐ Vous êtes l'organisateur
-              </Text>
+              <TouchableOpacity
+              style={styles.GroupContactButton}
+              onPress={() => router.push('/')}> {/* // déclencher la conversation avec les participants TODO: implémenter la conversation avec les participants */}
+                <Text style={styles.creatorBadgeText}>
+                  Contacter les participants
+                </Text>
+              </TouchableOpacity> 
+
+              <TouchableOpacity
+              
+              style={[
+                styles.participateButton,
+                isParticipating && styles.participateButtonActive,
+                isFull && !isParticipating && styles.participateButtonDisabled
+              ]}
+              onPress={handleParticipate}
+              disabled={isLoadingAction || (isFull && !isParticipating)}
+            >
+              {isLoadingAction ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.participateButtonText}>
+                  {isCreator ? 'Modifier le Gémou' : isFull ? 'Complet' : 'Participer'}
+                </Text>
+              )}
+                
+              </TouchableOpacity>
             </View>
+            
           )}
         </View>
       </View>
@@ -652,6 +701,10 @@ const styles = StyleSheet.create({
   actionsContainer: {
     marginTop: 20,
     marginBottom: 40,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
   },
   participateButton: {
     backgroundColor: '#3b82f6',
@@ -671,15 +724,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   creatorBadge: {
-    backgroundColor: '#fef3c7',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
   },
   creatorBadgeText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#92400e',
+    color: '#121417',
   },
   eventImageContainer: {
     width: '100%',
@@ -729,6 +781,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#2C3E50',
     overflow: 'hidden',
+    marginRight: 12,
   },
   
   gameImage: {
@@ -764,18 +817,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 6,
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#F0F2F5',
   },
   
   badgeText: {
-    color: '#FFFFFF',
+    color: '#121417',
     fontSize: 14,
     fontWeight: '600',
   },
   separator: {
     height: 1,
     backgroundColor: '#E0E0E0',
-    marginVertical: 10,
+    marginVertical: 5,
+  },
+  GroupContactButton: {
+    backgroundColor: '#F0F2F5',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+  },
+  GroupContactButtonText: {
+    color: '#121417',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
