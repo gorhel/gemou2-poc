@@ -1,19 +1,19 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   StyleSheet,
   ActivityIndicator,
   Platform,
   Alert
-} from 'react-native';
-import { router } from 'expo-router';
-import { supabase } from '../lib';
+} from 'react-native'
+import { router } from 'expo-router'
+import { supabase } from '../lib'
+import { PageLayout } from '../components/layout'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -63,7 +63,7 @@ export default function ForgotPasswordPage() {
 
   if (emailSent) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <PageLayout showHeader={false} contentContainerStyle={styles.contentContainer}>
         <View style={styles.successContainer}>
           <Text style={styles.successEmoji}>✅</Text>
           <Text style={styles.successTitle}>Email envoyé !</Text>
@@ -78,12 +78,12 @@ export default function ForgotPasswordPage() {
             <Text style={styles.backButtonText}>← Retour à la connexion</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
-    );
+      </PageLayout>
+    )
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <PageLayout showHeader={false} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.backLink}>← Retour</Text>
@@ -128,15 +128,11 @@ export default function ForgotPasswordPage() {
           </TouchableOpacity>
         </View>
       </View>
-    </ScrollView>
-  );
+    </PageLayout>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f4f8',
-  },
   contentContainer: {
     padding: 20,
     paddingTop: Platform.select({ ios: 80, android: 40, web: 60 }),

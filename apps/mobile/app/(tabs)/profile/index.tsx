@@ -1,19 +1,18 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   Platform,
-  RefreshControl
-} from 'react-native';
-import { router } from 'expo-router';
-import { supabase } from '../../../lib';
-import { TopHeader } from '../../../components/TopHeader';
+  ScrollView
+} from 'react-native'
+import { router } from 'expo-router'
+import { supabase } from '../../../lib'
+import { PageLayout } from '../../../components/layout'
 
 type TabType = 'informations' | 'privacy' | 'account';
 
@@ -102,19 +101,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+    <PageLayout showHeader={true} refreshing={refreshing} onRefresh={onRefresh}>
       {/* Header */}
-      <View style={{ flex: 1 }}>
-        <TopHeader />  {/* Auto-configuration ! */}
-        <ScrollView>
-          {/* Contenu */}
-        </ScrollView>
-      </View>
 
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
@@ -221,15 +209,11 @@ export default function ProfilePage() {
           <Text style={[styles.actionButtonText, styles.signOutText]}>Déconnexion</Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
-  );
+    </PageLayout>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f4f8',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',

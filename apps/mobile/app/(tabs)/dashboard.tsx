@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -12,12 +12,11 @@ import {
   Dimensions,
   Image,
   ImageBackground,
-  RefreshControl,
   TextInput
-} from 'react-native';
-import { router } from 'expo-router';
-import { supabase } from '../../lib';
-import { TopHeader } from '../../components/TopHeader';
+} from 'react-native'
+import { router } from 'expo-router'
+import { supabase } from '../../lib'
+import { PageLayout } from '../../components/layout'
 
 const { width } = Dimensions.get('window');
 
@@ -257,21 +256,11 @@ export default function DashboardPage() {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Top Header */}
-      <TopHeader 
-        dynamicSubtitle={`Bonjour, ${user.username}`}
-        actionHandlers={{
-          'logout': handleLogout
-        }}
-      />
-
-      <ScrollView
-        style={styles.scrollContainer}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
+    <PageLayout 
+      showHeader={true} 
+      refreshing={refreshing} 
+      onRefresh={onRefresh}
+    >
         {/* Search Bar */}
       <TouchableOpacity 
         style={styles.searchBar}
@@ -507,21 +496,13 @@ export default function DashboardPage() {
         )}
       </View>
 
-        {/* Spacer for bottom tab bar */}
-        <View style={{ height: 20 }} />
-      </ScrollView>
-    </View>
-  );
+      {/* Spacer for bottom tab bar */}
+      <View style={{ height: 20 }} />
+    </PageLayout>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f4f8',
-  },
-  scrollContainer: {
-    flex: 1,
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',

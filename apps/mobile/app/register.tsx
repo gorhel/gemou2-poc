@@ -1,19 +1,19 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   StyleSheet,
   ActivityIndicator,
   Platform,
   Alert
-} from 'react-native';
-import { router } from 'expo-router';
-import { supabase } from '../lib';
+} from 'react-native'
+import { router } from 'expo-router'
+import { supabase } from '../lib'
+import { PageLayout } from '../components/layout'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -165,7 +165,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <PageLayout showHeader={false} scrollEnabled={true} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
         <Text style={styles.title}>
           Créer un compte <Text style={styles.titleAccent}>Gémou2</Text>
@@ -304,15 +304,11 @@ export default function RegisterPage() {
           </View>
         </View>
       </View>
-    </ScrollView>
-  );
+    </PageLayout>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f4f8',
-  },
   contentContainer: {
     padding: 20,
     paddingTop: Platform.select({ web: 60, default: 40 }),
