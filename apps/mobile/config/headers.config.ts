@@ -21,8 +21,18 @@ export const HEADER_CONFIGS: Record<string, HeaderConfig> = {
   // Pages principales (visibles dans le menu tabs)
   // ═══════════════════════════════════════════════════════
   
+//   '/dashboard': {
+//     title: 'Gémou',
+//     subtitle: 'dynamic', // Sera remplacé par l'email de l'utilisateur
+//     showBackButton: false,
+//     rightActions: [
+//       { label: 'Déconnexion', action: 'logout' }
+//     ]
+//   }
+
+
   '/dashboard': {
-    title: 'Tableau de bord',
+    title: 'Gémou',
     subtitle: 'dynamic', // Sera remplacé par l'email de l'utilisateur
     showBackButton: false,
     rightActions: [
@@ -31,7 +41,7 @@ export const HEADER_CONFIGS: Record<string, HeaderConfig> = {
   },
 
   '/(tabs)/dashboard': {
-    title: 'Tableau de bord',
+    title: 'Tableau de bord (tabs)',
     subtitle: 'dynamic',
     showBackButton: false,
     rightActions: [
@@ -40,11 +50,8 @@ export const HEADER_CONFIGS: Record<string, HeaderConfig> = {
   },
   
   '/events': {
-    title: '📅 Événements',
-    showBackButton: false,
-    rightActions: [
-      { icon: '🔍', action: 'search' }
-    ]
+    title: '📅 Liste des Événements',
+    showBackButton: false
   },
 
   '/(tabs)/events': {
@@ -59,7 +66,6 @@ export const HEADER_CONFIGS: Record<string, HeaderConfig> = {
     title: '🛒 Marketplace',
     showBackButton: false,
     rightActions: [
-      { icon: '➕', action: 'create-trade' }
     ]
   },
 
@@ -74,8 +80,8 @@ export const HEADER_CONFIGS: Record<string, HeaderConfig> = {
   '/community': {
     title: '💬 Communauté',
     showBackButton: false,
+    subtitle: 'Découvrez les joueurs près de chez vous',
     rightActions: [
-      { icon: '🔍', action: 'search' }
     ]
   },
 
@@ -142,7 +148,7 @@ export const HEADER_CONFIGS: Record<string, HeaderConfig> = {
   // ═══════════════════════════════════════════════════════
   
   '/events/[id]': {
-    title: 'Détails de l\'événement',
+    title: '📅 Événement',
     showBackButton: true,
     rightActions: [
       { icon: '⋮', action: 'event-menu' }

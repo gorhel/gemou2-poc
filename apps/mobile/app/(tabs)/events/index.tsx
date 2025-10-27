@@ -17,6 +17,8 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../../../lib';
+import { TopHeader } from '../../../components/TopHeader';
+
 
 const { width } = Dimensions.get('window');
 
@@ -261,13 +263,14 @@ export default function EventsPage() {
   }, {});
 
   return (
+    
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text style={styles.backButton}>←</Text>
-          <Text style={styles.headerTitle}>Liste des événements</Text>
-        </View>
+      <View style={{ flex: 1 }}>
+        <TopHeader />  {/* Auto-configuration ! */}
+        <ScrollView>
+          {/* Contenu */}
+        </ScrollView>
       </View>
 
       {/* Search Bar */}

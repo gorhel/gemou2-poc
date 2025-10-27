@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../../../lib';
+import { TopHeader } from '../../../components/TopHeader';
 
 type TabType = 'informations' | 'privacy' | 'account';
 
@@ -108,6 +109,13 @@ export default function ProfilePage() {
       }
     >
       {/* Header */}
+      <View style={{ flex: 1 }}>
+        <TopHeader />  {/* Auto-configuration ! */}
+        <ScrollView>
+          {/* Contenu */}
+        </ScrollView>
+      </View>
+
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
           <View style={styles.avatar}>

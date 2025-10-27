@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '../../../lib';
+import { TopHeader } from '../../../components/TopHeader';
 
 interface Event {
   id: string;
@@ -226,10 +227,11 @@ export default function EventDetailsPage() {
       }
     >
       {/* Header avec bouton retour */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>← Retour</Text>
-        </TouchableOpacity>
+      <View style={{ flex: 1 }}>
+        <TopHeader />  {/* Auto-configuration ! */}
+        <ScrollView>
+          {/* Contenu */}
+        </ScrollView>
       </View>
 
       {/* Event Details */}

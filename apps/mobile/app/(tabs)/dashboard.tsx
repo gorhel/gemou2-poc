@@ -260,7 +260,7 @@ export default function DashboardPage() {
     <View style={styles.container}>
       {/* Top Header */}
       <TopHeader 
-        dynamicSubtitle={`Bienvenue, ${user.email}`}
+        dynamicSubtitle={`Bonjour, ${user.username}`}
         actionHandlers={{
           'logout': handleLogout
         }}
