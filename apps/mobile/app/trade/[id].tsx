@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '../../lib';
+import { TopHeader } from '../../components/TopHeader';
 
 export default function TradeDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -123,10 +124,12 @@ export default function TradeDetailsPage() {
       }
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backBtn}>← Retour</Text>
-        </TouchableOpacity>
+        <TopHeader />  {/* Auto-configuration ! */}
+        <ScrollView>
+          {/* Contenu */}
+        </ScrollView>
       </View>
+      
 
       <View style={styles.content}>
         <View style={styles.typeContainer}>
@@ -268,6 +271,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.select({ ios: 60, android: 16, web: 16 }),
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
+    flex: 1,
   },
   backBtn: {
     fontSize: 16,

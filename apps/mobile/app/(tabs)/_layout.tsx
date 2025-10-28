@@ -5,18 +5,18 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#3b82f6',
-        tabBarInactiveTintColor: '#9ca3af',
+        tabBarActiveTintColor: 'red',
+        tabBarInactiveTintColor: '#61758A',
         tabBarStyle: {
           backgroundColor: 'white',
-          borderTopWidth: 1,
+          borderTopWidth: 2,
           borderTopColor: '#e5e7eb',
-          height: Platform.select({ ios: 85, android: 65, web: 65 }),
+          height: Platform.select({ ios: 85, android: 85, web: 85 }),
           paddingBottom: Platform.select({ ios: 25, default: 10 }),
           paddingTop: 10,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 14,
           fontWeight: '500',
         },
         headerShown: false,
@@ -90,7 +90,17 @@ export default function TabLayout() {
           title: 'Créer un événement',
         }}
       />
+      <Tabs.Screen
+        name="create-trade"
+        options={{
+          href: null, // Masquer du menu
+          title: 'Créer une annonce',
+        }}
+      />
+
     </Tabs>
+
+    
   );
 }
 

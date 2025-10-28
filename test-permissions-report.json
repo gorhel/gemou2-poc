@@ -1,13 +1,13 @@
 {
-  "timestamp": "2025-10-07T15:19:50.838Z",
+  "timestamp": "2025-10-21T08:12:54.453Z",
   "type": "permissions",
   "summary": {
     "total": 17,
     "passed": 13,
     "failed": 4,
     "successRate": "76.5",
-    "duration": 6,
-    "averageDuration": "0.4"
+    "duration": 15,
+    "averageDuration": "0.9"
   },
   "securityIssues": [
     {
@@ -17,8 +17,8 @@
       "description": "FriendsSlider - Contrôles d'amitié",
       "hasFriendshipCheck": true,
       "hasConditionalDisplay": false,
-      "duration": 1,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 8,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 6
     },
     {
@@ -29,8 +29,8 @@
       "hasAuthUID": false,
       "hasWhereClause": false,
       "hasSecurityCheck": false,
-      "duration": 1,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 10
     },
     {
@@ -40,8 +40,8 @@
       "description": "Profil - Contrôles de propriétaire",
       "hasCreatorCheck": true,
       "hasOwnershipLogic": false,
-      "duration": 1,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 11
     },
     {
@@ -51,8 +51,8 @@
       "description": "Détail événement - Contrôles de propriétaire",
       "hasCreatorCheck": true,
       "hasOwnershipLogic": false,
-      "duration": 1,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 13
     }
   ],
@@ -69,8 +69,8 @@
       "description": "Dashboard - Contrôles d'authentification",
       "hasAuthCheck": true,
       "hasRedirect": true,
-      "duration": 2,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 3,
+      "timestamp": "2025-10-21T08:12:54.441Z",
       "index": 0
     },
     {
@@ -80,8 +80,8 @@
       "description": "Profil - Contrôles d'authentification",
       "hasAuthCheck": true,
       "hasRedirect": true,
-      "duration": 2,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 9,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 1
     },
     {
@@ -91,8 +91,8 @@
       "description": "Détail événement - Contrôles d'authentification",
       "hasAuthCheck": true,
       "hasRedirect": true,
-      "duration": 2,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 9,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 2
     },
     {
@@ -102,8 +102,8 @@
       "description": "Création événement - Contrôles d'authentification",
       "hasAuthCheck": true,
       "hasRedirect": true,
-      "duration": 2,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 9,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 3
     },
     {
@@ -113,8 +113,8 @@
       "description": "Communauté - Contrôles d'authentification",
       "hasAuthCheck": true,
       "hasRedirect": true,
-      "duration": 1,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 9,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 4
     },
     {
@@ -124,8 +124,8 @@
       "description": "Profil utilisateur - Contrôles d'amitié",
       "hasFriendshipCheck": true,
       "hasConditionalDisplay": true,
-      "duration": 1,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 8,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 5
     },
     {
@@ -135,8 +135,8 @@
       "description": "FriendsSlider - Contrôles d'amitié",
       "hasFriendshipCheck": true,
       "hasConditionalDisplay": false,
-      "duration": 1,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 8,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 6
     },
     {
@@ -147,8 +147,8 @@
       "hasAuthUID": true,
       "hasWhereClause": true,
       "hasSecurityCheck": true,
-      "duration": 1,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 7
     },
     {
@@ -159,8 +159,8 @@
       "hasAuthUID": true,
       "hasWhereClause": true,
       "hasSecurityCheck": true,
-      "duration": 1,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 8
     },
     {
@@ -171,8 +171,8 @@
       "hasAuthUID": true,
       "hasWhereClause": true,
       "hasSecurityCheck": true,
-      "duration": 1,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 9
     },
     {
@@ -183,8 +183,8 @@
       "hasAuthUID": false,
       "hasWhereClause": false,
       "hasSecurityCheck": false,
-      "duration": 1,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 10
     },
     {
@@ -194,8 +194,8 @@
       "description": "Profil - Contrôles de propriétaire",
       "hasCreatorCheck": true,
       "hasOwnershipLogic": false,
-      "duration": 1,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 11
     },
     {
@@ -205,8 +205,8 @@
       "description": "Profil utilisateur - Contrôles de propriétaire",
       "hasCreatorCheck": true,
       "hasOwnershipLogic": true,
-      "duration": 1,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 12
     },
     {
@@ -216,8 +216,8 @@
       "description": "Détail événement - Contrôles de propriétaire",
       "hasCreatorCheck": true,
       "hasOwnershipLogic": false,
-      "duration": 1,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 13
     },
     {
@@ -228,8 +228,8 @@
       "hasTryCatch": true,
       "hasErrorState": true,
       "hasUserFriendlyMessages": true,
-      "duration": 0,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 14
     },
     {
@@ -240,8 +240,8 @@
       "hasTryCatch": true,
       "hasErrorState": true,
       "hasUserFriendlyMessages": true,
-      "duration": 0,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 15
     },
     {
@@ -252,8 +252,8 @@
       "hasTryCatch": true,
       "hasErrorState": true,
       "hasUserFriendlyMessages": true,
-      "duration": 0,
-      "timestamp": "2025-10-07T15:19:50.834Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:12:54.448Z",
       "index": 16
     }
   ]

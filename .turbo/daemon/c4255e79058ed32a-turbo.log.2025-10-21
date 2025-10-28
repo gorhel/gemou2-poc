@@ -1,0 +1,337 @@
+2025-10-21T18:05:16.360351Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf(".turbo/cookies/.turbo-cookie"), AnchoredSystemPathBuf(".turbo/cookies/1.cookie")}
+2025-10-21T18:05:16.360359Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:21:35.227147Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("PROBLEME_CRITIQUE_RENDU.md")}
+2025-10-21T18:21:35.230774Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:21:35.381962Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("PROBLEME_CRITIQUE_RENDU.md")}
+2025-10-21T18:21:35.381982Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:22:09.088322Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("DEBUG_PAGE.html")}
+2025-10-21T18:22:09.090690Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:22:21.084330Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("DEBUG_PAGE.html"), AnchoredSystemPathBuf("PROBLEME_CRITIQUE_RENDU.md")}
+2025-10-21T18:22:21.084386Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:28:33.781983Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf(".turbo/cookies/2.cookie")}
+2025-10-21T18:28:33.782167Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:28:38.080291Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/web/next-env.d.ts")}
+2025-10-21T18:28:38.080315Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("web"), path: AnchoredSystemPathBuf("apps/web") }}))
+2025-10-21T18:31:18.388162Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("EXPLICATION_ARCHITECTURE.md")}
+2025-10-21T18:31:18.388621Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:31:31.782222Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("EXPLICATION_ARCHITECTURE.md")}
+2025-10-21T18:31:31.782247Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:33:16.977218Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("supabase/migrations/20251021120000_setup_marketplace_images_storage.sql")}
+2025-10-21T18:33:16.977251Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:33:17.074993Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("supabase/migrations/20251021120000_setup_marketplace_images_storage.sql")}
+2025-10-21T18:33:17.075003Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:33:59.275788Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("FIX_STORAGE_RLS.md")}
+2025-10-21T18:33:59.275847Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:33:59.375594Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("FIX_STORAGE_RLS.md")}
+2025-10-21T18:33:59.375644Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:34:16.474352Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("QUICK_FIX_UPLOAD.md")}
+2025-10-21T18:34:16.474417Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:34:16.574798Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("QUICK_FIX_UPLOAD.md")}
+2025-10-21T18:34:16.574810Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:34:35.775936Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/web/components/marketplace/ImageUpload.tsx")}
+2025-10-21T18:34:35.776724Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("web"), path: AnchoredSystemPathBuf("apps/web") }}))
+2025-10-21T18:35:31.286083Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("RECAP_CORRECTIONS_STORAGE.md")}
+2025-10-21T18:35:31.286977Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:35:31.373692Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("RECAP_CORRECTIONS_STORAGE.md")}
+2025-10-21T18:35:31.373702Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:36:52.587597Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("ARCHITECTURE_STORAGE.md")}
+2025-10-21T18:36:52.589033Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:36:52.671873Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("ARCHITECTURE_STORAGE.md")}
+2025-10-21T18:36:52.671892Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:37:50.971541Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("README_FIX_STORAGE.md")}
+2025-10-21T18:37:50.971580Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:37:51.071328Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("README_FIX_STORAGE.md")}
+2025-10-21T18:37:51.071337Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:39:03.172683Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("FAQ_STORAGE.md")}
+2025-10-21T18:39:03.172758Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:39:03.381386Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("FAQ_STORAGE.md")}
+2025-10-21T18:39:03.381399Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:40:08.669358Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("INDEX_DOCUMENTATION_STORAGE.md")}
+2025-10-21T18:40:08.669390Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:40:41.269204Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("QUICK_FIX_UPLOAD.md"), AnchoredSystemPathBuf("FIX_STORAGE_RLS.md"), AnchoredSystemPathBuf("apps/web/components/marketplace/ImageUpload.tsx"), AnchoredSystemPathBuf("FAQ_STORAGE.md"), AnchoredSystemPathBuf("INDEX_DOCUMENTATION_STORAGE.md"), AnchoredSystemPathBuf("supabase/migrations/20251021120000_setup_marketplace_images_storage.sql"), AnchoredSystemPathBuf("ARCHITECTURE_STORAGE.md"), AnchoredSystemPathBuf("RECAP_CORRECTIONS_STORAGE.md"), AnchoredSystemPathBuf("README_FIX_STORAGE.md")}
+2025-10-21T18:40:41.269703Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("web"), path: AnchoredSystemPathBuf("apps/web") }, WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:40:41.334479Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T18:47:55.348072Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("supabase/migrations/20251021120000_setup_marketplace_images_storage.sql")}
+2025-10-21T18:47:55.349948Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:48:20.133983Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("ERREUR_SYNTAXE_CORRIGEE.md")}
+2025-10-21T18:48:20.134490Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:48:20.232622Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("ERREUR_SYNTAXE_CORRIGEE.md")}
+2025-10-21T18:48:20.232631Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:48:42.234024Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("supabase/migrations/20251021120000_setup_marketplace_images_storage.sql"), AnchoredSystemPathBuf("ERREUR_SYNTAXE_CORRIGEE.md")}
+2025-10-21T18:48:42.234050Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:54:43.638842Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("DEBUG_MARKETPLACE_INSERT.sql")}
+2025-10-21T18:54:43.640441Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:54:43.724922Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("DEBUG_MARKETPLACE_INSERT.sql")}
+2025-10-21T18:54:43.724931Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:55:35.227730Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("FIX_INSERT_MARKETPLACE.md")}
+2025-10-21T18:55:35.227812Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:56:37.104370Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("START_HERE_MARKETPLACE_FIX.md")}
+2025-10-21T18:56:37.104405Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:56:37.205626Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("START_HERE_MARKETPLACE_FIX.md")}
+2025-10-21T18:56:37.205634Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:57:37.101437Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("RESUME_COMPLET_FIX.md")}
+2025-10-21T18:57:37.101563Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:57:37.198242Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("RESUME_COMPLET_FIX.md")}
+2025-10-21T18:57:37.198252Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T18:58:49.395337Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("FIX_INSERT_MARKETPLACE.md"), AnchoredSystemPathBuf("DEBUG_MARKETPLACE_INSERT.sql"), AnchoredSystemPathBuf("RESUME_COMPLET_FIX.md"), AnchoredSystemPathBuf("START_HERE_MARKETPLACE_FIX.md")}
+2025-10-21T18:58:49.395368Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:05:20.989088Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf(".turbo/cookies/3.cookie")}
+2025-10-21T19:05:20.989301Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:12:17.006568Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("START_HERE_MARKETPLACE_FIX.md")}
+2025-10-21T19:12:17.055641Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:12:46.461193Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("FIX_CONDITION_CHECK_ERROR.md")}
+2025-10-21T19:12:46.461223Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:12:46.562928Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("FIX_CONDITION_CHECK_ERROR.md")}
+2025-10-21T19:12:46.563116Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:13:44.581781Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("ACTION_IMMEDIATE.md")}
+2025-10-21T19:13:44.581865Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:13:44.787424Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("ACTION_IMMEDIATE.md")}
+2025-10-21T19:13:44.787433Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:14:34.361248Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("README_FIX_MARKETPLACE.md")}
+2025-10-21T19:14:34.361386Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:14:34.459718Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("README_FIX_MARKETPLACE.md")}
+2025-10-21T19:14:34.459726Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:14:57.560522Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("ACTION_IMMEDIATE.md"), AnchoredSystemPathBuf("README_FIX_MARKETPLACE.md"), AnchoredSystemPathBuf("START_HERE_MARKETPLACE_FIX.md"), AnchoredSystemPathBuf("FIX_CONDITION_CHECK_ERROR.md")}
+2025-10-21T19:14:57.560940Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:44.478170Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/app.config.js")}
+2025-10-21T19:22:44.479505Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:44.555065Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/ui/Input.tsx"), AnchoredSystemPathBuf("apps/web/lib/supabase.ts")}
+2025-10-21T19:22:44.555075Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("web"), path: AnchoredSystemPathBuf("apps/web") }, WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:44.556741Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:44.654582Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/ui/Input.tsx")}
+2025-10-21T19:22:44.654592Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:44.654622Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:44.857810Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/ui/Select.tsx")}
+2025-10-21T19:22:44.857973Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:44.990180Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/ui/Select.tsx")}
+2025-10-21T19:22:44.990190Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:44.990212Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:45.157018Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/ui/Toggle.tsx")}
+2025-10-21T19:22:45.157033Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:45.955856Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/ui/SmallPill.tsx")}
+2025-10-21T19:22:45.956026Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:46.255153Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/ui/index.ts")}
+2025-10-21T19:22:46.255170Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:46.354477Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/events/index.ts")}
+2025-10-21T19:22:46.354486Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:46.576699Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/games/GameCard.tsx"), AnchoredSystemPathBuf("apps/mobile/components/users/index.ts"), AnchoredSystemPathBuf("packages/database/games.ts"), AnchoredSystemPathBuf("apps/mobile/components/games/index.ts")}
+2025-10-21T19:22:46.576722Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@gemou2/database"), path: AnchoredSystemPathBuf("packages/database") }, WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:46.650198Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:46.650334Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("packages/database/games.ts")}
+2025-10-21T19:22:46.650342Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@gemou2/database"), path: AnchoredSystemPathBuf("packages/database") }}))
+2025-10-21T19:22:46.650370Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:46.754900Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("packages/database/index.ts")}
+2025-10-21T19:22:46.754910Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@gemou2/database"), path: AnchoredSystemPathBuf("packages/database") }}))
+2025-10-21T19:22:46.754922Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:46.855337Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("package.json"), AnchoredSystemPathBuf("apps/web/package.json")}
+2025-10-21T19:22:46.855344Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(All)
+2025-10-21T19:22:47.004416Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("packages/database/username-validation.ts"), AnchoredSystemPathBuf("packages/database/package.json")}
+2025-10-21T19:22:47.004427Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@gemou2/database"), path: AnchoredSystemPathBuf("packages/database") }}))
+2025-10-21T19:22:47.004454Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:47.054713Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/web/components/events/EventParticipationButton.tsx"), AnchoredSystemPathBuf("packages/database/package.json"), AnchoredSystemPathBuf("apps/mobile/app/forgot-password.tsx")}
+2025-10-21T19:22:47.054749Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@gemou2/database"), path: AnchoredSystemPathBuf("packages/database") }, WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }, WorkspacePackage { name: Other("web"), path: AnchoredSystemPathBuf("apps/web") }}))
+2025-10-21T19:22:47.054766Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:47.292460Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:47.292576Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:47.292713Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/app/marketplace.tsx")}
+2025-10-21T19:22:47.292720Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:47.292761Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:47.755797Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/ui/Modal.tsx")}
+2025-10-21T19:22:47.755835Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:47.855055Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:47.954952Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/ui/Modal.tsx")}
+2025-10-21T19:22:47.954972Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:47.988516Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:48.254253Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/users/UserCard.tsx")}
+2025-10-21T19:22:48.254271Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:48.327207Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:48.354039Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/users/UserCard.tsx")}
+2025-10-21T19:22:48.354049Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:48.406196Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:48.456405Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/web/tsconfig.json"), AnchoredSystemPathBuf("apps/web/lib/types/games.ts")}
+2025-10-21T19:22:48.456426Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("web"), path: AnchoredSystemPathBuf("apps/web") }}))
+2025-10-21T19:22:48.521347Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:48.555498Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/web/components/users/UsersSlider.tsx")}
+2025-10-21T19:22:48.555553Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("web"), path: AnchoredSystemPathBuf("apps/web") }}))
+2025-10-21T19:22:49.004654Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:49.004835Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/web/components/users/FriendsSlider.tsx"), AnchoredSystemPathBuf("apps/web/components/users/UserCard.tsx"), AnchoredSystemPathBuf("apps/web/app/events/[id]/page-with-participants.tsx"), AnchoredSystemPathBuf("apps/web/components/users/UserPreferences.tsx"), AnchoredSystemPathBuf("apps/web/components/games/GameDetailsModal.tsx")}
+2025-10-21T19:22:49.004848Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("web"), path: AnchoredSystemPathBuf("apps/web") }}))
+2025-10-21T19:22:49.004916Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:49.154311Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/app/(tabs)/events/[id].tsx")}
+2025-10-21T19:22:49.154323Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:49.295821Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:49.296017Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/ui/Loading.tsx")}
+2025-10-21T19:22:49.296024Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:49.296092Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:49.655732Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/ui/Loading.tsx")}
+2025-10-21T19:22:49.655764Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:49.798501Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:49.798776Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/ui/Card.tsx")}
+2025-10-21T19:22:49.798783Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:49.799536Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:49.855131Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/ui/Card.tsx")}
+2025-10-21T19:22:49.855145Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:50.140765Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:50.140929Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("documentation/INDEX.md"), AnchoredSystemPathBuf("apps/mobile/components/events/EventCard.tsx"), AnchoredSystemPathBuf("apps/mobile/components/events/EventsList.tsx")}
+2025-10-21T19:22:50.140935Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }, WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:50.141509Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:50.254596Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("documentation/INDEX.md"), AnchoredSystemPathBuf("README.md")}
+2025-10-21T19:22:50.254668Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:50.355550Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("README.md"), AnchoredSystemPathBuf("apps/mobile/package.json")}
+2025-10-21T19:22:50.355575Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }, WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:50.489494Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:50.489652Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/package.json")}
+2025-10-21T19:22:50.489659Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:22:50.489696Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:50.554164Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("documentation/MARKETPLACE_POST_MIGRATION_CHECKLIST.md")}
+2025-10-21T19:22:50.554181Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:50.658579Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("documentation/GUIDE_TEST_MARKETPLACE.md")}
+2025-10-21T19:22:50.658595Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:50.755793Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("documentation/RESUME_IMPLEMENTATION_MARKETPLACE.md")}
+2025-10-21T19:22:50.755810Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:50.855163Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("MARKETPLACE_PRET.md")}
+2025-10-21T19:22:50.855186Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:50.954683Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("MARKETPLACE_PRET.md"), AnchoredSystemPathBuf("scripts/check-marketplace-setup.js")}
+2025-10-21T19:22:50.954716Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:51.054836Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("scripts/check-marketplace-setup.js")}
+2025-10-21T19:22:51.054857Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:51.155714Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("CE_QUI_RESTE_A_FAIRE.md")}
+2025-10-21T19:22:51.155739Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:51.254679Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("CE_QUI_RESTE_A_FAIRE.md"), AnchoredSystemPathBuf("scripts/README.md")}
+2025-10-21T19:22:51.254694Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:51.354262Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("README_MARKETPLACE.md"), AnchoredSystemPathBuf("scripts/README.md")}
+2025-10-21T19:22:51.354280Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:51.454102Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("README_MARKETPLACE.md")}
+2025-10-21T19:22:51.454117Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:51.555176Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("documentation/INDEX_MARKETPLACE.md")}
+2025-10-21T19:22:51.555192Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:51.654359Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("supabase/migrations/20251021_fix_marketplace_seller_id.sql")}
+2025-10-21T19:22:51.654375Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:51.755149Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("CORRECTION_MARKETPLACE.md"), AnchoredSystemPathBuf("supabase/migrations/20251021_fix_marketplace_seller_id.sql")}
+2025-10-21T19:22:51.755180Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:51.854278Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("FIX_SELLER_ID.sql"), AnchoredSystemPathBuf("CORRECTION_MARKETPLACE.md")}
+2025-10-21T19:22:51.854296Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:51.955971Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("URGENCE_FIX_MARKETPLACE.md")}
+2025-10-21T19:22:51.955987Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:52.054142Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("STRUCTURE_VISUELLE_CREATE_TRADE.md")}
+2025-10-21T19:22:52.054169Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:52.155375Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("DIAGNOSTIC_URGENT.md"), AnchoredSystemPathBuf("STRUCTURE_VISUELLE_CREATE_TRADE.md")}
+2025-10-21T19:22:52.155419Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:52.255017Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("DIAGNOSTIC_URGENT.md"), AnchoredSystemPathBuf("PROBLEME_CRITIQUE_RENDU.md")}
+2025-10-21T19:22:52.255032Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:52.354548Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("DEBUG_PAGE.html"), AnchoredSystemPathBuf("EXPLICATION_ARCHITECTURE.md")}
+2025-10-21T19:22:52.354564Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:52.455239Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("FIX_STORAGE_RLS.md")}
+2025-10-21T19:22:52.455259Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:52.554806Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("QUICK_FIX_UPLOAD.md")}
+2025-10-21T19:22:52.554829Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:52.655154Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/web/components/marketplace/ImageUpload.tsx")}
+2025-10-21T19:22:52.655188Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("web"), path: AnchoredSystemPathBuf("apps/web") }}))
+2025-10-21T19:22:52.778693Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:22:52.778924Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("ARCHITECTURE_STORAGE.md"), AnchoredSystemPathBuf("RECAP_CORRECTIONS_STORAGE.md")}
+2025-10-21T19:22:52.778928Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:52.855175Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("README_FIX_STORAGE.md"), AnchoredSystemPathBuf("ARCHITECTURE_STORAGE.md")}
+2025-10-21T19:22:52.855184Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:52.954885Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("README_FIX_STORAGE.md")}
+2025-10-21T19:22:52.954901Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:53.073466Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("FAQ_STORAGE.md"), AnchoredSystemPathBuf("INDEX_DOCUMENTATION_STORAGE.md")}
+2025-10-21T19:22:53.073478Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:53.184838Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("INDEX_DOCUMENTATION_STORAGE.md")}
+2025-10-21T19:22:53.184850Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:53.254233Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("supabase/migrations/20251021120000_setup_marketplace_images_storage.sql")}
+2025-10-21T19:22:53.254251Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:53.354747Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("supabase/migrations/20251021120000_setup_marketplace_images_storage.sql"), AnchoredSystemPathBuf("ERREUR_SYNTAXE_CORRIGEE.md")}
+2025-10-21T19:22:53.354762Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:53.453855Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("ERREUR_SYNTAXE_CORRIGEE.md")}
+2025-10-21T19:22:53.453871Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:53.556347Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("DEBUG_MARKETPLACE_INSERT.sql")}
+2025-10-21T19:22:53.556362Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:53.654979Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("DEBUG_MARKETPLACE_INSERT.sql")}
+2025-10-21T19:22:53.655001Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:53.754604Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("FIX_INSERT_MARKETPLACE.md")}
+2025-10-21T19:22:53.754626Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:53.855494Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("RESUME_COMPLET_FIX.md"), AnchoredSystemPathBuf("START_HERE_MARKETPLACE_FIX.md")}
+2025-10-21T19:22:53.855510Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:53.955455Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("FIX_CONDITION_CHECK_ERROR.md")}
+2025-10-21T19:22:53.955470Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:54.055047Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("ACTION_IMMEDIATE.md")}
+2025-10-21T19:22:54.055067Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:54.156718Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("README_FIX_MARKETPLACE.md"), AnchoredSystemPathBuf("ACTION_IMMEDIATE.md")}
+2025-10-21T19:22:54.156986Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:22:54.254917Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("README_FIX_MARKETPLACE.md")}
+2025-10-21T19:22:54.255036Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:23:33.569967Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("documentation/ARCHITECTURE_STORAGE.md"), AnchoredSystemPathBuf("ARCHITECTURE_STORAGE.md")}
+2025-10-21T19:23:33.571174Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:23:40.255762Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("CE_QUI_RESTE_A_FAIRE.md"), AnchoredSystemPathBuf("documentation/CE_QUI_RESTE_A_FAIRE.md")}
+2025-10-21T19:23:40.255802Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:23:45.854930Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("CORRECTION_MARKETPLACE.md"), AnchoredSystemPathBuf("documentation/CORRECTION_MARKETPLACE.md")}
+2025-10-21T19:23:45.854985Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:23:50.454919Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("DEBUG_MARKETPLACE_INSERT.sql"), AnchoredSystemPathBuf("documentation/DEBUG_MARKETPLACE_INSERT.sql")}
+2025-10-21T19:23:50.454976Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:23:55.154605Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("DEBUG_PAGE.html"), AnchoredSystemPathBuf("documentation/DEBUG_PAGE.html")}
+2025-10-21T19:23:55.154655Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:24:01.055202Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("DIAGNOSTIC_URGENT.md"), AnchoredSystemPathBuf("documentation/DIAGNOSTIC_URGENT.md")}
+2025-10-21T19:24:01.055278Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:25:02.089071Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("README_FIX_MARKETPLACE.md"), AnchoredSystemPathBuf("documentation/FIX_INSERT_MARKETPLACE.md"), AnchoredSystemPathBuf("FIX_STORAGE_RLS.md"), AnchoredSystemPathBuf("README_MARKETPLACE.md"), AnchoredSystemPathBuf("RECAP_CORRECTIONS_STORAGE.md"), AnchoredSystemPathBuf("README_FIX_STORAGE.md"), AnchoredSystemPathBuf("RESUME_COMPLET_FIX.md"), AnchoredSystemPathBuf("documentation/STRUCTURE_VISUELLE_CREATE_TRADE.md"), AnchoredSystemPathBuf("MARKETPLACE_PRET.md"), AnchoredSystemPathBuf("URGENCE_FIX_MARKETPLACE.md"), AnchoredSystemPathBuf("FIX_CONDITION_CHECK_ERROR.md"), AnchoredSystemPathBuf("documentation/FAQ_STORAGE.md"), AnchoredSystemPathBuf("documentation/URGENCE_FIX_MARKETPLACE.md"), AnchoredSystemPathBuf("STRUCTURE_VISUELLE_CREATE_TRADE.md"), AnchoredSystemPathBuf("PROBLEME_CRITIQUE_RENDU.md"), AnchoredSystemPathBuf("documentation/README_FIX_MARKETPLACE.md"), AnchoredSystemPathBuf("QUICK_FIX_UPLOAD.md"), AnchoredSystemPathBuf("documentation/QUICK_FIX_UPLOAD.md"), AnchoredSystemPathBuf("documentation/FIX_CONDITION_CHECK_ERROR.md"), AnchoredSystemPathBuf("documentation/RESUME_COMPLET_FIX.md"), AnchoredSystemPathBuf("documentation/EXPLICATION_ARCHITECTURE.md"), AnchoredSystemPathBuf("documentation/README_FIX_STORAGE.md"), AnchoredSystemPathBuf("START_HERE_MARKETPLACE_FIX.md"), AnchoredSystemPathBuf("EXPLICATION_ARCHITECTURE.md"), AnchoredSystemPathBuf("FAQ_STORAGE.md"), AnchoredSystemPathBuf("ERREUR_SYNTAXE_CORRIGEE.md"), AnchoredSystemPathBuf("INDEX_DOCUMENTATION_STORAGE.md"), AnchoredSystemPathBuf("documentation/FIX_STORAGE_RLS.md"), AnchoredSystemPathBuf("documentation/INDEX_DOCUMENTATION_STORAGE.md"), AnchoredSystemPathBuf("documentation/MARKETPLACE_PRET.md"), AnchoredSystemPathBuf("documentation/START_HERE_MARKETPLACE_FIX.md"), AnchoredSystemPathBuf("documentation/RECAP_CORRECTIONS_STORAGE.md"), AnchoredSystemPathBuf("documentation/PROBLEME_CRITIQUE_RENDU.md"), AnchoredSystemPathBuf("FIX_INSERT_MARKETPLACE.md"), AnchoredSystemPathBuf("documentation/ERREUR_SYNTAXE_CORRIGEE.md"), AnchoredSystemPathBuf("documentation/README_MARKETPLACE.md")}
+2025-10-21T19:25:02.090302Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:35:08.638511Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/app.config.js")}
+2025-10-21T19:35:08.639587Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:35:08.740111Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:35:11.937800Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/components/ui/Input.tsx")}
+2025-10-21T19:35:11.937812Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:35:11.937858Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:43:12.698698Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/package.json")}
+2025-10-21T19:43:12.699435Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:43:12.790665Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("package-lock.json")}
+2025-10-21T19:43:12.790689Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:43:22.991239Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/jest.config.js")}
+2025-10-21T19:43:22.991330Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:43:36.491646Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/jest.setup.js")}
+2025-10-21T19:43:36.491741Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:43:36.590212Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/jest.setup.js")}
+2025-10-21T19:43:36.590228Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:43:36.590289Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:43:43.290859Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/__tests__/setup"), AnchoredSystemPathBuf("apps/mobile/__tests__/setup/helpers"), AnchoredSystemPathBuf("apps/mobile/__tests__/integration"), AnchoredSystemPathBuf("apps/mobile/__tests__/setup/mocks"), AnchoredSystemPathBuf("apps/mobile/__tests__/unit"), AnchoredSystemPathBuf("apps/mobile/__tests__/unit/components/ui"), AnchoredSystemPathBuf("apps/mobile/__tests__"), AnchoredSystemPathBuf("apps/mobile/__tests__/unit/components/games"), AnchoredSystemPathBuf("apps/mobile/__tests__/unit/utils"), AnchoredSystemPathBuf("apps/mobile/__tests__/unit/components"), AnchoredSystemPathBuf("apps/mobile/__tests__/unit/components/auth"), AnchoredSystemPathBuf("apps/mobile/__tests__/unit/components/events"), AnchoredSystemPathBuf("apps/mobile/__tests__/unit/hooks")}
+2025-10-21T19:43:43.290882Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:43:43.290929Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:43:55.090990Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/__tests__/setup/helpers/render.tsx")}
+2025-10-21T19:43:55.091040Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:43:55.191006Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/__tests__/setup/helpers/render.tsx")}
+2025-10-21T19:43:55.191015Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:43:55.191050Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:44:00.890262Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/__tests__/setup/helpers/test-utils.tsx")}
+2025-10-21T19:44:00.890278Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:44:23.891415Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/__tests__/setup/mocks/data.ts")}
+2025-10-21T19:44:23.891527Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:44:23.991059Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/__tests__/setup/mocks/data.ts")}
+2025-10-21T19:44:23.991098Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:44:23.991146Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:44:29.790984Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/__tests__/setup/mocks/supabase.ts")}
+2025-10-21T19:44:29.791014Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:44:29.972866Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/__tests__/setup/mocks/supabase.ts")}
+2025-10-21T19:44:29.972877Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:44:29.972900Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-10-21T19:44:55.396620Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/__tests__/unit/components/ui/Button.test.tsx")}
+2025-10-21T19:44:55.396660Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:45:28.992113Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/__tests__/unit/components/ui/Input.test.tsx")}
+2025-10-21T19:45:28.992258Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:45:42.995344Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/__tests__/unit/components/ui/Card.test.tsx")}
+2025-10-21T19:45:42.996180Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:46:09.293538Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/__tests__/unit/components/auth/AuthProvider.test.tsx")}
+2025-10-21T19:46:09.293610Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:46:18.891575Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/utils/validation.ts"), AnchoredSystemPathBuf("apps/mobile/utils")}
+2025-10-21T19:46:18.891587Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:46:52.695159Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/__tests__/unit/utils/validation.test.ts")}
+2025-10-21T19:46:52.695357Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:47:16.593227Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/__tests__/integration/auth-flow.test.tsx")}
+2025-10-21T19:47:16.593403Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:47:45.994850Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf(".github/workflows/mobile-tests.yml")}
+2025-10-21T19:47:45.994901Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:47:46.092034Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf(".github/workflows/mobile-tests.yml")}
+2025-10-21T19:47:46.092070Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-10-21T19:48:02.394004Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/package.json")}
+2025-10-21T19:48:02.394055Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:48:50.494178Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/README_TESTS.md")}
+2025-10-21T19:48:50.494198Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))
+2025-10-21T19:49:05.293224Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps/mobile/jest.config.js")}
+2025-10-21T19:49:05.293263Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("mobile"), path: AnchoredSystemPathBuf("apps/mobile") }}))

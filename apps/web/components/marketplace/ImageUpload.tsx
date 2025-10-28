@@ -23,8 +23,17 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
   const uploadImage = async (file: File): Promise<string | null> => {
     try {
+      // Récupérer l'utilisateur connecté
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.error('User not authenticated');
+        setError('Vous devez être connecté pour uploader des images');
+        return null;
+      }
+
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const fileName = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
 
       const { data, error: uploadError } = await supabase.storage
         .from(bucketName)
@@ -41,6 +50,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       return publicUrl;
     } catch (err) {
       console.error('Error uploading image:', err);
+      setError('Erreur lors de l\'upload. Vérifiez votre connexion.');
       return null;
     }
   };

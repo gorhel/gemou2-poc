@@ -11,10 +11,13 @@ import {
   Platform,
   Dimensions,
   Image,
-  RefreshControl
+  ImageBackground,
+  RefreshControl,
+  TextInput
 } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../../lib';
+import { TopHeader } from '../../components/TopHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -53,10 +56,16 @@ interface MarketplaceItem {
 interface BoardGame {
   id: string;
   name: string;
-  image_url?: string;
-  min_players?: number;
-  max_players?: number;
-  play_time?: string;
+  description?: string;
+  thumbnail?: string;
+  image?: string;
+  minPlayers?: number;
+  maxPlayers?: number;
+  minPlaytime?: number;
+  maxPlaytime?: number;
+  complexity?: string;
+  categories?: string[];
+  mechanics?: string[];
 }
 
 export default function DashboardPage() {
@@ -173,11 +182,48 @@ export default function DashboardPage() {
   const loadGames = async () => {
     try {
       setGamesLoading(true);
-      // Simuler des jeux populaires pour le moment
-      // TODO: Connecter à l'API BoardGameGeek
-      setGames([]);
+      
+      // Récupérer des jeux depuis la table games
+      const { data, error } = await supabase
+        .from('games')
+        .select('*')
+        .limit(10);
+
+      if (error) {
+        console.error('Error loading games:', error);
+        setGames([]);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        setGames([]);
+        return;
+      }
+
+      // Mélanger aléatoirement et prendre 8 jeux
+      const shuffled = [...data].sort(() => Math.random() - 0.5);
+      const randomGames = shuffled.slice(0, 8);
+
+      // Convertir au format BoardGame
+      const convertedGames = randomGames.map((game: any) => ({
+        id: game.id,
+        name: game.name,
+        description: game.description || 'Aucune description disponible',
+        thumbnail: game.photo_url || 'https://via.placeholder.com/300',
+        image: game.photo_url || 'https://via.placeholder.com/300',
+        minPlayers: game.min_players || 1,
+        maxPlayers: game.max_players || 4,
+        minPlaytime: game.duration_min || undefined,
+        maxPlaytime: game.duration_min || undefined,
+        complexity: game.data?.complexity || 'N/A',
+        categories: game.data?.categories || [],
+        mechanics: game.data?.mechanics || [],
+      }));
+
+      setGames(convertedGames);
     } catch (error) {
       console.error('Error loading games:', error);
+      setGames([]);
     } finally {
       setGamesLoading(false);
     }
@@ -211,30 +257,32 @@ export default function DashboardPage() {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Tableau de bord</Text>
-          <Text style={styles.headerSubtitle}>Bienvenue, {user.email}</Text>
-        </View>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-          <Text style={styles.logoutText}>Déconnexion</Text>
-        </TouchableOpacity>
-      </View>
+    <View style={styles.container}>
+      {/* Top Header */}
+      <TopHeader 
+        dynamicSubtitle={`Bonjour, ${user.username}`}
+        actionHandlers={{
+          'logout': handleLogout
+        }}
+      />
 
-      {/* Welcome Section */}
-      <View style={styles.welcomeCard}>
-        <Text style={styles.welcomeTitle}>🎲 Bienvenue sur Gémou2 !</Text>
-        <Text style={styles.welcomeText}>
-          Découvrez les événements, rencontrez des joueurs et explorez de nouveaux jeux.
+      <ScrollView
+        style={styles.scrollContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* Search Bar */}
+      <TouchableOpacity 
+        style={styles.searchBar}
+        onPress={() => router.push('/search')}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.searchIcon}>🔍</Text>
+        <Text style={styles.searchPlaceholder}>
+          Recherche un événement, un joueur, une annonce ou un jeu
         </Text>
-      </View>
+      </TouchableOpacity>
       
 
       {/* Events Section */}
@@ -388,11 +436,81 @@ export default function DashboardPage() {
                       )}
           </View>
 
+      {/* Games Recommendations */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>🎮 Recommandations de jeux</Text>
+          <TouchableOpacity onPress={() => loadGames()}>
+            <Text style={styles.seeAllText}>Actualiser</Text>
+          </TouchableOpacity>
+        </View>
 
+        {gamesLoading ? (
+          <ActivityIndicator color="#3b82f6" style={{ marginVertical: 20 }} />
+        ) : games.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyEmoji}>🎲</Text>
+            <Text style={styles.emptyText}>Aucun jeu disponible</Text>
+          </View>
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScrollGames}>
+            {games.map((game) => (
+              <View key={game.id} style={styles.gameCardWrapper}>
+                <TouchableOpacity
+                  onPress={() => router.push(`/games/${game.id}`)}
+                  activeOpacity={0.9}
+                  style={styles.gameCard}
+                >
+                  <ImageBackground
+                    source={{ uri: game.thumbnail || game.image || 'https://via.placeholder.com/300' }}
+                    style={styles.gameImageBackground}
+                    resizeMode="cover"
+                  >
+                    {/* Overlay sombre */}
+                    <View style={styles.gameOverlay} />
 
-      {/* Spacer for bottom tab bar */}
-      <View style={{ height: 20 }} />
-    </ScrollView>
+                    {/* Contenu en bas */}
+                    <View style={styles.gameContent}>
+                      {/* Nom du jeu */}
+                      <Text style={styles.gameName} numberOfLines={2}>
+                        {game.name}
+                      </Text>
+                      
+                      {/* Catégorie */}
+                      {game.categories && game.categories.length > 0 && (
+                        <Text style={styles.gameCategory} numberOfLines={1}>
+                          {game.categories[0]}
+                        </Text>
+                      )}
+                      
+                      {/* Informations supplémentaires */}
+                      <View style={styles.gameInfo}>
+                        <Text style={styles.gameInfoText}>
+                          {game.minPlayers === game.maxPlayers 
+                            ? `${game.minPlayers} joueur${game.minPlayers > 1 ? 's' : ''}`
+                            : `${game.minPlayers}-${game.maxPlayers} joueurs`}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Indicateur de complexité */}
+                    {game.complexity && game.complexity !== 'N/A' && (
+                      <View style={styles.complexityBadge}>
+                        <Text style={styles.complexityText}>{game.complexity}/5</Text>
+                      </View>
+                    )}
+                  </ImageBackground>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        )}
+      </View>
+
+        {/* Spacer for bottom tab bar */}
+        <View style={{ height: 20 }} />
+      </ScrollView>
+    </View>
   );
 }
 
@@ -400,6 +518,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f0f4f8',
+  },
+  scrollContainer: {
+    flex: 1,
   },
   loadingContainer: {
     flex: 1,
@@ -412,61 +533,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6b7280',
   },
-  header: {
-    backgroundColor: 'white',
-    padding: 20,
-    paddingTop: Platform.select({ ios: 60, android: 20, web: 20 }),
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 4,
-  },
-  logoutButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 8,
-  },
-  logoutText: {
-    color: '#6b7280',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  welcomeCard: {
+  searchBar: {
     margin: 16,
-    padding: 20,
+    marginTop: 12,
+    marginBottom: 12,
+    padding: 16,
     backgroundColor: 'white',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#dbeafe',
+    borderColor: '#e5e7eb',
+    flexDirection: 'row',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
   },
-  welcomeTitle: {
+  searchIcon: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 8,
+    marginRight: 12,
   },
-  welcomeText: {
-    fontSize: 14,
-    color: '#6b7280',
-    lineHeight: 20,
+  searchPlaceholder: {
+    flex: 1,
+    fontSize: 15,
+    color: '#9ca3af',
   },
   section: {
     marginTop: 8,
@@ -545,8 +636,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   userAvatar: {
-    width: 128,
-    height: 128,
+    width: 96,
+    height: 96,
     borderRadius: '50%',
     backgroundColor: '#3b82f6',
     justifyContent: 'center',
@@ -645,5 +736,70 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
     color: '#6b7280',
+  },
+  horizontalScrollGames: {
+    marginBottom: 16,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 4,
+  },
+  gameCardWrapper: {
+    width: 176,
+    height: 100,
+    marginBottom: 16,
+    marginLeft: 20,
+  },
+  gameCard: {
+    aspectRatio: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 3,
+    height: 100,
+  },
+  gameImageBackground: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  gameOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  gameContent: {
+    padding: 12,
+    zIndex: 1,
+  },
+  gameName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 4,
+  },
+  gameCategory: {
+    fontSize: 12,
+    color: '#d1d5db',
+    marginBottom: 4,
+  },
+  gameInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  gameInfoText: {
+    fontSize: 11,
+    color: '#9ca3af',
+  },
+  complexityBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    zIndex: 2,
+  },
+  complexityText: {
+    color: 'white',
+    fontSize: 11,
+    fontWeight: '600',
   },
 });

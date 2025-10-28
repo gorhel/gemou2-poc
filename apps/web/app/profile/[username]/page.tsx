@@ -6,7 +6,7 @@ import { createClientSupabaseClient } from '../../../lib/supabase-client';
 import { Button } from '../../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
 import { LoadingSpinner } from '../../../components/ui/Loading';
-import { ResponsiveLayout } from '../../../components/layout';
+import { ResponsiveLayout, PageHeader, PageFooter } from '../../../components/layout';
 import { FriendsSlider } from '../../../components/users';
 
 interface UserProfile {
@@ -274,8 +274,15 @@ export default function UserProfilePage() {
 
   return (
     <ResponsiveLayout>
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50">
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex flex-col">
+        <PageHeader
+          icon="👤"
+          title={profile?.full_name || 'Profil utilisateur'}
+          subtitle={profile?.username ? `@${profile.username}` : ''}
+          showBackButton
+        />
+        
+        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-1">
           {/* Header du profil */}
           <div className="bg-white rounded-xl shadow-sm border p-8 mb-8">
             <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
@@ -491,6 +498,8 @@ export default function UserProfilePage() {
             </Button>
           </div>
         </div>
+
+        <PageFooter />
       </div>
     </ResponsiveLayout>
   );

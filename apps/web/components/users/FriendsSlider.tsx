@@ -78,11 +78,11 @@ export default function FriendsSlider({ userId, showAllProfiles = false }: Frien
           error = null;
         } else {
           // Étape 2: Extraire les IDs uniques des amis (pas l'utilisateur lui-même)
-          const uniqueFriendIds = [...new Set(
+          const uniqueFriendIds = Array.from(new Set(
             friendIds
               .map(f => f.user_id === userId ? f.friend_id : f.user_id)
               .filter(id => id !== userId)
-          )];
+          ));
 
           // Étape 3: Récupérer les profils des amis
           const result = await supabase

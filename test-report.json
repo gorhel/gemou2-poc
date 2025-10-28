@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-10-07T15:20:24.959Z",
+  "timestamp": "2025-10-21T08:13:27.049Z",
   "summary": {
     "total": 45,
     "passed": 30,
     "failed": 15,
     "successRate": "66.7",
-    "duration": 13,
+    "duration": 15,
     "averageDuration": "0.3"
   },
   "configuration": {
@@ -19,9 +19,9 @@
       "message": "✓ Route  existe",
       "route": "",
       "description": "Page d'accueil (Landing)",
-      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/page.tsx",
-      "duration": 6,
-      "timestamp": "2025-10-07T15:20:24.952Z",
+      "file": "/Users/essykouame/.cursor/worktrees/gemou2-poc/1760588725147-e7f735/apps/web/app/page.tsx",
+      "duration": 8,
+      "timestamp": "2025-10-21T08:13:27.042Z",
       "index": 0
     },
     {
@@ -29,9 +29,9 @@
       "message": "✓ Route login existe",
       "route": "login",
       "description": "Page de connexion",
-      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/login/page.tsx",
-      "duration": 7,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "file": "/Users/essykouame/.cursor/worktrees/gemou2-poc/1760588725147-e7f735/apps/web/app/login/page.tsx",
+      "duration": 9,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 1
     },
     {
@@ -39,9 +39,9 @@
       "message": "✓ Route register existe",
       "route": "register",
       "description": "Page d'inscription",
-      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/register/page.tsx",
-      "duration": 7,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "file": "/Users/essykouame/.cursor/worktrees/gemou2-poc/1760588725147-e7f735/apps/web/app/register/page.tsx",
+      "duration": 9,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 2
     },
     {
@@ -49,9 +49,9 @@
       "message": "✓ Route dashboard existe",
       "route": "dashboard",
       "description": "Tableau de bord",
-      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/dashboard/page.tsx",
-      "duration": 7,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "file": "/Users/essykouame/.cursor/worktrees/gemou2-poc/1760588725147-e7f735/apps/web/app/dashboard/page.tsx",
+      "duration": 9,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 3
     },
     {
@@ -59,9 +59,9 @@
       "message": "✓ Route profile existe",
       "route": "profile",
       "description": "Profil utilisateur",
-      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/profile/page.tsx",
-      "duration": 7,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "file": "/Users/essykouame/.cursor/worktrees/gemou2-poc/1760588725147-e7f735/apps/web/app/profile/page.tsx",
+      "duration": 9,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 4
     },
     {
@@ -69,9 +69,9 @@
       "message": "✓ Route events existe",
       "route": "events",
       "description": "Liste des événements",
-      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/events/page.tsx",
-      "duration": 7,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "file": "/Users/essykouame/.cursor/worktrees/gemou2-poc/1760588725147-e7f735/apps/web/app/events/page.tsx",
+      "duration": 9,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 5
     },
     {
@@ -79,9 +79,9 @@
       "message": "✓ Route community existe",
       "route": "community",
       "description": "Communauté",
-      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/community/page.tsx",
-      "duration": 7,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "file": "/Users/essykouame/.cursor/worktrees/gemou2-poc/1760588725147-e7f735/apps/web/app/community/page.tsx",
+      "duration": 9,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 6
     },
     {
@@ -89,9 +89,9 @@
       "message": "✓ Route create-event existe",
       "route": "create-event",
       "description": "Création d'événement",
-      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/create-event/page.tsx",
-      "duration": 7,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "file": "/Users/essykouame/.cursor/worktrees/gemou2-poc/1760588725147-e7f735/apps/web/app/create-event/page.tsx",
+      "duration": 9,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 7
     },
     {
@@ -99,9 +99,9 @@
       "message": "✓ Route search existe",
       "route": "search",
       "description": "Recherche",
-      "file": "/Users/essykouame/Downloads/gemou2-poc/apps/web/app/search/page.tsx",
-      "duration": 7,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "file": "/Users/essykouame/.cursor/worktrees/gemou2-poc/1760588725147-e7f735/apps/web/app/search/page.tsx",
+      "duration": 9,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 8
     },
     {
@@ -110,8 +110,8 @@
       "component": "AuthForm",
       "description": "Formulaire d'authentification sur la page d'accueil",
       "file": "apps/web/app/page.tsx",
-      "duration": 6,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 8,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 9
     },
     {
@@ -120,8 +120,8 @@
       "component": "Header",
       "description": "Header sur la page d'accueil",
       "file": "apps/web/app/page.tsx",
-      "duration": 6,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 8,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 10
     },
     {
@@ -130,8 +130,8 @@
       "component": "EventsSlider",
       "description": "Slider d'événements sur le dashboard",
       "file": "apps/web/app/dashboard/page.tsx",
-      "duration": 6,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 8,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 11
     },
     {
@@ -140,8 +140,8 @@
       "component": "UsersRecommendations",
       "description": "Recommandations d'utilisateurs sur le dashboard",
       "file": "apps/web/app/dashboard/page.tsx",
-      "duration": 6,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 8,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 12
     },
     {
@@ -150,8 +150,8 @@
       "component": "ResponsiveLayout",
       "description": "Layout responsive sur le dashboard",
       "file": "apps/web/app/dashboard/page.tsx",
-      "duration": 6,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 8,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 13
     },
     {
@@ -160,8 +160,8 @@
       "component": "FriendsSlider",
       "description": "Slider d'amis sur le profil",
       "file": "apps/web/app/profile/page.tsx",
-      "duration": 6,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 8,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 14
     },
     {
@@ -170,8 +170,8 @@
       "component": "Card",
       "description": "Composant Card sur le profil",
       "file": "apps/web/app/profile/page.tsx",
-      "duration": 5,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 15
     },
     {
@@ -180,8 +180,8 @@
       "function": "fetchUserEvents",
       "description": "Fonction de récupération des événements utilisateur",
       "file": "apps/web/app/profile/page.tsx",
-      "duration": 5,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 16
     },
     {
@@ -190,8 +190,8 @@
       "component": "FriendsSlider",
       "description": "Slider d'amis sur le profil utilisateur",
       "file": "apps/web/app/profile/[username]/page.tsx",
-      "duration": 5,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 17
     },
     {
@@ -200,8 +200,8 @@
       "component": "SmallPill",
       "description": "Composant SmallPill pour les préférences",
       "file": "apps/web/app/profile/[username]/page.tsx",
-      "duration": 5,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 18
     },
     {
@@ -210,8 +210,8 @@
       "function": "fetchUserProfile",
       "description": "Fonction de récupération du profil utilisateur",
       "file": "apps/web/app/profile/[username]/page.tsx",
-      "duration": 5,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 19
     },
     {
@@ -220,8 +220,8 @@
       "component": "EventCard",
       "description": "Carte d'événement sur la liste",
       "file": "apps/web/app/events/page.tsx",
-      "duration": 5,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 20
     },
     {
@@ -230,8 +230,8 @@
       "component": "ResponsiveLayout",
       "description": "Layout responsive sur les événements",
       "file": "apps/web/app/events/page.tsx",
-      "duration": 4,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 21
     },
     {
@@ -240,8 +240,8 @@
       "component": "ParticipantCard",
       "description": "Carte de participant sur le détail événement",
       "file": "apps/web/app/events/[id]/page.tsx",
-      "duration": 4,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 7,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 22
     },
     {
@@ -250,8 +250,8 @@
       "hook": "EventParticipantsCount",
       "description": "Hook de comptage des participants",
       "file": "apps/web/app/events/[id]/page.tsx",
-      "duration": 4,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 6,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 23
     },
     {
@@ -260,8 +260,8 @@
       "component": "CreateEventForm",
       "description": "Formulaire de création d'événement",
       "file": "apps/web/app/create-event/page.tsx",
-      "duration": 4,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 6,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 24
     },
     {
@@ -270,8 +270,8 @@
       "component": "ResponsiveLayout",
       "description": "Layout responsive sur la création d'événement",
       "file": "apps/web/app/create-event/page.tsx",
-      "duration": 4,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 6,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 25
     },
     {
@@ -280,8 +280,8 @@
       "component": "UserCard",
       "description": "Carte d'utilisateur sur la communauté",
       "file": "apps/web/app/community/page.tsx",
-      "duration": 4,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 6,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 26
     },
     {
@@ -290,8 +290,8 @@
       "component": "ResponsiveLayout",
       "description": "Layout responsive sur la communauté",
       "file": "apps/web/app/community/page.tsx",
-      "duration": 3,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 5,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 27
     },
     {
@@ -300,8 +300,8 @@
       "component": "Button",
       "description": "Composant Button",
       "file": "apps/web/components/ui/Button.tsx",
-      "duration": 3,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 5,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 28
     },
     {
@@ -310,8 +310,8 @@
       "component": "Card",
       "description": "Composant Card",
       "file": "apps/web/components/ui/Card.tsx",
-      "duration": 3,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 4,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 29
     },
     {
@@ -319,8 +319,8 @@
       "message": "Fichier non trouvé: apps/web/components/ui/LoadingSpinner.tsx",
       "component": "LoadingSpinner",
       "description": "Composant LoadingSpinner",
-      "duration": 3,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 4,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 30
     },
     {
@@ -329,8 +329,8 @@
       "component": "SmallPill",
       "description": "Composant SmallPill",
       "file": "apps/web/components/ui/SmallPill.tsx",
-      "duration": 3,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 4,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 31
     },
     {
@@ -339,8 +339,8 @@
       "component": "ResponsiveHeader",
       "description": "Composant ResponsiveHeader",
       "file": "apps/web/components/ui/ResponsiveHeader.tsx",
-      "duration": 2,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 4,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 32
     },
     {
@@ -349,8 +349,8 @@
       "component": "EventsSlider",
       "description": "Slider d'événements",
       "file": "apps/web/components/events/EventsSlider.tsx",
-      "duration": 2,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 4,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 33
     },
     {
@@ -359,8 +359,8 @@
       "component": "EventCard",
       "description": "Carte d'événement",
       "file": "apps/web/components/events/EventCard.tsx",
-      "duration": 2,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 3,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 34
     },
     {
@@ -369,8 +369,8 @@
       "component": "CreateEventForm",
       "description": "Formulaire de création d'événement",
       "file": "apps/web/components/events/CreateEventForm.tsx",
-      "duration": 2,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 3,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 35
     },
     {
@@ -379,8 +379,8 @@
       "component": "FriendsSlider",
       "description": "Slider d'amis",
       "file": "apps/web/components/users/FriendsSlider.tsx",
-      "duration": 1,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "duration": 2,
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 36
     },
     {
@@ -390,7 +390,7 @@
       "description": "Carte d'ami",
       "file": "apps/web/components/users/FriendCard.tsx",
       "duration": 1,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 37
     },
     {
@@ -400,7 +400,7 @@
       "description": "Carte d'utilisateur",
       "file": "apps/web/components/users/UserCard.tsx",
       "duration": 1,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 38
     },
     {
@@ -410,7 +410,7 @@
       "description": "Hook de comptage des participants",
       "file": "apps/web/hooks/useEventParticipantsCount.ts",
       "duration": 1,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 39
     },
     {
@@ -420,7 +420,7 @@
       "description": "Hook de validation d'username",
       "file": "apps/web/hooks/useUsernameValidation.ts",
       "duration": 1,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 40
     },
     {
@@ -429,7 +429,7 @@
       "file": "apps/web/package.json",
       "description": "Configuration package.json web",
       "duration": 1,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 41
     },
     {
@@ -438,7 +438,7 @@
       "file": "apps/web/next.config.js",
       "description": "Configuration Next.js",
       "duration": 1,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 42
     },
     {
@@ -447,7 +447,7 @@
       "file": "apps/web/tailwind.config.js",
       "description": "Configuration Tailwind",
       "duration": 1,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 43
     },
     {
@@ -456,7 +456,7 @@
       "file": ".env.local",
       "description": "Variables d'environnement",
       "duration": 1,
-      "timestamp": "2025-10-07T15:20:24.953Z",
+      "timestamp": "2025-10-21T08:13:27.043Z",
       "index": 44
     }
   ]

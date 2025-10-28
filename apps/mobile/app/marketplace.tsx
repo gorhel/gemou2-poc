@@ -13,7 +13,7 @@ import {
   TextInput
 } from 'react-native';
 import { router } from 'expo-router';
-import { supabase } from '../lib';
+import { supabase } from '../lib/supabase';
 
 interface MarketplaceItem {
   id: string;

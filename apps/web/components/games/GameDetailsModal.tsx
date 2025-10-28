@@ -27,18 +27,20 @@ export default function GameDetailsModal({
     return remainingMinutes > 0 ? `${hours}h${remainingMinutes}min` : `${hours} heures`;
   };
 
-  const getComplexityColor = (complexity: number) => {
-    if (complexity <= 2) return 'text-green-600 bg-green-100 border-green-200';
-    if (complexity <= 3) return 'text-yellow-600 bg-yellow-100 border-yellow-200';
-    if (complexity <= 4) return 'text-orange-600 bg-orange-100 border-orange-200';
+  const getComplexityColor = (complexity: number | string) => {
+    const num = typeof complexity === 'number' ? complexity : parseFloat(complexity) || 0;
+    if (num <= 2) return 'text-green-600 bg-green-100 border-green-200';
+    if (num <= 3) return 'text-yellow-600 bg-yellow-100 border-yellow-200';
+    if (num <= 4) return 'text-orange-600 bg-orange-100 border-orange-200';
     return 'text-red-600 bg-red-100 border-red-200';
   };
 
-  const getComplexityText = (complexity: number) => {
-    if (complexity <= 1.5) return 'Très facile';
-    if (complexity <= 2.5) return 'Facile';
-    if (complexity <= 3.5) return 'Moyen';
-    if (complexity <= 4.5) return 'Difficile';
+  const getComplexityText = (complexity: number | string) => {
+    const num = typeof complexity === 'number' ? complexity : parseFloat(complexity) || 0;
+    if (num <= 1.5) return 'Très facile';
+    if (num <= 2.5) return 'Facile';
+    if (num <= 3.5) return 'Moyen';
+    if (num <= 4.5) return 'Difficile';
     return 'Très difficile';
   };
 
@@ -126,12 +128,12 @@ export default function GameDetailsModal({
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">🧩 Complexité</h3>
                 <div className="space-y-2">
                   <span className={`px-3 py-2 rounded-full text-sm font-medium border ${getComplexityColor(game.complexity)}`}>
-                    {getComplexityText(game.complexity)} ({game.complexity.toFixed(1)}/5)
+                    {getComplexityText(game.complexity)} ({typeof game.complexity === 'number' ? game.complexity.toFixed(1) : game.complexity}/5)
                   </span>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${(game.complexity / 5) * 100}%` }}
+                      style={{ width: `${(typeof game.complexity === 'number' ? game.complexity : 0) / 5 * 100}%` }}
                     />
                   </div>
                 </div>
