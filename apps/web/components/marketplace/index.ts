@@ -11,3 +11,5 @@ export type { GameSelectProps } from './GameSelect';
 export { MarketplaceListings } from './MarketplaceListings';
 export type { MarketplaceListingsProps } from './MarketplaceListings';
 
+export { default as MarketplaceCard } from './MarketplaceCard';
+
