@@ -1,23 +1,22 @@
-'use client';
+'use client'
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   Platform,
-  RefreshControl,
   TextInput,
   Image,
   FlatList,
-  Dimensions
-} from 'react-native';
-import { router } from 'expo-router';
-import { supabase } from '../../../lib';
-import { TopHeader } from '../../../components/TopHeader';
+  Dimensions,
+  ScrollView
+} from 'react-native'
+import { router } from 'expo-router'
+import { supabase } from '../../../lib'
+import { PageLayout } from '../../../components/layout'
 
 
 const { width } = Dimensions.get('window');
@@ -263,16 +262,7 @@ export default function EventsPage() {
   }, {});
 
   return (
-    
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={{ flex: 1 }}>
-        <TopHeader />  {/* Auto-configuration ! */}
-        <ScrollView>
-          {/* Contenu */}
-        </ScrollView>
-      </View>
-
+    <PageLayout showHeader={true} refreshing={refreshing} onRefresh={onRefresh}>
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <TextInput
@@ -362,21 +352,14 @@ export default function EventsPage() {
           </View>
         )}
         style={styles.eventsList}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
         contentContainerStyle={styles.eventsListContent}
         showsVerticalScrollIndicator={false}
       />
-    </View>
-  );
+    </PageLayout>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',

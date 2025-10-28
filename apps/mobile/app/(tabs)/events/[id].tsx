@@ -1,21 +1,19 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   Platform,
   Alert,
-  RefreshControl,
   Image
-} from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { supabase } from '../../../lib';
-import { TopHeader } from '../../../components/TopHeader';
+} from 'react-native'
+import { useLocalSearchParams, router } from 'expo-router'
+import { supabase } from '../../../lib'
+import { PageLayout } from '../../../components/layout'
 
 interface Event {
   id: string;
@@ -220,19 +218,8 @@ export default function EventDetailsPage() {
   const isFull = (event.current_participants || participants.length) >= event.max_participants;
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+    <PageLayout showHeader={true} refreshing={refreshing} onRefresh={onRefresh}>
       {/* Header avec bouton retour */}
-      <View style={{ flex: 1 }}>
-        <TopHeader />  {/* Auto-configuration ! */}
-        <ScrollView>
-          {/* Contenu */}
-        </ScrollView>
-      </View>
 
       {/* Event Details */}
       <View style={styles.content}>
@@ -502,15 +489,11 @@ export default function EventDetailsPage() {
           )}
         </View>
       </View>
-    </ScrollView>
-  );
+    </PageLayout>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
