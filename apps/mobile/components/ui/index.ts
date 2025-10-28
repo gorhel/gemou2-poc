@@ -1,5 +1,5 @@
 export { Button } from './Button';
-export { Card } from './Card';
+export { Card, CardContent } from './Card';
 export * from './Input';
 export * from './Loading';
 export * from './Modal';

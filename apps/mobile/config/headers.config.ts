@@ -93,13 +93,13 @@ export const HEADER_CONFIGS: Record<string, HeaderConfig> = {
     ]
   },
   
-  '/profile': {
-    title: '👤 Profil',
-    showBackButton: false,
-    rightActions: [
-      { icon: '⚙️', action: 'settings' }
-    ]
-  },
+//   '/profile': {
+//     title: '👤 Profil',
+//     showBackButton: false,
+//     rightActions: [
+//       { icon: '⚙️', action: 'settings' }
+//     ]
+//   },
 
   '/(tabs)/profile': {
     title: '👤 Profil',
@@ -107,6 +107,12 @@ export const HEADER_CONFIGS: Record<string, HeaderConfig> = {
     rightActions: [
       { icon: '⚙️', action: 'settings' }
     ]
+  },
+
+  '/components-demo': {
+    title: '🎨 Composants UI',
+    showBackButton: true,
+    rightActions: []
   },
   
   // ═══════════════════════════════════════════════════════

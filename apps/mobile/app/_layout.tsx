@@ -50,6 +50,10 @@ export default function RootLayout() {
           name="profile/[username]" 
           options={{ title: 'Profil', headerShown: false }} 
         />
+        <Stack.Screen 
+          name="components-demo" 
+          options={{ title: 'Composants UI', headerShown: false }} 
+        />
 
         {/* Routes protégées sans tabs */}
         
