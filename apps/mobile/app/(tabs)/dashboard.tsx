@@ -1,39 +1,192 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Platform,
+  Dimensions,
+  Image,
+  RefreshControl
+} from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../../lib';
+
+const { width } = Dimensions.get('window');
+
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date_time: string;
+  location: string;
+  max_participants: number;
+  current_participants: number;
+  image_url?: string;
+  status: string;
+}
+
+interface User {
+  id: string;
+  username: string;
+  full_name: string;
+  bio?: string;
+  avatar_url?: string;
+}
+
+interface MarketplaceItem {
+  id: string;
+  title: string;
+  type: 'sale' | 'exchange';
+  price?: number;
+  condition: string;
+  game_name?: string;
+  wanted_game?: string;
+  images?: string[];
+  seller_city?: string;
+}
+
+interface BoardGame {
+  id: string;
+  name: string;
+  image_url?: string;
+  min_players?: number;
+  max_players?: number;
+  play_time?: string;
+}
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  // États pour les données
+  const [events, setEvents] = useState<Event[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [marketplaceItems, setMarketplaceItems] = useState<MarketplaceItem[]>([]);
+  const [games, setGames] = useState<BoardGame[]>([]);
+
+  // États de chargement
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [marketplaceLoading, setMarketplaceLoading] = useState(true);
+  const [gamesLoading, setGamesLoading] = useState(true);
 
   useEffect(() => {
-    const getUser = async () => {
-      try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        
-        if (error) {
-          console.error('Error getting user:', error);
-          router.replace('/login');
-          return;
-        }
-
-        if (!user) {
-          router.replace('/login');
-          return;
-        }
-
-        setUser(user);
-      } catch (error) {
-        console.error('Error:', error);
-        router.replace('/login');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getUser();
+    loadUser();
   }, []);
+
+  const loadUser = async () => {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error || !user) {
+        router.replace('/login');
+        return;
+      }
+
+      setUser(user);
+      // Charger toutes les données en parallèle
+      await Promise.all([
+        loadEvents(),
+        loadUsers(),
+        loadMarketplace(),
+        loadGames()
+      ]);
+    } catch (error) {
+      console.error('Error:', error);
+      router.replace('/login');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const loadEvents = async () => {
+    try {
+      setEventsLoading(true);
+      const now = new Date().toISOString();
+      
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('status', 'active')
+        .gte('date_time', now)
+        .order('date_time', { ascending: true })
+        .limit(10);
+
+      if (!error) {
+        setEvents(data || []);
+      }
+    } catch (error) {
+      console.error('Error loading events:', error);
+    } finally {
+      setEventsLoading(false);
+    }
+  };
+
+  const loadUsers = async () => {
+    try {
+      setUsersLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .not('username', 'is', null)
+        .not('full_name', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (!error) {
+        setUsers(data || []);
+      }
+    } catch (error) {
+      console.error('Error loading users:', error);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const loadMarketplace = async () => {
+    try {
+      setMarketplaceLoading(true);
+      const { data, error } = await supabase
+        .from('marketplace_items_enriched')
+        .select('*')
+        .eq('status', 'available')
+        .order('created_at', { ascending: false })
+        .limit(6);
+
+      if (!error) {
+        setMarketplaceItems(data || []);
+      }
+    } catch (error) {
+      console.error('Error loading marketplace:', error);
+    } finally {
+      setMarketplaceLoading(false);
+    }
+  };
+
+  const loadGames = async () => {
+    try {
+      setGamesLoading(true);
+      // Simuler des jeux populaires pour le moment
+      // TODO: Connecter à l'API BoardGameGeek
+      setGames([]);
+    } catch (error) {
+      console.error('Error loading games:', error);
+    } finally {
+      setGamesLoading(false);
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadUser();
+  };
 
   const handleLogout = async () => {
     try {
@@ -41,7 +194,6 @@ export default function DashboardPage() {
       router.replace('/login');
     } catch (error) {
       console.error('Error logging out:', error);
-      Alert.alert('Erreur', 'Impossible de se déconnecter');
     }
   };
 
@@ -55,96 +207,191 @@ export default function DashboardPage() {
   }
 
   if (!user) {
-    return null; // Will redirect to login
+    return null;
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>🎲 Tableau de bord Gémou2</Text>
-        <Text style={styles.subtitle}>Bienvenue, {user.email}</Text>
+        <View>
+          <Text style={styles.headerTitle}>Tableau de bord</Text>
+          <Text style={styles.headerSubtitle}>Bienvenue, {user.email}</Text>
+        </View>
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+          <Text style={styles.logoutText}>Déconnexion</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Welcome Card */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Félicitations !</Text>
-        <Text style={styles.cardText}>
-          Vous êtes maintenant connecté à votre compte Gémou2.
-          Votre authentification avec email + mot de passe fonctionne parfaitement.
+      {/* Welcome Section */}
+      <View style={styles.welcomeCard}>
+        <Text style={styles.welcomeTitle}>🎲 Bienvenue sur Gémou2 !</Text>
+        <Text style={styles.welcomeText}>
+          Découvrez les événements, rencontrez des joueurs et explorez de nouveaux jeux.
         </Text>
-        <View style={styles.successBadge}>
-          <Text style={styles.successText}>✅ Connexion réussie</Text>
+      </View>
+      
+
+      {/* Events Section */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Événements à venir</Text>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/events')}>
+            <Text style={styles.seeAllText}>Voir tout</Text>
+          </TouchableOpacity>
         </View>
+
+        {eventsLoading ? (
+          <ActivityIndicator color="#3b82f6" style={{ marginVertical: 20 }} />
+        ) : events.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyEmoji}>🎲</Text>
+            <Text style={styles.emptyText}>Aucun événement à venir</Text>
+          </View>
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+            {events.map((event) => (
+              <TouchableOpacity
+                key={event.id}
+                style={styles.eventCard}
+                onPress={() => router.push(`/(tabs)/events/${event.id}`)}
+              >
+                <View style={styles.eventImageContainer}>
+                {event.image_url ? (
+                  <Image
+                  source={{ uri: event.image_url }}
+                  style={styles.eventImage}
+                  resizeMode="cover"
+                  
+                  />
+
+                  ) : (
+                    <Text style={styles.eventImagePlaceholder}>📅</Text>
+                    )}
+                </View>
+                <Text style={styles.eventTitle} numberOfLines={2}>{event.title}</Text>
+                <Text style={styles.eventLocation} numberOfLines={1}>📍 {event.location}</Text>
+                <Text style={styles.eventDate}>
+                  {new Date(event.date_time).toLocaleDateString('fr-FR', { 
+                    day: 'numeric', 
+                    month: 'short' 
+                  })}, 👤 4/6
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
       </View>
 
-      {/* User Info Card */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>👤 Informations du compte</Text>
-        <View style={styles.infoContainer}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Email :</Text>
-            <Text style={styles.infoValue}>{user.email}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>ID utilisateur :</Text>
-            <Text style={styles.infoValue}>{user.id.substring(0, 8)}...</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Dernière connexion :</Text>
-            <Text style={styles.infoValue}>
-              {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('fr-FR') : 'Maintenant'}
-            </Text>
-          </View>
+      {/* Marketplace Section */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Annonces de vente et d'échange</Text>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/marketplace')}>
+            <Text style={styles.seeAllText}>Voir tout</Text>
+          </TouchableOpacity>
         </View>
+
+        {marketplaceLoading ? (
+          <ActivityIndicator color="#3b82f6" style={{ marginVertical: 20 }} />
+        ) : marketplaceItems.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyEmoji}>📦</Text>
+            <Text style={styles.emptyText}>Aucune annonce disponible</Text>
+          </View>
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+            {marketplaceItems.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.marketplaceCard}
+                onPress={() => router.push(`/trade/${item.id}`)}
+              >
+                <View style={styles.marketplaceImage}>
+                  {item.images && item.images.length > 0 ? (
+                    <Image source={{ uri: item.images[0] }} style={styles.marketplaceImageFill} />
+                  ) : (
+                    <Text style={styles.marketplaceImagePlaceholder}>🎲</Text>
+                  )}
+                  {item.type === 'sale' && item.price && (
+                    <View style={styles.priceTag}>
+                      <Text style={styles.priceText}>{item.price.toFixed(2)} €</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.marketplaceTitle} numberOfLines={2}>
+                {item.type === 'sale' && (
+                  'Vente : ' + item.title
+                )}
+                {item.type === 'exchange' && (
+                  'Échange : ' + item.title
+                )}
+                  
+                  </Text>
+                
+                  <Text style={styles.marketplaceGame} numberOfLines={1}>🎮 {item.game_name}</Text>
+
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
       </View>
 
-      {/* Features Card */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>🚀 Fonctionnalités disponibles</Text>
-        <View style={styles.featuresList}>
-          <View style={styles.featureItem}>
-            <Text style={styles.featureIcon}>✅</Text>
-            <Text style={styles.featureText}>Authentification email + mot de passe</Text>
-          </View>
-          <View style={styles.featureItem}>
-            <Text style={styles.featureIcon}>✅</Text>
-            <Text style={styles.featureText}>Validation côté client</Text>
-          </View>
-          <View style={styles.featureItem}>
-            <Text style={styles.featureIcon}>✅</Text>
-            <Text style={styles.featureText}>Gestion d'erreurs explicites</Text>
-          </View>
-          <View style={styles.featureItem}>
-            <Text style={styles.featureIcon}>✅</Text>
-            <Text style={styles.featureText}>États de chargement</Text>
-          </View>
-          <View style={styles.featureItem}>
-            <Text style={styles.featureIcon}>✅</Text>
-            <Text style={styles.featureText}>Redirection vers dashboard</Text>
-          </View>
+      {/* Users Recommendations */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Suggestions de joueurs</Text>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/community')}>
+            <Text style={styles.seeAllText}>Voir tout</Text>
+          </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Next Steps Card */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>📋 Spécifications OUT-132-2</Text>
-        <Text style={styles.cardText}>
-          Toutes les spécifications fonctionnelles sont implémentées :
-        </Text>
-        <View style={styles.specsList}>
-          <Text style={styles.specItem}>• Méthode unique : Email + Mot de passe</Text>
-          <Text style={styles.specItem}>• Validation côté client</Text>
-          <Text style={styles.specItem}>• Gestion d'erreurs explicites</Text>
-          <Text style={styles.specItem}>• États de chargement</Text>
-          <Text style={styles.specItem}>• Redirection vers dashboard</Text>
-        </View>
-      </View>
+        {usersLoading ? (
+          <ActivityIndicator color="#3b82f6" style={{ marginVertical: 20 }} />
+        ) : users.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyEmoji}>👥</Text>
+            <Text style={styles.emptyText}>Aucun joueur trouvé</Text>
+          </View>
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+            {users.slice(0, 10).map((userItem) => (
+              <TouchableOpacity
+                key={userItem.id}
+                style={styles.userCard}
+                onPress={() => router.push(`/profile/${userItem.username}`)}
+              >
+                <View style={styles.userAvatar}>
+                {userItem.avatar_url ? (
+                  <Image
+                  source={{ uri: userItem.avatar_url }}
+                  style={styles.userAvatarImage}
+                  resizeMode="cover"
+                  />
+                  ) : (
+                    <Text style={styles.userAvatarText}>
+                      {userItem.full_name?.charAt(0) || '👤'}
+                    </Text>
+                  )}
+                </View>
+                <Text style={styles.userName} numberOfLines={1}>{userItem.full_name}</Text>
+                <Text style={styles.userUsername} numberOfLines={1}>@{userItem.username}</Text>
+                <Text style={styles.userUsername} numberOfLines={1}>@{userItem.username}</Text>
+              </TouchableOpacity>
+                      ))}
+            </ScrollView>
+                      )}
+          </View>
 
-      {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutButtonText}>Se déconnecter</Text>
-      </TouchableOpacity>
+
+
+      {/* Spacer for bottom tab bar */}
+      <View style={{ height: 20 }} />
     </ScrollView>
   );
 }
@@ -152,126 +399,251 @@ export default function DashboardPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f0f4f8',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f0f4f8',
   },
   loadingText: {
-    marginTop: 16,
+    marginTop: 12,
     fontSize: 16,
     color: '#6b7280',
   },
   header: {
-    padding: 20,
     backgroundColor: 'white',
+    padding: 20,
+    paddingTop: Platform.select({ ios: 60, android: 20, web: 20 }),
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#6b7280',
-  },
-  card: {
-    backgroundColor: 'white',
-    margin: 16,
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 12,
-  },
-  cardText: {
-    fontSize: 14,
-    color: '#6b7280',
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  successBadge: {
-    backgroundColor: '#dcfce7',
-    padding: 8,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-  },
-  successText: {
-    color: '#166534',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  infoContainer: {
-    gap: 8,
-  },
-  infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  infoLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1f2937',
   },
-  infoValue: {
-    fontSize: 14,
-    color: '#6b7280',
-    flex: 1,
-    textAlign: 'right',
-  },
-  featuresList: {
-    gap: 8,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  featureIcon: {
-    marginRight: 8,
-    fontSize: 14,
-  },
-  featureText: {
+  headerSubtitle: {
     fontSize: 14,
     color: '#6b7280',
+    marginTop: 4,
   },
-  specsList: {
-    marginTop: 8,
-    gap: 4,
+  logoutButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
   },
-  specItem: {
+  logoutText: {
+    color: '#6b7280',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  welcomeCard: {
+    margin: 16,
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#dbeafe',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  welcomeTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 8,
+  },
+  welcomeText: {
     fontSize: 14,
     color: '#6b7280',
     lineHeight: 20,
   },
-  logoutButton: {
-    backgroundColor: '#ef4444',
-    margin: 16,
-    padding: 16,
-    borderRadius: 10,
+  section: {
+    marginTop: 8,
+    paddingHorizontal: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  seeAllText: {
+    fontSize: 14,
+    color: '#3b82f6',
+    fontWeight: '500',
+  },
+  horizontalScroll: {
+    marginBottom: 16,
+  },
+  eventCard: {
+    width: 200,
+    borderRadius: 12,
+    padding: 12,
+    marginRight: 12,
+    elevation: 3,
+  },
+  eventImageContainer: {
+    height: 100,
+    backgroundColor: '#112211',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  eventImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8, // optionnel, pour arrondir les coins
+  },
+  eventImagePlaceholder: {
+    fontSize: 32,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  logoutButtonText: {
+  eventTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 4,
+    position: 'absolute',
+    backgroundColor: 'white',
+    opacity: 0.7,
+    top:'37%'
+  },
+  eventLocation: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginBottom: 4,
+  },
+  eventDate: {
+    fontSize: 12,
+    color: '#61758A',
+    fontWeight: '500',
+  },
+  userCard: {
+    width: 150,
+    borderRadius: 12,
+    padding: 12,
+    marginRight: 12,
+    alignItems: 'center',
+    elevation: 3,
+  },
+  userAvatar: {
+    width: 128,
+    height: 128,
+    borderRadius: '50%',
+    backgroundColor: '#3b82f6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  userAvatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: '50%', // ou la moitié de la largeur/hauteur pour un cercle parfait
+  },
+  userAvatarText: {
+    fontSize: 24,
     color: 'white',
-    fontSize: 16,
     fontWeight: 'bold',
   },
+  userName: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1f2937',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  userUsername: {
+    fontSize: 11,
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+  marketplaceGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  marketplaceCard: {
+    width: 200,
+    borderRadius: 12,
+    marginBottom: 12,
+    padding: 12,
+    marginRight: 12,
+    shadowColor: '#000',
+    elevation: 3,
+    overflow: 'hidden'
+  },
+  marketplaceImage: {
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    backgroundColor:'#112211',
+    borderRadius: 8,
+  },
+  marketplaceImageFill: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  marketplaceImagePlaceholder: {
+    fontSize: 48,
+  },
+  priceTag: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  priceText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  marketplaceTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1f2937',
+    padding: 8,
+    paddingBottom: 4,
+  },
+  marketplaceGame: {
+    fontSize: 11,
+    color: '#6b7280',
+    paddingHorizontal: 8,
+    paddingBottom: 8
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  emptyEmoji: {
+    fontSize: 48,
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
 });
-

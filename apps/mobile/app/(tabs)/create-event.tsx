@@ -13,7 +13,7 @@ import {
   Alert
 } from 'react-native';
 import { router } from 'expo-router';
-import { supabase } from '../lib';
+import { supabase } from '../../lib';
 
 export default function CreateEventPage() {
   const [user, setUser] = useState<any>(null);

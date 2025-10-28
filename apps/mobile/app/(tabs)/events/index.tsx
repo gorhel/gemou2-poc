@@ -100,7 +100,7 @@ export default function EventsPage() {
         </View>
         <TouchableOpacity
           style={styles.createButton}
-          onPress={() => router.push('/create-event')}
+          onPress={() => router.push('/(tabs)/create-event')}
         >
           <Text style={styles.createButtonText}>Créer</Text>
         </TouchableOpacity>
@@ -122,7 +122,7 @@ export default function EventsPage() {
             </Text>
             <TouchableOpacity
               style={styles.emptyButton}
-              onPress={() => router.push('/create-event')}
+              onPress={() => router.push('/(tabs)/create-event')}
             >
               <Text style={styles.emptyButtonText}>Créer un événement</Text>
             </TouchableOpacity>
@@ -133,7 +133,7 @@ export default function EventsPage() {
               <TouchableOpacity
                 key={event.id}
                 style={styles.eventCard}
-                onPress={() => router.push(`/events/${event.id}`)}
+                onPress={() => router.push(`/(tabs)/events/${event.id}`)}
               >
                 <Text style={styles.eventTitle}>{event.title}</Text>
                 <Text style={styles.eventDescription} numberOfLines={2}>
@@ -314,4 +314,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+
 

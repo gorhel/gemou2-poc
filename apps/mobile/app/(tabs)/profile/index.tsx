@@ -153,7 +153,7 @@ export default function ProfilePage() {
       <View style={styles.actionsContainer}>
         <TouchableOpacity
           style={styles.actionButton}
-          onPress={() => router.push('/events')}
+          onPress={() => router.push('/(tabs)/events')}
         >
           <Text style={styles.actionButtonEmoji}>📅</Text>
           <Text style={styles.actionButtonText}>Mes événements</Text>
@@ -161,7 +161,7 @@ export default function ProfilePage() {
 
         <TouchableOpacity
           style={styles.actionButton}
-          onPress={() => router.push('/community')}
+          onPress={() => router.push('/(tabs)/community')}
         >
           <Text style={styles.actionButtonEmoji}>💬</Text>
           <Text style={styles.actionButtonText}>Communauté</Text>
@@ -310,4 +310,6 @@ const styles = StyleSheet.create({
     color: '#dc2626',
   },
 });
+
+
 

@@ -10,7 +10,8 @@ import {
   ActivityIndicator,
   Platform,
   Alert,
-  RefreshControl
+  RefreshControl,
+  Image
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '../../../lib';
@@ -19,12 +20,13 @@ interface Event {
   id: string;
   title: string;
   description: string;
-  event_date: string;
+  date_time: string;
   location: string;
   max_participants: number;
   current_participants: number;
   status: string;
   creator_id: string;
+  image_url: string;
 }
 
 export default function EventDetailsPage() {
@@ -86,7 +88,8 @@ export default function EventDetailsPage() {
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
+            gaming_preferences
           )
         `)
         .eq('event_id', id);
@@ -203,13 +206,47 @@ export default function EventDetailsPage() {
 
       {/* Event Details */}
       <View style={styles.content}>
+        <View style={styles.eventImageContainer}>
+          {event.image_url ? (
+            <Image
+              source={{ uri: event.image_url }}
+              style={styles.eventImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <Text style={styles.eventImagePlaceholder}>📅</Text>
+          )}
+        </View>
+
         <Text style={styles.title}>{event.title}</Text>
+
+        
+
         
         <View style={styles.metaContainer}>
+        {creator && (
+          
+            <View style={styles.metaItem}>
+              <Text style={styles.metaEmoji}>👤</Text>
+              <Text style={styles.metaText}>
+                Organisé par {creator.full_name || creator.username}
+              </Text>
+            </View>
+          )}
+
+          <View style={styles.separator} />
+
+          <View style={styles.metaItem}>
+            <Text style={styles.metaEmoji}>📍</Text>
+            <Text style={styles.metaText}>{event.location}</Text>
+          </View>
+
+          <View style={styles.separator} />
+
           <View style={styles.metaItem}>
             <Text style={styles.metaEmoji}>📅</Text>
             <Text style={styles.metaText}>
-              {new Date(event.event_date).toLocaleDateString('fr-FR', {
+              {new Date(event.date_time).toLocaleDateString('fr-FR', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
@@ -220,10 +257,9 @@ export default function EventDetailsPage() {
             </Text>
           </View>
 
-          <View style={styles.metaItem}>
-            <Text style={styles.metaEmoji}>📍</Text>
-            <Text style={styles.metaText}>{event.location}</Text>
-          </View>
+          <View style={styles.separator} />
+
+          
 
           <View style={styles.metaItem}>
             <Text style={styles.metaEmoji}>👥</Text>
@@ -232,48 +268,148 @@ export default function EventDetailsPage() {
             </Text>
           </View>
 
-          {creator && (
-            <View style={styles.metaItem}>
-              <Text style={styles.metaEmoji}>👤</Text>
-              <Text style={styles.metaText}>
-                Organisé par {creator.full_name || creator.username}
-              </Text>
+          <View style={styles.separator} />
+
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.descriptionTitle}>Description</Text>
+            <Text style={styles.description}>{event.description}</Text>
+          </View>
+
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.descriptionTitle}>Jeux</Text>
+            <TouchableOpacity 
+              style={styles.gameCard}
+              onPress={() => router.push(`/games/${gameId}`)}
+            >
+              <View style={styles.gameInfo}>
+                <Text style={styles.gameTitle}>7 Wonders</Text>
+                <Text style={styles.gameCategory}>Jeu de stratégie</Text>
+              </View>
+              
+              <View style={styles.gameImageContainer}>
+                <Image
+                  source={{ uri: event.image_url }}
+                  style={styles.gameImage}
+                  resizeMode="cover"
+                />
+                
+              </View>
+              <View style={styles.arrowContainer}>
+                  <Text style={styles.arrow}>›</Text>
+                </View>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.descriptionTitle}>Tag.s événement et jeu</Text>
+            <View style={styles.badgesContainer}>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Default</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Dark</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Red</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Green</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={[styles.badgeText]}>Yellow</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Indigo</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Purple</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Pink</Text>
+              </View>
             </View>
-          )}
+          </View>
+
         </View>
 
-        <View style={styles.descriptionContainer}>
-          <Text style={styles.descriptionTitle}>Description</Text>
-          <Text style={styles.description}>{event.description}</Text>
-        </View>
+        
 
         {/* Participants */}
         {participants.length > 0 && (
-          <View style={styles.participantsContainer}>
+          <View style={styles.participantsSection}>
             <Text style={styles.participantsTitle}>
               Participants ({participants.length})
             </Text>
-            {participants.map((participant) => (
-              <View key={participant.id} style={styles.participantCard}>
-                <Text style={styles.participantEmoji}>👤</Text>
-                <View style={styles.participantInfo}>
-                  <Text style={styles.participantName}>
-                    {participant.profiles?.full_name || participant.profiles?.username || 'Utilisateur'}
-                  </Text>
-                  {participant.profiles?.city && (
-                    <Text style={styles.participantCity}>
-                      📍 {participant.profiles.city}
-                    </Text>
-                  )}
-                </View>
-              </View>
-            ))}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.participantsScroll}>
+              {participants.map((participant) => {
+                const isOrganizer = participant.profiles?.id === event?.creator_id;
+                const preferences = participant.profiles?.gaming_preferences || null;
+                
+                return (
+                  <View key={participant.id} style={styles.participantContainer}>
+                    <TouchableOpacity
+                      style={styles.participantCard}
+                      onPress={() => participant.profiles?.username && router.push(`/profile/${participant.profiles.username}`)}
+                    >
+                      <View style={styles.participantAvatar}>
+                        {participant.profiles?.avatar_url ? (
+                          <Image
+                            source={{ uri: participant.profiles.avatar_url }}
+                            style={styles.participantAvatarImage}
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <Text style={styles.participantAvatarText}>
+                            {participant.profiles?.full_name?.charAt(0) || participant.profiles?.username?.charAt(0) || '👤'}
+                          </Text>
+                        )}
+                      </View>
+                      <Text style={styles.participantName} numberOfLines={1}>
+                        {participant.profiles?.full_name || 'Utilisateur'}
+                      </Text>
+                      <Text style={styles.participantUsername} numberOfLines={1}>
+                        @{participant.profiles?.username || 'anonyme'}
+                      </Text>
+                      
+                      {/* Préférences de jeu */}
+                      {preferences && (
+                        <View style={styles.participantPreferences}>
+                          <Text style={styles.preferencesText} numberOfLines={1}>
+                            {preferences.favorite_type && `🎲 ${preferences.favorite_type}`}
+                          </Text>
+                          {preferences.experience_level && (
+                            <Text style={styles.preferencesText} numberOfLines={1}>
+                              ⭐ {preferences.experience_level}
+                            </Text>
+                          )}
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                    
+                    {/* Badge Organisateur */}
+                    {isOrganizer && (
+                      <View style={styles.organizerBadge}>
+                        <Text style={styles.organizerBadgeText}>👑 Organisateur</Text>
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </ScrollView>
           </View>
         )}
 
+
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
+        <TouchableOpacity 
+          style={styles.contactButton}>
+            <Text style={styles.contactButtonText}>
+              Contacter l'organisateur
+            </Text>
+          </TouchableOpacity>
           {!isCreator && (
+            
             <TouchableOpacity
               style={[
                 styles.participateButton,
@@ -289,9 +425,11 @@ export default function EventDetailsPage() {
                 <Text style={styles.participateButtonText}>
                   {isParticipating ? '✓ Je participe' : isFull ? 'Complet' : 'Participer'}
                 </Text>
+                
               )}
             </TouchableOpacity>
           )}
+          
 
           {isCreator && (
             <View style={styles.creatorBadge}>
@@ -406,10 +544,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     elevation: 2,
   },
   descriptionTitle: {
@@ -423,16 +557,8 @@ const styles = StyleSheet.create({
     color: '#4b5563',
     lineHeight: 22,
   },
-  participantsContainer: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
+  participantsSection: {
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   participantsTitle: {
     fontSize: 18,
@@ -440,39 +566,98 @@ const styles = StyleSheet.create({
     color: '#1f2937',
     marginBottom: 12,
   },
-  participantCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+  participantsScroll: {
+    marginBottom: 16,
   },
-  participantEmoji: {
-    fontSize: 24,
+  participantContainer: {
     marginRight: 12,
+    alignItems: 'center',
   },
-  participantInfo: {
-    flex: 1,
+  participantCard: {
+    width: 150,
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  participantAvatar: {
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    backgroundColor: '#3b82f6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
+  participantAvatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 64,
+  },
+  participantAvatarText: {
+    fontSize: 24,
+    color: 'white',
+    fontWeight: 'bold',
   },
   participantName: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '600',
     color: '#1f2937',
+    textAlign: 'center',
+    marginBottom: 2,
   },
-  participantCity: {
-    fontSize: 14,
+  participantUsername: {
+    fontSize: 11,
     color: '#6b7280',
-    marginTop: 2,
+    textAlign: 'center',
+  },
+  participantPreferences: {
+    marginTop: 8,
+    width: '100%',
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+  },
+  preferencesText: {
+    fontSize: 10,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  organizerBadge: {
+    marginTop: 8,
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#fbbf24',
+  },
+  organizerBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#92400e',
+    textAlign: 'center',
   },
   actionsContainer: {
-    marginTop: 20,
-    marginBottom: 40,
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  
   },
   participateButton: {
     backgroundColor: '#3b82f6',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',
+    width: '50%',
   },
   participateButtonActive: {
     backgroundColor: '#10b981',
@@ -482,6 +667,18 @@ const styles = StyleSheet.create({
   },
   participateButtonText: {
     color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  contactButton: {
+    backgroundColor: '#F0F2F5',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    width: '50%',
+  },
+  contactButtonText: {
+    color: '#121417',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -496,5 +693,106 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#92400e',
   },
+  separator: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 10,
+  },
+  eventImageContainer: {
+    width: '100%',
+    height: 200,
+    overflow: 'hidden',
+    backgroundColor: '#E0E0E0'
+  },
+  eventImage: {
+    width: '100%',
+    height: '100%',
+  },
+  eventImagePlaceholder: {
+    fontSize: 24,
+    color: '#6b7280',
+  },
+  badgesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginVertical: 12,
+  },
+  
+  badge: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    backgroundColor: '#3b82f6',
+  },
+  
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  gameCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  
+  gameInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  
+  gameTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  
+  gameCategory: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  
+  gameImageContainer: {
+    position: 'relative',
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    backgroundColor: '#2C3E50',
+    overflow: 'hidden',
+  },
+  
+  gameImage: {
+    width: '100%',
+    height: '100%',
+  },
+  
+  arrowContainer: {
+    position: 'absolute',
+    right: 4,
+    top: '50%',
+    transform: [{ translateY: -12 }],
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  arrow: {
+    fontSize: 40,
+    color: '#1F2937',
+    fontWeight: 'bold',
+  },
 });
-
