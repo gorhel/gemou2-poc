@@ -71,7 +71,6 @@ export function TopHeader({
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         {/* Left Section: Back Button or Spacer */}
         <View style={styles.leftSection}>
@@ -119,7 +118,6 @@ export function TopHeader({
           )}
         </View>
       </View>
-    </SafeAreaView>
   )
 }
 

@@ -62,12 +62,13 @@ export const HEADER_CONFIGS: Record<string, HeaderConfig> = {
     ]
   },
   
-  '/marketplace': {
-    title: '🛒 Marketplace',
-    showBackButton: false,
-    rightActions: [
-    ]
-  },
+//   '/marketplace': {
+//     title: '🛒 Marketplace',
+//     showBackButton: false,
+//     rightActions: [
+//         { icon: '➕', action: 'create-trade' }
+//     ]
+//   },
 
   '/(tabs)/marketplace': {
     title: '🛒 Marketplace',

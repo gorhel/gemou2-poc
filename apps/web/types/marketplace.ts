@@ -16,13 +16,15 @@ export type MarketplaceItemCondition =
 
 export type MarketplaceItemType = 
   | 'sale'
-  | 'exchange';
+  | 'exchange'
+  | 'donation';
 
 export type MarketplaceItemStatus = 
   | 'draft'
   | 'available'
   | 'sold'
   | 'exchanged'
+  | 'donated'
   | 'closed';
 
 // =====================================================
@@ -39,7 +41,8 @@ export const CONDITION_LABELS: Record<MarketplaceItemCondition, string> = {
 
 export const TYPE_LABELS: Record<MarketplaceItemType, string> = {
   sale: 'Vente',
-  exchange: 'Échange'
+  exchange: 'Échange',
+  donation: 'Don'
 };
 
 export const STATUS_LABELS: Record<MarketplaceItemStatus, string> = {
@@ -47,6 +50,7 @@ export const STATUS_LABELS: Record<MarketplaceItemStatus, string> = {
   available: 'Disponible',
   sold: 'Vendu',
   exchanged: 'Échangé',
+  donated: 'Donné',
   closed: 'Fermé'
 };
 
@@ -265,6 +269,7 @@ export function getStatusColor(status: MarketplaceItemStatus): string {
     available: 'bg-green-100 text-green-800',
     sold: 'bg-red-100 text-red-800',
     exchanged: 'bg-blue-100 text-blue-800',
+    donated: 'bg-purple-100 text-purple-800',
     closed: 'bg-gray-100 text-gray-600'
   };
   
@@ -275,7 +280,12 @@ export function getStatusColor(status: MarketplaceItemStatus): string {
  * Retourne l'icône selon le type
  */
 export function getTypeIcon(type: MarketplaceItemType): string {
-  return type === 'sale' ? '💰' : '🔄';
+  const icons: Record<MarketplaceItemType, string> = {
+    sale: '💰',
+    exchange: '🔄',
+    donation: '🎁'
+  };
+  return icons[type];
 }
 
 /**

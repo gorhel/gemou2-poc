@@ -6,6 +6,7 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  Image,
   StyleSheet,
   ActivityIndicator,
   Platform,
@@ -115,23 +116,37 @@ export default function CommunityPage() {
                 style={styles.userCard}
                 onPress={() => router.push(`/profile/${userItem.username}`)}
               >
-                <View style={styles.userAvatar}>
-                  <Text style={styles.userAvatarText}>
-                    {userItem.full_name?.charAt(0) || userItem.username?.charAt(0) || '👤'}
-                  </Text>
-                </View>
 
                 <View style={styles.userInfo}>
                   <Text style={styles.userName}>
-                    {userItem.full_name || userItem.username || 'Utilisateur'}
+                    @{userItem.username || 'Utilisateur'}
                   </Text>
-                  <Text style={styles.userUsername}>@{userItem.username}</Text>
                   {userItem.city && (
-                    <Text style={styles.userCity}>📍 {userItem.city}</Text>
+                    <Text style={styles.userCity}>📍 {userItem.city} - 2km</Text>
+                  )}
+
+                <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Familial</Text>
+                <Text style={styles.badgeText}>Familial</Text>
+                <Text style={styles.badgeText}>Familial</Text>
+                </View>
+
+                </View>
+
+                <View style={styles.userAvatar}>
+                {userItem.avatar_url ? (
+                  <Image
+                  source={{ uri: userItem.avatar_url }}
+                  style={styles.userAvatarImage}
+                  resizeMode="cover"
+                  />
+                  ) : (
+                    <Text style={styles.userAvatarText}>
+                      {userItem.full_name?.charAt(0) || '👤'}
+                    </Text>
                   )}
                 </View>
 
-                <Text style={styles.userArrow}>→</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -208,9 +223,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   userAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 80,
+    height: 80,
+    borderRadius: 10,
     backgroundColor: '#3b82f6',
     justifyContent: 'center',
     alignItems: 'center',
@@ -263,6 +278,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6b7280',
     textAlign: 'center',
+  },
+  userAvatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius:10, // ou la moitié de la largeur/hauteur pour un cercle parfait
+  },
+  badge: {
+    marginHorizontal: 4,
+    flexDirection: 'row',
+    
+  },
+  badgeText: {
+    fontSize: 12,
+    color: 'white',
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginVertical: 10,
+    marginRight: 10,
   },
 });
 

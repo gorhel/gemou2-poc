@@ -266,7 +266,7 @@ export default function EventsPage() {
     
     <View style={styles.container}>
       {/* Header */}
-      <View style={{ flex: 1 }}>
+      <View>
         <TopHeader />  {/* Auto-configuration ! */}
         <ScrollView>
           {/* Contenu */}
