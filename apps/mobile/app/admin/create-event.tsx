@@ -57,7 +57,7 @@ export default function AdminCreateEventPage() {
         setResult(successMessage);
         if (Platform.OS !== 'web') {
           Alert.alert('Succès', 'Événement créé !', [
-            { text: 'Voir', onPress: () => router.push(`/events/${data[0].id}`) },
+            { text: 'Voir', onPress: () => router.push(`/(tabs)/events/${data[0].id}`) },
             { text: 'OK' }
           ]);
         }

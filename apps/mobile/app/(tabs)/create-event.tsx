@@ -113,17 +113,17 @@ export default function CreateEventPage() {
         .from('event_participants')
         .insert({
           event_id: data.id,
-          profile_id: user.id,
-          status: 'confirmed'
+          user_id: user.id,
+          status: 'registered'
         })
 
       if (Platform.OS === 'web') {
-        router.push(`/events/${data.id}`)
+        router.push(`/(tabs)/events/${data.id}`)
       } else {
         Alert.alert(
           'Succès !',
           'Votre événement a été créé',
-          [{ text: 'OK', onPress: () => router.push(`/events/${data.id}`) }]
+          [{ text: 'OK', onPress: () => router.push(`/(tabs)/events/${data.id}`) }]
         )
       }
     } catch (error: any) {
