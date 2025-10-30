@@ -12,13 +12,15 @@ import {
   Platform,
   Alert
 } from 'react-native'
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { supabase } from '../../lib'
 
 export default function CreateEventPage() {
+  const { eventId } = useLocalSearchParams<{ eventId?: string }>()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -30,7 +32,7 @@ export default function CreateEventPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    const getUser = async () => {
+    const initialize = async () => {
       try {
         const { data: { user }, error } = await supabase.auth.getUser()
         
@@ -40,6 +42,12 @@ export default function CreateEventPage() {
         }
 
         setUser(user)
+
+        // Si un eventId est fourni, charger les données de l'événement
+        if (eventId) {
+          setIsEditMode(true)
+          await loadEventData(eventId, user.id)
+        }
       } catch (error) {
         console.error('Error:', error)
         router.replace('/login')
@@ -48,8 +56,41 @@ export default function CreateEventPage() {
       }
     }
 
-    getUser()
-  }, [])
+    initialize()
+  }, [eventId])
+
+  const loadEventData = async (id: string, userId: string) => {
+    try {
+      const { data: event, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (error) throw error
+
+      // Vérifier que l'utilisateur est bien le créateur
+      if (event.creator_id !== userId) {
+        Alert.alert('Erreur', 'Vous n\'êtes pas autorisé à modifier cet événement')
+        router.back()
+        return
+      }
+
+      // Charger les données dans le formulaire
+      setFormData({
+        title: event.title || '',
+        description: event.description || '',
+        date_time: event.date_time || '',
+        location: event.location || '',
+        max_participants: event.max_participants || 4,
+        visibility: event.visibility || 'public'
+      })
+    } catch (error: any) {
+      console.error('Error loading event:', error)
+      Alert.alert('Erreur', 'Impossible de charger l\'événement')
+      router.back()
+    }
+  }
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
@@ -93,38 +134,67 @@ export default function CreateEventPage() {
 
     setSubmitting(true)
     try {
-      const { data, error } = await supabase
-        .from('events')
-        .insert([
-          {
-            ...formData,
-            creator_id: user.id,
-            status: 'active',
-            current_participants: 1
-          }
-        ])
-        .select()
-        .single()
+      if (isEditMode && eventId) {
+        // Mode édition : mettre à jour l'événement existant
+        const { error } = await supabase
+          .from('events')
+          .update({
+            title: formData.title,
+            description: formData.description,
+            date_time: formData.date_time,
+            location: formData.location,
+            max_participants: formData.max_participants,
+            visibility: formData.visibility
+          })
+          .eq('id', eventId)
+          .eq('creator_id', user.id) // Sécurité supplémentaire
 
-      if (error) throw error
+        if (error) throw error
 
-      // Ajouter le créateur comme participant
-      await supabase
-        .from('event_participants')
-        .insert({
-          event_id: data.id,
-          user_id: user.id,
-          status: 'registered'
-        })
-
-      if (Platform.OS === 'web') {
-        router.push(`/(tabs)/events/${data.id}`)
+        if (Platform.OS === 'web') {
+          router.push(`/(tabs)/events/${eventId}`)
+        } else {
+          Alert.alert(
+            'Succès !',
+            'Votre événement a été modifié',
+            [{ text: 'OK', onPress: () => router.push(`/(tabs)/events/${eventId}`) }]
+          )
+        }
       } else {
-        Alert.alert(
-          'Succès !',
-          'Votre événement a été créé',
-          [{ text: 'OK', onPress: () => router.push(`/(tabs)/events/${data.id}`) }]
-        )
+        // Mode création : créer un nouvel événement
+        const { data, error } = await supabase
+          .from('events')
+          .insert([
+            {
+              ...formData,
+              creator_id: user.id,
+              status: 'active',
+              current_participants: 1
+            }
+          ])
+          .select()
+          .single()
+
+        if (error) throw error
+
+        // Ajouter le créateur comme participant
+        await supabase
+          .from('event_participants')
+          .insert({
+            event_id: data.id,
+            user_id: user.id,
+            status: 'registered'
+          })
+
+        if (Platform.OS === 'web') {
+          router.push(`/(tabs)/events/${data.id}`)
+        } else {
+          Alert.alert(
+            'Succès !',
+            'Votre événement a été créé',
+            [{ text: 'OK', onPress: () => router.push(`/(tabs)/events/${data.id}`) }]
+          )
+        }
       }
     } catch (error: any) {
       const message = error.message || 'Une erreur est survenue'
@@ -157,11 +227,15 @@ export default function CreateEventPage() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>← Retour</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Créer un événement</Text>
+        <Text style={styles.headerTitle}>
+          {isEditMode ? 'Modifier l\'événement' : 'Créer un événement'}
+        </Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Nouvel événement 🎲</Text>
+        <Text style={styles.cardTitle}>
+          {isEditMode ? 'Modifier votre événement 🎲' : 'Nouvel événement 🎲'}
+        </Text>
 
         {/* Title */}
         <View style={styles.inputContainer}>
@@ -283,7 +357,9 @@ export default function CreateEventPage() {
             {submitting ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text style={styles.submitButtonText}>Créer l'événement</Text>
+              <Text style={styles.submitButtonText}>
+                {isEditMode ? 'Enregistrer les modifications' : 'Créer l\'événement'}
+              </Text>
             )}
           </TouchableOpacity>
         </View>

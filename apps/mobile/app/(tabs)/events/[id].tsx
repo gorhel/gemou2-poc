@@ -113,17 +113,36 @@ export default function EventDetailsPage() {
   const handleParticipate = async () => {
     if (!user || !event) return;
 
+    // Si l'utilisateur est le créateur, rediriger vers la page d'édition
+    if (isCreator) {
+      router.push({
+        pathname: '/(tabs)/create-event',
+        params: { eventId: event.id }
+      });
+      return;
+    }
+
     setIsLoadingAction(true);
     try {
       if (isParticipating) {
-        // Annuler la participation
-        const { error } = await supabase
+        // Annuler la participation et décrémenter le compteur
+        const { error: deleteError } = await supabase
           .from('event_participants')
           .delete()
           .eq('event_id', event.id)
           .eq('user_id', user.id);
 
-        if (error) throw error;
+        if (deleteError) throw deleteError;
+
+        // Décrémenter le compteur de participants
+        const { error: updateError } = await supabase
+          .from('events')
+          .update({ 
+            current_participants: Math.max(0, (event.current_participants || 0) - 1)
+          })
+          .eq('id', event.id);
+
+        if (updateError) throw updateError;
 
         setIsParticipating(false);
         if (Platform.OS !== 'web') {
@@ -141,8 +160,8 @@ export default function EventDetailsPage() {
           return;
         }
 
-        // Participer
-        const { error } = await supabase
+        // Participer et incrémenter le compteur
+        const { error: insertError } = await supabase
           .from('event_participants')
           .insert({
             event_id: event.id,
@@ -150,7 +169,17 @@ export default function EventDetailsPage() {
             status: 'registered'
           });
 
-        if (error) throw error;
+        if (insertError) throw insertError;
+
+        // Incrémenter le compteur de participants
+        const { error: updateError } = await supabase
+          .from('events')
+          .update({ 
+            current_participants: (event.current_participants || 0) + 1
+          })
+          .eq('id', event.id);
+
+        if (updateError) throw updateError;
 
         setIsParticipating(true);
         if (Platform.OS !== 'web') {
@@ -158,8 +187,8 @@ export default function EventDetailsPage() {
         }
       }
 
-      // Recharger les données
-      loadEvent();
+      // Recharger les données pour voir les changements immédiatement
+      await loadEvent();
     } catch (error: any) {
       const message = error.message || 'Une erreur est survenue';
       if (Platform.OS === 'web') {
@@ -459,11 +488,11 @@ export default function EventDetailsPage() {
             <TouchableOpacity
               style={[
                 styles.participateButton,
-                isParticipating && styles.participateButtonActive,
+                isParticipating && !isCreator && styles.participateButtonActive,
                 isFull && !isParticipating && styles.participateButtonDisabled
               ]}
               onPress={handleParticipate}
-              disabled={isLoadingAction || (isFull && !isParticipating)}
+              disabled={isLoadingAction || (isFull && !isParticipating && !isCreator)}
             >
               {isLoadingAction ? (
                 <ActivityIndicator color="white" />
@@ -493,17 +522,16 @@ export default function EventDetailsPage() {
               
               style={[
                 styles.participateButton,
-                isParticipating && styles.participateButtonActive,
-                isFull && !isParticipating && styles.participateButtonDisabled
+                !isCreator && styles.participateButtonActive
               ]}
               onPress={handleParticipate}
-              disabled={isLoadingAction || (isFull && !isParticipating)}
+              disabled={isLoadingAction}
             >
               {isLoadingAction ? (
                 <ActivityIndicator color="white" />
               ) : (
                 <Text style={styles.participateButtonText}>
-                  {isCreator ? 'Modifier le Gémou' : isFull ? 'Complet' : 'Participer'}
+                  Modifier le Gémou
                 </Text>
               )}
                 
