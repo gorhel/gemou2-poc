@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
-import { router } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-import { useAuth } from '../components/auth/AuthProvider';
-import AuthForm from '../components/auth/AuthForm';
+import React, { useEffect, useState } from 'react'
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform } from 'react-native'
+import { router } from 'expo-router'
+import * as SecureStore from 'expo-secure-store'
+import { useAuth } from '../components/auth/AuthProvider'
+import AuthForm from '../components/auth/AuthForm'
+import { PageLayout } from '../components/layout'
 
 // Fonction helper pour gérer le storage cross-platform
 const getStorageItem = async (key: string): Promise<string | null> => {
@@ -16,7 +17,8 @@ const getStorageItem = async (key: string): Promise<string | null> => {
 
 function LandingPage() {
   return (
-    <ScrollView style={styles.container}>
+    <>
+      <AuthForm />
       <View style={styles.content}>
         <Text style={styles.title}>Bienvenue sur Gémou2 ! 🎲</Text>
         <Text style={styles.subtitle}>
@@ -50,8 +52,8 @@ function LandingPage() {
           </View>
         </View>
       </View>
-    </ScrollView>
-  );
+    </>
+  )
 }
 
 function Dashboard() {
@@ -118,22 +120,17 @@ export default function Home() {
   }
 
   if (user) {
-    return <Dashboard />;
+    return <Dashboard />
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <AuthForm />
+    <PageLayout showHeader={false}>
       <LandingPage />
-    </ScrollView>
-  );
+    </PageLayout>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
   content: {
     padding: 20,
   },

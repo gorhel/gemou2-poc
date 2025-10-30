@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
-import { router } from 'expo-router';
-import { supabase } from '../lib';
+import React, { useState } from 'react'
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ActivityIndicator } from 'react-native'
+import { router } from 'expo-router'
+import { supabase } from '../lib'
+import { PageLayout } from '../components/layout'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -124,7 +125,7 @@ export default function LoginPage() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <PageLayout showHeader={false} scrollEnabled={true} contentContainerStyle={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Connexion à Gémou2</Text>
@@ -200,8 +201,8 @@ export default function LoginPage() {
           </TouchableOpacity>
         </View>
       </View>
-    </ScrollView>
-  );
+    </PageLayout>
+  )
 }
 
 const styles = StyleSheet.create({
