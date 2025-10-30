@@ -317,7 +317,7 @@ export default function DashboardPage() {
                   {new Date(event.date_time).toLocaleDateString('fr-FR', { 
                     day: 'numeric', 
                     month: 'short' 
-                  })}, 👤 4/6
+                  })} - 👤 {event.current_participants}/{event.max_participants} participants
                 </Text>
               </TouchableOpacity>
             ))}

@@ -184,7 +184,7 @@ export default function SearchPage() {
               <TouchableOpacity
                 key={event.id}
                 style={styles.resultCard}
-                onPress={() => router.push(`/events/${event.id}`)}
+                onPress={() => router.push(`/(tabs)/events/${event.id}`)}
               >
                 <Text style={styles.resultEmoji}>📅</Text>
                 <View style={styles.resultInfo}>

@@ -73,7 +73,7 @@ export default function EventDetailsPage() {
         .from('event_participants')
         .select('*')
         .eq('event_id', id)
-        .eq('profile_id', user.id)
+        .eq('user_id', user.id)
         .single();
 
       setIsParticipating(!!participationData);
@@ -83,7 +83,7 @@ export default function EventDetailsPage() {
         .from('event_participants')
         .select(`
           *,
-          profiles (
+          profiles:user_id (
             id,
             username,
             full_name,
@@ -111,33 +111,73 @@ export default function EventDetailsPage() {
   const handleParticipate = async () => {
     if (!user || !event) return;
 
+    // Si l'utilisateur est le créateur, rediriger vers la page d'édition
+    if (isCreator) {
+      router.push({
+        pathname: '/(tabs)/create-event',
+        params: { eventId: event.id }
+      });
+      return;
+    }
+
     setIsLoadingAction(true);
     try {
       if (isParticipating) {
-        // Annuler la participation
-        const { error } = await supabase
+        // Annuler la participation et décrémenter le compteur
+        const { error: deleteError } = await supabase
           .from('event_participants')
           .delete()
           .eq('event_id', event.id)
-          .eq('profile_id', user.id);
+          .eq('user_id', user.id);
 
-        if (error) throw error;
+        if (deleteError) throw deleteError;
+
+        // Décrémenter le compteur de participants
+        const { error: updateError } = await supabase
+          .from('events')
+          .update({ 
+            current_participants: Math.max(0, (event.current_participants || 0) - 1)
+          })
+          .eq('id', event.id);
+
+        if (updateError) throw updateError;
 
         setIsParticipating(false);
         if (Platform.OS !== 'web') {
           Alert.alert('Succès', 'Vous ne participez plus à cet événement');
         }
       } else {
-        // Participer
-        const { error } = await supabase
+        // Vérifier le quota avant de participer
+        const currentParticipantsCount = event.current_participants || 0;
+        if (currentParticipantsCount >= event.max_participants) {
+          if (Platform.OS === 'web') {
+            alert('Le quota de participants est atteint');
+          } else {
+            Alert.alert('Quota atteint', 'Le nombre maximum de participants est déjà atteint pour cet événement');
+          }
+          return;
+        }
+
+        // Participer et incrémenter le compteur
+        const { error: insertError } = await supabase
           .from('event_participants')
           .insert({
             event_id: event.id,
-            profile_id: user.id,
-            status: 'confirmed'
+            user_id: user.id,
+            status: 'registered'
           });
 
-        if (error) throw error;
+        if (insertError) throw insertError;
+
+        // Incrémenter le compteur de participants
+        const { error: updateError } = await supabase
+          .from('events')
+          .update({ 
+            current_participants: (event.current_participants || 0) + 1
+          })
+          .eq('id', event.id);
+
+        if (updateError) throw updateError;
 
         setIsParticipating(true);
         if (Platform.OS !== 'web') {
@@ -145,8 +185,8 @@ export default function EventDetailsPage() {
         }
       }
 
-      // Recharger les données
-      loadEvent();
+      // Recharger les données pour voir les changements immédiatement
+      await loadEvent();
     } catch (error: any) {
       const message = error.message || 'Une erreur est survenue';
       if (Platform.OS === 'web') {
@@ -215,7 +255,7 @@ export default function EventDetailsPage() {
   }
 
   const isCreator = user?.id === event.creator_id;
-  const isFull = (event.current_participants || participants.length) >= event.max_participants;
+  const isFull = (event.current_participants || 0) >= event.max_participants;
 
   return (
     <PageLayout showHeader={true} refreshing={refreshing} onRefresh={onRefresh}>
@@ -297,7 +337,7 @@ export default function EventDetailsPage() {
             <Text style={styles.metaText}>
             <span style={{ fontWeight:700 }}>Capacité</span> 
             <br />
-              {participants.length}/{event.max_participants} participants
+              {event.current_participants || 0}/{event.max_participants} participants
             </Text>
           </View>
 
@@ -406,11 +446,11 @@ export default function EventDetailsPage() {
                 </View>
                 <View style={styles.participantInfo}>
                   <Text style={styles.participantName}>
-                    {participant.profiles?.full_name || participant.profiles?.username || 'Utilisateur'}
+                    @{participant.profiles?.username || 'Utilisateur'}
                   </Text>
                   {participant.profiles?.city && (
                     <Text style={styles.participantCity}>
-                      📍 {participant.profiles.city}
+                  {isCreator ? 'vous' : participant.full_name || participant.username}
                     </Text>
                   )}
                 </View>
@@ -435,17 +475,17 @@ export default function EventDetailsPage() {
             <TouchableOpacity
               style={[
                 styles.participateButton,
-                isParticipating && styles.participateButtonActive,
+                isParticipating && !isCreator && styles.participateButtonActive,
                 isFull && !isParticipating && styles.participateButtonDisabled
               ]}
               onPress={handleParticipate}
-              disabled={isLoadingAction || (isFull && !isParticipating)}
+              disabled={isLoadingAction || (isFull && !isParticipating && !isCreator)}
             >
               {isLoadingAction ? (
                 <ActivityIndicator color="white" />
               ) : (
                 <Text style={styles.participateButtonText}>
-                  {isParticipating ? '✓ Je participe' : isFull ? 'Complet' : 'Participer'}
+                  {isParticipating ? 'Quitter le gémou' : isFull ? 'Complet' : 'Participer'}
                 </Text>
               )}
             </TouchableOpacity>
@@ -469,17 +509,16 @@ export default function EventDetailsPage() {
               
               style={[
                 styles.participateButton,
-                isParticipating && styles.participateButtonActive,
-                isFull && !isParticipating && styles.participateButtonDisabled
+                !isCreator && styles.participateButtonActive
               ]}
               onPress={handleParticipate}
-              disabled={isLoadingAction || (isFull && !isParticipating)}
+              disabled={isLoadingAction}
             >
               {isLoadingAction ? (
                 <ActivityIndicator color="white" />
               ) : (
                 <Text style={styles.participateButtonText}>
-                  {isCreator ? 'Modifier le Gémou' : isFull ? 'Complet' : 'Participer'}
+                  Modifier le Gémou
                 </Text>
               )}
                 
@@ -696,7 +735,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   participateButtonActive: {
-    backgroundColor: '#10b981',
+    backgroundColor: '#ef4444',
   },
   participateButtonDisabled: {
     backgroundColor: '#9ca3af',

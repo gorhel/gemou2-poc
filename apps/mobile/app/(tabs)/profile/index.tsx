@@ -53,7 +53,7 @@ export default function ProfilePage() {
       // Charger les statistiques
       const [eventsCreated, eventsParticipated, gamesOwned, friends] = await Promise.all([
         supabase.from('events').select('id', { count: 'exact', head: true }).eq('creator_id', user.id),
-        supabase.from('event_participants').select('id', { count: 'exact', head: true }).eq('profile_id', user.id),
+        supabase.from('event_participants').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('user_games').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('friends').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted')
       ]);
