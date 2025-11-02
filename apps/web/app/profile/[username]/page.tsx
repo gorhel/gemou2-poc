@@ -6,7 +6,8 @@ import { createClientSupabaseClient } from '../../../lib/supabase-client';
 import { Button } from '../../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
 import { LoadingSpinner } from '../../../components/ui/Loading';
-import { ResponsiveLayout } from '../../../components/layout';
+import { ResponsiveLayout, PageHeader, PageFooter } from '../../../components/layout';
+import { FriendsSlider } from '../../../components/users';
 
 interface UserProfile {
   id: string;
@@ -82,6 +83,26 @@ export default function UserProfilePage() {
 
       setProfile(profileData);
 
+      // Vérifier le statut d'amitié
+      const { data: currentUser } = await supabase.auth.getUser();
+      let friendshipData = null;
+      
+      if (currentUser.user) {
+        const { data: friendship, error: friendshipError } = await supabase
+          .from('friends')
+          .select('friendship_status')
+          .or(`and(user_id.eq.${currentUser.user.id},friend_id.eq.${profileData.id}),and(user_id.eq.${profileData.id},friend_id.eq.${currentUser.user.id})`)
+          .eq('friendship_status', 'accepted')
+          .single();
+
+        if (friendshipError && friendshipError.code !== 'PGRST116') { // PGRST116 = no rows returned
+          console.error('Error checking friendship status:', friendshipError);
+        } else {
+          friendshipData = friendship;
+          setIsFriend(!!friendship);
+        }
+      }
+
       // Récupérer les jeux de l'utilisateur depuis la base de données
       const { data: gamesData, error: gamesError } = await supabase
         .from('user_games')
@@ -105,26 +126,63 @@ export default function UserProfilePage() {
         setUserGames(formattedGames);
       }
 
-      // Récupérer les événements de l'utilisateur
-      const { data: eventsData, error: eventsError } = await supabase
-        .from('events')
-        .select('*')
-        .or(`creator_id.eq.${profileData.id},participants.user_id.eq.${profileData.id}`)
-        .order('date_time', { ascending: false })
-        .limit(10);
+      // Récupérer les événements de l'utilisateur (seulement si ami)
+      if (currentUser.user && (currentUser.user.id === profileData.id || !!friendshipData)) {
+        // Récupérer les événements organisés
+        const { data: organizedEvents, error: organizedError } = await supabase
+          .from('events')
+          .select('id, title, description, date_time, location')
+          .eq('creator_id', profileData.id)
+          .order('date_time', { ascending: false });
 
-      if (eventsError) {
-        console.error('Error fetching events:', eventsError);
-      } else {
-        const formattedEvents: UserEvent[] = (eventsData || []).map(event => ({
+        if (organizedError) {
+          console.error('Error fetching organized events:', organizedError);
+        }
+
+        // Récupérer les événements participés
+        const { data: participatedEvents, error: participatedError } = await supabase
+          .from('event_participants')
+          .select(`
+            id,
+            events!inner(id, title, description, date_time, location)
+          `)
+          .eq('user_id', profileData.id)
+          .eq('status', 'registered')
+          .order('joined_at', { ascending: false });
+
+        if (participatedError) {
+          console.error('Error fetching participated events:', participatedError);
+        }
+
+        // Combiner et formater les événements
+        const organizedFormatted: UserEvent[] = organizedEvents?.map(event => ({
           id: event.id,
           title: event.title,
+          description: event.description,
           date_time: event.date_time,
           location: event.location,
-          status: event.status,
-          role: event.creator_id === profileData.id ? 'organizer' : 'participant'
-        }));
-        setUserEvents(formattedEvents);
+          status: 'active',
+          role: 'organizer' as const
+        })) || [];
+
+        const participatedFormatted: UserEvent[] = participatedEvents?.map(participant => ({
+          id: (participant as any).events.id,
+          title: (participant as any).events.title,
+          description: (participant as any).events.description,
+          date_time: (participant as any).events.date_time,
+          location: (participant as any).events.location,
+          status: 'registered',
+          role: 'participant' as const
+        })) || [];
+
+        // Fusionner et trier par date
+        const allEvents = [...organizedFormatted, ...participatedFormatted]
+          .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
+
+        setUserEvents(allEvents);
+      } else {
+        // Pas ami ou pas connecté, ne pas charger les événements
+        setUserEvents([]);
       }
 
     } catch (error: any) {
@@ -216,8 +274,15 @@ export default function UserProfilePage() {
 
   return (
     <ResponsiveLayout>
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50">
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex flex-col">
+        <PageHeader
+          icon="👤"
+          title={profile?.full_name || 'Profil utilisateur'}
+          subtitle={profile?.username ? `@${profile.username}` : ''}
+          showBackButton
+        />
+        
+        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-1">
           {/* Header du profil */}
           <div className="bg-white rounded-xl shadow-sm border p-8 mb-8">
             <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
@@ -334,10 +399,28 @@ export default function UserProfilePage() {
           {/* Section Mes événements */}
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-xl font-bold">📅 Mes événements</CardTitle>
+              <CardTitle className="text-xl font-bold">
+                📅 Événements de {profile?.full_name || profile?.username}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              {userEvents.length === 0 ? (
+              {!isFriend ? (
+                <div className="text-center py-8">
+                  <div className="text-gray-400 mb-4">
+                    <span className="text-4xl">🔒</span>
+                  </div>
+                  <p className="text-gray-600 mb-4">
+                    Vous devez être ami avec {profile?.full_name || profile?.username} pour voir ses événements
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => router.push('/community')}
+                  >
+                    Ajouter comme ami
+                  </Button>
+                </div>
+              ) : userEvents.length === 0 ? (
                 <div className="text-center py-8">
                   <div className="text-gray-400 mb-4">
                     <span className="text-4xl">📅</span>
@@ -381,6 +464,21 @@ export default function UserProfilePage() {
             </CardContent>
           </Card>
 
+          {/* Section Amis de cet utilisateur */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">👥 Amis de {profile?.full_name || profile?.username}</h2>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => router.push('/community')}
+              >
+                Voir tous les amis
+              </Button>
+            </div>
+            <FriendsSlider userId={profile?.id} />
+          </div>
+
           {/* Boutons d'action */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -400,6 +498,8 @@ export default function UserProfilePage() {
             </Button>
           </div>
         </div>
+
+        <PageFooter />
       </div>
     </ResponsiveLayout>
   );

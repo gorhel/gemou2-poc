@@ -417,30 +417,50 @@ export interface Database {
       };
       tags: {
         Row: {
-          id: number;
+          id: string;
           name: string;
         };
         Insert: {
-          id?: number;
+          id?: string;
           name: string;
         };
         Update: {
-          id?: number;
+          id?: string;
           name?: string;
+        };
+      };
+      user_tags: {
+        Row: {
+          id: string;
+          created_at: string;
+          user_id: string | null;
+          tag_id: string | null;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          user_id?: string | null;
+          tag_id?: string | null;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          user_id?: string | null;
+          tag_id?: string | null;
         };
       };
       event_tags: {
         Row: {
           event_id: string;
-          tag_id: number;
+          tag_id: string;
         };
         Insert: {
           event_id: string;
-          tag_id: number;
+          tag_id: string;
         };
         Update: {
           event_id?: string;
-          tag_id?: number;
+          tag_id?: string;
         };
       };
       event_games: {
@@ -476,6 +496,7 @@ export type Contact = Database['public']['Tables']['contacts']['Row'];
 export type Notification = Database['public']['Tables']['notifications']['Row'];
 export type MarketplaceItem = Database['public']['Tables']['marketplace_items']['Row'];
 export type Tag = Database['public']['Tables']['tags']['Row'];
+export type UserTag = Database['public']['Tables']['user_tags']['Row'];
 export type EventTag = Database['public']['Tables']['event_tags']['Row'];
 export type EventGame = Database['public']['Tables']['event_games']['Row'];
 
@@ -493,6 +514,7 @@ export type NewContact = Database['public']['Tables']['contacts']['Insert'];
 export type NewNotification = Database['public']['Tables']['notifications']['Insert'];
 export type NewMarketplaceItem = Database['public']['Tables']['marketplace_items']['Insert'];
 export type NewTag = Database['public']['Tables']['tags']['Insert'];
+export type NewUserTag = Database['public']['Tables']['user_tags']['Insert'];
 export type NewEventTag = Database['public']['Tables']['event_tags']['Insert'];
 export type NewEventGame = Database['public']['Tables']['event_games']['Insert'];
 
@@ -510,5 +532,6 @@ export type UpdateContact = Database['public']['Tables']['contacts']['Update'];
 export type UpdateNotification = Database['public']['Tables']['notifications']['Update'];
 export type UpdateMarketplaceItem = Database['public']['Tables']['marketplace_items']['Update'];
 export type UpdateTag = Database['public']['Tables']['tags']['Update'];
+export type UpdateUserTag = Database['public']['Tables']['user_tags']['Update'];
 export type UpdateEventTag = Database['public']['Tables']['event_tags']['Update'];
 export type UpdateEventGame = Database['public']['Tables']['event_games']['Update'];

@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '../../lib';
+import { TopHeader } from '../../components/TopHeader';
 
 export default function TradeDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -123,10 +124,12 @@ export default function TradeDetailsPage() {
       }
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backBtn}>← Retour</Text>
-        </TouchableOpacity>
+        <TopHeader />  {/* Auto-configuration ! */}
+        <ScrollView>
+          {/* Contenu */}
+        </ScrollView>
       </View>
+      
 
       <View style={styles.content}>
         <View style={styles.typeContainer}>
@@ -145,6 +148,17 @@ export default function TradeDetailsPage() {
         )}
 
         <View style={styles.metaContainer}>
+        <View style={styles.metaItem}>
+            <Text style={styles.metaLabel}>Jeu identifié :</Text>
+            <Text style={styles.metaValue}>
+              Identifier le jeu en question
+            </Text>
+          </View>
+
+          <View style={styles.separator} />
+
+
+
           <View style={styles.metaItem}>
             <Text style={styles.metaLabel}>État :</Text>
             <Text style={styles.metaValue}>
@@ -152,10 +166,15 @@ export default function TradeDetailsPage() {
             </Text>
           </View>
 
+          <View style={styles.separator} />
+
           <View style={styles.metaItem}>
             <Text style={styles.metaLabel}>Lieu :</Text>
             <Text style={styles.metaValue}>📍 {item.location_city}</Text>
           </View>
+
+          <View style={styles.separator} />
+
 
           {seller && (
             <View style={styles.metaItem}>
@@ -165,12 +184,16 @@ export default function TradeDetailsPage() {
               </TouchableOpacity>
             </View>
           )}
+
+        <View style={styles.separator} />
+
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.descriptionTitle}>Description</Text>
+            <Text style={styles.description}>{item.description}</Text>
+          </View>
         </View>
 
-        <View style={styles.descriptionContainer}>
-          <Text style={styles.descriptionTitle}>Description</Text>
-          <Text style={styles.description}>{item.description}</Text>
-        </View>
+        
 
         {item.wanted_game && (
           <View style={styles.wantedContainer}>
@@ -248,6 +271,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.select({ ios: 60, android: 16, web: 16 }),
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
+    flex: 1,
   },
   backBtn: {
     fontSize: 16,
@@ -382,5 +406,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#92400e',
   },
+  separator: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 10,
+  }
 });
 

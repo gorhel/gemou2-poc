@@ -1,0 +1,42 @@
+{
+  "timestamp": "2025-10-21T00:58:22.606Z",
+  "type": "global",
+  "summary": {
+    "total": 2,
+    "passed": 0,
+    "failed": 2,
+    "successRate": "0.0",
+    "duration": 80,
+    "configuration": {
+      "verbose": false,
+      "components": true,
+      "permissions": true,
+      "parallel": true,
+      "generateReport": true
+    }
+  },
+  "components": {
+    "passed": 0,
+    "failed": 1,
+    "total": 1
+  },
+  "permissions": {
+    "passed": 0,
+    "failed": 1,
+    "total": 1
+  },
+  "testResults": [
+    {
+      "script": "Tests des Composants",
+      "success": false,
+      "duration": 52,
+      "code": 1
+    },
+    {
+      "script": "Tests des Permissions",
+      "success": false,
+      "duration": 27,
+      "code": 1
+    }
+  ]
+}

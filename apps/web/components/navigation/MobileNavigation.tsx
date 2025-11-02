@@ -156,7 +156,12 @@ export default function MobileNavigation({ className = '' }: MobileNavigationPro
           {/* Footer */}
           <div className="p-6 border-t border-gray-200">
             <div className="text-center text-sm text-gray-500">
-              <div className="mb-2">🎲 Gémou2</div>
+              <a 
+                href="/dashboard" 
+                className="mb-2 block text-primary-600 hover:text-primary-700 transition-colors cursor-pointer"
+              >
+                🎲 Gémou2
+              </a>
               <div>Version 1.0.0</div>
             </div>
           </div>

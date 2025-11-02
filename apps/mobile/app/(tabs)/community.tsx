@@ -1,19 +1,20 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
+  Image,
   StyleSheet,
   ActivityIndicator,
   Platform,
-  RefreshControl,
-  TextInput
-} from 'react-native';
-import { router } from 'expo-router';
-import { supabase } from '../../lib';
+  TextInput,
+  ScrollView
+} from 'react-native'
+import { router } from 'expo-router'
+import { supabase } from '../../lib'
+import { PageLayout } from '../../components/layout'
 
 export default function CommunityPage() {
   const [user, setUser] = useState<any>(null);
@@ -76,15 +77,7 @@ export default function CommunityPage() {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>💬 Communauté</Text>
-        <Text style={styles.headerSubtitle}>
-          Découvrez les joueurs près de chez vous
-        </Text>
-      </View>
-
+    <PageLayout showHeader={true} refreshing={refreshing} onRefresh={onRefresh}>
       {/* Search */}
       <View style={styles.searchContainer}>
         <TextInput
@@ -96,12 +89,7 @@ export default function CommunityPage() {
       </View>
 
       {/* Users List */}
-      <ScrollView
-        style={styles.scrollView}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
+      <View style={styles.usersContainer}>
         {filteredUsers.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>👥</Text>
@@ -118,37 +106,47 @@ export default function CommunityPage() {
                 style={styles.userCard}
                 onPress={() => router.push(`/profile/${userItem.username}`)}
               >
-                <View style={styles.userAvatar}>
-                  <Text style={styles.userAvatarText}>
-                    {userItem.full_name?.charAt(0) || userItem.username?.charAt(0) || '👤'}
-                  </Text>
-                </View>
 
                 <View style={styles.userInfo}>
                   <Text style={styles.userName}>
-                    {userItem.full_name || userItem.username || 'Utilisateur'}
+                    @{userItem.username || 'Utilisateur'}
                   </Text>
-                  <Text style={styles.userUsername}>@{userItem.username}</Text>
                   {userItem.city && (
-                    <Text style={styles.userCity}>📍 {userItem.city}</Text>
+                    <Text style={styles.userCity}>📍 {userItem.city} - 2km</Text>
+                  )}
+
+                <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Familial</Text>
+                <Text style={styles.badgeText}>Familial</Text>
+                <Text style={styles.badgeText}>Familial</Text>
+                </View>
+
+                </View>
+
+                <View style={styles.userAvatar}>
+                {userItem.avatar_url ? (
+                  <Image
+                  source={{ uri: userItem.avatar_url }}
+                  style={styles.userAvatarImage}
+                  resizeMode="cover"
+                  />
+                  ) : (
+                    <Text style={styles.userAvatarText}>
+                      {userItem.full_name?.charAt(0) || '👤'}
+                    </Text>
                   )}
                 </View>
 
-                <Text style={styles.userArrow}>→</Text>
               </TouchableOpacity>
             ))}
           </View>
         )}
-      </ScrollView>
-    </View>
-  );
+      </View>
+    </PageLayout>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f4f8',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -211,9 +209,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   userAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 80,
+    height: 80,
+    borderRadius: 10,
     backgroundColor: '#3b82f6',
     justifyContent: 'center',
     alignItems: 'center',
@@ -266,6 +264,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6b7280',
     textAlign: 'center',
+  },
+  userAvatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius:10, // ou la moitié de la largeur/hauteur pour un cercle parfait
+  },
+  badge: {
+    marginHorizontal: 4,
+    flexDirection: 'row',
+    
+  },
+  badgeText: {
+    fontSize: 12,
+    color: 'white',
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginVertical: 10,
+    marginRight: 10,
   },
 });
 

@@ -1,18 +1,18 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   Platform,
   Alert
-} from 'react-native';
-import { router } from 'expo-router';
-import { supabase } from '../../lib';
+} from 'react-native'
+import { router } from 'expo-router'
+import { supabase } from '../../lib'
+import { PageLayout } from '../../components/layout'
 
 export default function AdminCreateEventPage() {
   const [loading, setLoading] = useState(false);
@@ -57,7 +57,7 @@ export default function AdminCreateEventPage() {
         setResult(successMessage);
         if (Platform.OS !== 'web') {
           Alert.alert('Succès', 'Événement créé !', [
-            { text: 'Voir', onPress: () => router.push(`/events/${data[0].id}`) },
+            { text: 'Voir', onPress: () => router.push(`/(tabs)/events/${data[0].id}`) },
             { text: 'OK' }
           ]);
         }
@@ -71,7 +71,7 @@ export default function AdminCreateEventPage() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <PageLayout showHeader={false}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.backButton}>← Retour</Text>
@@ -113,15 +113,11 @@ export default function AdminCreateEventPage() {
           </Text>
         </View>
       </View>
-    </ScrollView>
-  );
+    </PageLayout>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f4f8',
-  },
   header: {
     backgroundColor: 'white',
     padding: 20,

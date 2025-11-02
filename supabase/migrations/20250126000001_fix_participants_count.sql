@@ -101,3 +101,4 @@ COMMENT ON FUNCTION sync_all_event_participants_count() IS 'Synchronise tous les
 COMMENT ON FUNCTION get_real_participants_count(uuid) IS 'Retourne le nombre réel de participants pour un événement';
 COMMENT ON FUNCTION check_participants_count_consistency() IS 'Vérifie la cohérence entre le compteur stocké et le nombre réel de participants';
 
+

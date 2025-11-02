@@ -61,3 +61,4 @@ Pour un projet propre, seuls ces fichiers devraient rester à la racine :
 - `node_modules/`
 
 Tous les autres fichiers de documentation et de test sont maintenant organisés dans ce dossier `informations/`.
+

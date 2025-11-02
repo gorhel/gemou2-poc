@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClientSupabaseClient } from '../lib/supabase-client';
 
 interface ParticipantsCountData {
@@ -14,7 +14,7 @@ export function useEventParticipantsCount(eventId: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchParticipantsCount = async () => {
+  const fetchParticipantsCount = useCallback(async () => {
     if (!eventId) return;
 
     try {
@@ -43,7 +43,7 @@ export function useEventParticipantsCount(eventId: string) {
         .single();
 
       if (!eventError && eventData && eventData.current_participants !== realCount) {
-        console.log(`🔄 Synchronisation du compteur pour l'événement ${eventId}: ${eventData.current_participants} → ${realCount}`);
+        // Synchronisation du compteur nécessaire
         
         // Mettre à jour le compteur en base
         await supabase
@@ -56,16 +56,18 @@ export function useEventParticipantsCount(eventId: string) {
       }
 
     } catch (error: any) {
-      console.error('❌ Erreur lors de la récupération du compteur:', error);
+      console.error('Erreur lors de la récupération du compteur:', error);
       setError(error.message || 'Erreur lors du chargement du compteur');
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId, supabase]);
 
   useEffect(() => {
-    fetchParticipantsCount();
-  }, [eventId]);
+    if (eventId) {
+      fetchParticipantsCount();
+    }
+  }, [eventId, fetchParticipantsCount]);
 
   const refreshCount = () => {
     fetchParticipantsCount();
@@ -101,7 +103,7 @@ export function useParticipantsCountConsistency() {
       setData(consistencyData || []);
 
     } catch (error: any) {
-      console.error('❌ Erreur lors de la vérification de cohérence:', error);
+      console.error('Erreur lors de la vérification de cohérence:', error);
       setError(error.message || 'Erreur lors de la vérification');
     } finally {
       setLoading(false);
@@ -124,7 +126,7 @@ export function useParticipantsCountConsistency() {
       await checkConsistency();
 
     } catch (error: any) {
-      console.error('❌ Erreur lors de la synchronisation:', error);
+      console.error('Erreur lors de la synchronisation:', error);
       setError(error.message || 'Erreur lors de la synchronisation');
     } finally {
       setLoading(false);
@@ -143,4 +145,5 @@ export function useParticipantsCountConsistency() {
     syncAllCounts
   };
 }
+
 

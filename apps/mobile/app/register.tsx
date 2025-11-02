@@ -1,19 +1,19 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   StyleSheet,
   ActivityIndicator,
   Platform,
   Alert
-} from 'react-native';
-import { router } from 'expo-router';
-import { supabase } from '../lib';
+} from 'react-native'
+import { router } from 'expo-router'
+import { supabase } from '../lib'
+import { PageLayout } from '../components/layout'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -79,6 +79,13 @@ export default function RegisterPage() {
       newErrors.email = 'L\'email est requis';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'L\'email n\'est pas valide';
+    } else {
+      // Vérifier les domaines invalides
+      const invalidDomains = ['example.com', 'test.com', 'localhost'];
+      const domain = formData.email.split('@')[1];
+      if (invalidDomains.includes(domain)) {
+        newErrors.email = 'Veuillez utiliser une adresse email valide (Gmail, Yahoo, etc.)';
+      }
     }
 
     if (!formData.password) {
@@ -119,8 +126,12 @@ export default function RegisterPage() {
       });
 
       if (error) {
-        if (error.message.includes('User already registered')) {
+        if (error.message.includes('Email address') && error.message.includes('invalid')) {
+          setGeneralError('Veuillez utiliser une adresse email valide (Gmail, Yahoo, etc.)');
+        } else if (error.message.includes('User already registered')) {
           setGeneralError('Un compte existe déjà avec cet email');
+        } else if (error.message.includes('Password should be at least')) {
+          setGeneralError('Le mot de passe doit contenir au moins 6 caractères');
         } else {
           setGeneralError(error.message);
         }
@@ -154,7 +165,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <PageLayout showHeader={false} scrollEnabled={true} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
         <Text style={styles.title}>
           Créer un compte <Text style={styles.titleAccent}>Gémou2</Text>
@@ -293,15 +304,11 @@ export default function RegisterPage() {
           </View>
         </View>
       </View>
-    </ScrollView>
-  );
+    </PageLayout>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f4f8',
-  },
   contentContainer: {
     padding: 20,
     paddingTop: Platform.select({ web: 60, default: 40 }),

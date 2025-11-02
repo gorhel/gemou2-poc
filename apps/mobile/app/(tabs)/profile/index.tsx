@@ -1,22 +1,25 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   Platform,
-  RefreshControl
-} from 'react-native';
-import { router } from 'expo-router';
-import { supabase } from '../../../lib';
+  ScrollView
+} from 'react-native'
+import { router } from 'expo-router'
+import { supabase } from '../../../lib'
+import { PageLayout } from '../../../components/layout'
+
+type TabType = 'informations' | 'privacy' | 'account';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<TabType>('informations');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({
@@ -50,7 +53,7 @@ export default function ProfilePage() {
       // Charger les statistiques
       const [eventsCreated, eventsParticipated, gamesOwned, friends] = await Promise.all([
         supabase.from('events').select('id', { count: 'exact', head: true }).eq('creator_id', user.id),
-        supabase.from('event_participants').select('id', { count: 'exact', head: true }).eq('profile_id', user.id),
+        supabase.from('event_participants').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('user_games').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('friends').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted')
       ]);
@@ -98,13 +101,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+    <PageLayout showHeader={true} refreshing={refreshing} onRefresh={onRefresh}>
       {/* Header */}
+
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
           <View style={styles.avatar}>
@@ -116,6 +115,33 @@ export default function ProfilePage() {
 
         <Text style={styles.fullName}>{profile.full_name || 'Utilisateur'}</Text>
         <Text style={styles.username}>@{profile.username || 'username'}</Text>
+
+              {/* Navigation Tabs */}
+        <View style={styles.tabsContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsScroll}>
+            {[
+              { key: 'informations', label: 'Mes infos' },
+              { key: 'privacy', label: 'Ma confidentialité' },
+              { key: 'account', label: 'Mon compte' }
+            ].map((tab) => (
+              <TouchableOpacity
+                key={tab.key}
+                style={[
+                  styles.tab,
+                  activeTab === tab.key && styles.activeTab
+                ]}
+                onPress={() => setActiveTab(tab.key as TabType)}
+              >
+                <Text style={[
+                  styles.tabText,
+                  activeTab === tab.key && styles.activeTabText
+                ]}>
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
         
         {profile.bio && (
           <Text style={styles.bio}>{profile.bio}</Text>
@@ -153,7 +179,7 @@ export default function ProfilePage() {
       <View style={styles.actionsContainer}>
         <TouchableOpacity
           style={styles.actionButton}
-          onPress={() => router.push('/events')}
+          onPress={() => router.push('/(tabs)/events')}
         >
           <Text style={styles.actionButtonEmoji}>📅</Text>
           <Text style={styles.actionButtonText}>Mes événements</Text>
@@ -161,7 +187,7 @@ export default function ProfilePage() {
 
         <TouchableOpacity
           style={styles.actionButton}
-          onPress={() => router.push('/community')}
+          onPress={() => router.push('/(tabs)/community')}
         >
           <Text style={styles.actionButtonEmoji}>💬</Text>
           <Text style={styles.actionButtonText}>Communauté</Text>
@@ -183,15 +209,11 @@ export default function ProfilePage() {
           <Text style={[styles.actionButtonText, styles.signOutText]}>Déconnexion</Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
-  );
+    </PageLayout>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f4f8',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -309,5 +331,34 @@ const styles = StyleSheet.create({
   signOutText: {
     color: '#dc2626',
   },
+  tabsContainer: {
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  tabsScroll: {
+    paddingHorizontal: 16,
+  },
+  tab: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginRight: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  activeTab: {
+    borderBottomColor: '#3b82f6',
+  },
+  tabText: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  activeTabText: {
+    color: '#3b82f6',
+    fontWeight: '600',
+  },
 });
+
+
 

@@ -1,0 +1,42 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="400" fill="#FEF3C7"/>
+  
+  <!-- Calendar -->
+  <rect x="100" y="80" width="200" height="240" rx="16" fill="white" stroke="#F59E0B" stroke-width="3"/>
+  
+  <!-- Calendar header -->
+  <rect x="100" y="80" width="200" height="50" rx="16" fill="#F59E0B"/>
+  <rect x="100" y="115" width="200" height="15" fill="#F59E0B"/>
+  
+  <!-- Calendar rings -->
+  <circle cx="130" cy="100" r="8" fill="white"/>
+  <circle cx="130" cy="100" r="4" fill="#F59E0B"/>
+  <circle cx="200" cy="100" r="8" fill="white"/>
+  <circle cx="200" cy="100" r="4" fill="#F59E0B"/>
+  <circle cx="270" cy="100" r="8" fill="white"/>
+  <circle cx="270" cy="100" r="4" fill="#F59E0B"/>
+  
+  <!-- Calendar grid -->
+  <rect x="120" y="150" width="30" height="30" rx="4" fill="#FEF3C7"/>
+  <rect x="160" y="150" width="30" height="30" rx="4" fill="#FEF3C7"/>
+  <rect x="200" y="150" width="30" height="30" rx="4" fill="#FEF3C7"/>
+  <rect x="240" y="150" width="30" height="30" rx="4" fill="#FEF3C7"/>
+  
+  <rect x="120" y="190" width="30" height="30" rx="4" fill="#FEF3C7"/>
+  <rect x="160" y="190" width="30" height="30" rx="4" fill="#FEF3C7"/>
+  <rect x="200" y="190" width="30" height="30" rx="4" fill="#FBBF24"/>
+  <rect x="240" y="190" width="30" height="30" rx="4" fill="#FEF3C7"/>
+  
+  <rect x="120" y="230" width="30" height="30" rx="4" fill="#FEF3C7"/>
+  <rect x="160" y="230" width="30" height="30" rx="4" fill="#FEF3C7"/>
+  <rect x="200" y="230" width="30" height="30" rx="4" fill="#FEF3C7"/>
+  <rect x="240" y="230" width="30" height="30" rx="4" fill="#FEF3C7"/>
+  
+  <rect x="120" y="270" width="30" height="30" rx="4" fill="#FEF3C7"/>
+  <rect x="160" y="270" width="30" height="30" rx="4" fill="#FEF3C7"/>
+  <rect x="200" y="270" width="30" height="30" rx="4" fill="#FEF3C7"/>
+  <rect x="240" y="270" width="30" height="30" rx="4" fill="#FEF3C7"/>
+  
+  <!-- Highlight circle -->
+  <circle cx="215" cy="205" r="18" fill="none" stroke="#DC2626" stroke-width="2"/>
+</svg>

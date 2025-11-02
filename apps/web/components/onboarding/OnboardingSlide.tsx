@@ -32,21 +32,23 @@ export function OnboardingSlide({
 
   return (
     <div className={`
-      w-full h-full flex flex-col items-center justify-center p-8
+      absolute inset-0 w-full h-full flex flex-col items-center justify-center p-8
       transition-all duration-500 ease-in-out
-      ${isActive ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}
+      ${isActive ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 translate-x-8 pointer-events-none'}
     `}>
       {/* Image/Icon Section */}
       <div className="flex-1 flex items-center justify-center mb-8">
-        <div className="relative">
-          {/* Placeholder pour l'image - sera remplacé par de vraies images */}
-          <div className="w-64 h-64 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center shadow-soft">
-            <span className="text-8xl">{slide.icon}</span>
-          </div>
-          
-          {/* Indicateur de chargement pour les vraies images */}
-          {slide.image && slide.image !== '/images/onboarding/welcome.svg' && (
-            <div className="absolute inset-0 bg-gray-200 rounded-full animate-pulse" />
+        <div className="relative w-full max-w-md">
+          {slide.image ? (
+            <img 
+              src={slide.image} 
+              alt={slide.title}
+              className="w-full h-auto"
+            />
+          ) : (
+            <div className="w-64 h-64 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center shadow-soft mx-auto">
+              <span className="text-8xl">{slide.icon}</span>
+            </div>
           )}
         </div>
       </div>
@@ -66,20 +68,6 @@ export function OnboardingSlide({
             {slide.description}
           </p>
         )}
-
-        {/* Action Button */}
-        <button
-          onClick={handleAction}
-          className="
-            px-8 py-4 bg-primary-600 text-white text-lg font-semibold
-            rounded-full shadow-medium hover:bg-primary-700
-            transition-all duration-200 transform hover:scale-105
-            focus:outline-none focus:ring-4 focus:ring-primary-200
-            min-w-[200px]
-          "
-        >
-          {slide.ctaText || (isLast ? 'Commencer' : 'Suivant')}
-        </button>
       </div>
 
       {/* Navigation Arrows - Desktop Only */}

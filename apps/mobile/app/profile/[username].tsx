@@ -43,7 +43,7 @@ export default function PublicProfilePage() {
       // Charger les stats
       const [eventsCreated, eventsParticipated, gamesOwned] = await Promise.all([
         supabase.from('events').select('id', { count: 'exact', head: true }).eq('creator_id', profileData.id),
-        supabase.from('event_participants').select('id', { count: 'exact', head: true }).eq('profile_id', profileData.id),
+        supabase.from('event_participants').select('id', { count: 'exact', head: true }).eq('user_id', profileData.id),
         supabase.from('user_games').select('id', { count: 'exact', head: true }).eq('user_id', profileData.id)
       ]);
 

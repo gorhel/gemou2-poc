@@ -42,7 +42,14 @@ function LandingPage() {
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50">
       {/* Header */}
       <Header
-        logo={<span className="text-2xl font-bold text-primary-600">🎲 Gémou2</span>}
+        logo={
+          <a 
+            href="/dashboard" 
+            className="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors cursor-pointer"
+          >
+            🎲 Gémou2
+          </a>
+        }
         navItems={navItems}
         userMenu={
           <UserMenu
@@ -273,7 +280,14 @@ function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <Header
-        logo={<span className="text-2xl font-bold text-primary-600">🎲 Gémou2</span>}
+        logo={
+          <a 
+            href="/dashboard" 
+            className="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors cursor-pointer"
+          >
+            🎲 Gémou2
+          </a>
+        }
         navItems={navItems}
         userMenu={
           <UserMenu

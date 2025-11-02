@@ -94,7 +94,7 @@ export default function EventPageWithParticipants() {
       }
 
       // Ajouter le rôle (hôte ou participant)
-      const participantsWithRoles: Participant[] = participantsData.map(participant => ({
+      const participantsWithRoles: Participant[] = (participantsData as any[]).map(participant => ({
         ...participant,
         role: participant.user_id === event?.creator_id ? 'host' : 'participant'
       }));

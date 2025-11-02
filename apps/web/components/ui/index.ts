@@ -1,6 +1,9 @@
 // Composants de base
 export { Button } from './Button';
 export type { ButtonProps } from './Button';
+export { default as SmallPill } from './SmallPill';
+export { default as ResponsiveHeader } from './ResponsiveHeader';
+export type { ResponsiveHeaderProps } from './ResponsiveHeader';
 
 // Composants de mise en page
 export {
@@ -23,6 +26,10 @@ export type {
 // Composants de formulaire
 export { Input, Textarea } from './Input';
 export type { InputProps, TextareaProps } from './Input';
+export { Select } from './Select';
+export type { SelectProps, SelectOption } from './Select';
+export { Toggle } from './Toggle';
+export type { ToggleProps } from './Toggle';
 
 // Composants de chargement
 export {

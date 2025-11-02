@@ -10,6 +10,15 @@ export function Card({ children, style }: CardProps) {
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
+interface CardContentProps {
+  children: React.ReactNode;
+  style?: ViewStyle;
+}
+
+export function CardContent({ children, style }: CardContentProps) {
+  return <View style={[styles.cardContent, style]}>{children}</View>;
+}
+
 const styles = StyleSheet.create({
   card: {
     backgroundColor: 'white',
@@ -25,6 +34,10 @@ const styles = StyleSheet.create({
         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
       },
     }),
+  },
+  cardContent: {
+    padding: 16,
+    alignItems: 'center',
   },
 });
 

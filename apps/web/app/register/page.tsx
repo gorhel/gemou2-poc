@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientSupabaseClient } from '../../lib/supabase-client';
+import { useUsernameValidation } from '../../hooks/useUsernameValidation';
 import {
   Button,
   Card,
@@ -18,7 +19,9 @@ export default function RegisterPage() {
   const supabase = createClientSupabaseClient();
   
   const [formData, setFormData] = useState({
-    fullName: '',
+    firstName: '',
+    lastName: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -27,18 +30,42 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
 
+  // Validation du username en temps réel
+  const usernameValidation = useUsernameValidation(formData.username);
+
   // Validation des champs
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Le nom complet est requis';
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'Le prénom est requis';
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Le nom est requis';
+    }
+
+    if (!formData.username.trim()) {
+      newErrors.username = 'Le nom d\'utilisateur est requis';
+    } else if (formData.username.length < 3) {
+      newErrors.username = 'Le nom d\'utilisateur doit contenir au moins 3 caractères';
+    } else if (!/^[a-zA-Z0-9_-]+$/.test(formData.username)) {
+      newErrors.username = 'Le nom d\'utilisateur ne peut contenir que des lettres, chiffres, tirets et underscores';
+    } else if (!usernameValidation.isValid && usernameValidation.error) {
+      newErrors.username = usernameValidation.error;
     }
 
     if (!formData.email) {
       newErrors.email = 'L\'email est requis';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'L\'email n\'est pas valide';
+    } else {
+      // Vérifier les domaines invalides
+      const invalidDomains = ['example.com', 'test.com', 'localhost'];
+      const domain = formData.email.split('@')[1];
+      if (invalidDomains.includes(domain)) {
+        newErrors.email = 'Veuillez utiliser une adresse email valide (Gmail, Yahoo, etc.)';
+      }
     }
 
     if (!formData.password) {
@@ -71,14 +98,21 @@ export default function RegisterPage() {
         password: formData.password,
         options: {
           data: {
-            full_name: formData.fullName,
+            full_name: `${formData.firstName} ${formData.lastName}`,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            username: formData.username,
           },
         },
       });
 
       if (error) {
-        if (error.message.includes('User already registered')) {
+        if (error.message.includes('Email address') && error.message.includes('invalid')) {
+          setGeneralError('Veuillez utiliser une adresse email valide (Gmail, Yahoo, etc.)');
+        } else if (error.message.includes('User already registered')) {
           setGeneralError('Un compte existe déjà avec cet email');
+        } else if (error.message.includes('Password should be at least')) {
+          setGeneralError('Le mot de passe doit contenir au moins 6 caractères');
         } else {
           setGeneralError(error.message);
         }
@@ -116,16 +150,69 @@ export default function RegisterPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <Input
-                label="Nom complet"
-                type="text"
-                placeholder="Jean Dupont"
-                value={formData.fullName}
-                onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                error={errors.fullName}
-                leftIcon="👤"
-                required
-              />
+            <div className="grid grid-cols-2 gap-4">
+                <Input
+                  label="Prénom"
+                  type="text"
+                  placeholder="Jean"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                  error={errors.firstName}
+                  leftIcon="👤"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+
+                <Input
+                  label="Nom"
+                  type="text"
+                  placeholder="Dupont"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                  error={errors.lastName}
+                  leftIcon="👤"
+                  required
+                />
+              </div>
+
+              <div>
+                <Input
+                  label="Nom d'utilisateur"
+                  type="text"
+                  placeholder="jean_dupont"
+                  value={formData.username}
+                  onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                  error={errors.username || usernameValidation.error}
+                  leftIcon="🏷️"
+                  required
+                />
+                {/* Indicateur de validation en temps réel */}
+                {formData.username.length >= 3 && (
+                  <div className="mt-1 text-sm">
+                    {usernameValidation.isChecking && (
+                      <span className="text-blue-600 flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Vérification...
+                      </span>
+                    )}
+                    {!usernameValidation.isChecking && usernameValidation.isValid && (
+                      <span className="text-green-600 flex items-center">
+                        ✅ {formData.username} est disponible
+                      </span>
+                    )}
+                    {!usernameValidation.isChecking && !usernameValidation.isValid && usernameValidation.error && (
+                      <span className="text-red-600 flex items-center">
+                        ❌ {usernameValidation.error}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
 
               <Input
                 label="Adresse email"

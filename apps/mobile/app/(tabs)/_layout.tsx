@@ -5,18 +5,18 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#3b82f6',
-        tabBarInactiveTintColor: '#9ca3af',
+        tabBarActiveTintColor: 'red',
+        tabBarInactiveTintColor: '#61758A',
         tabBarStyle: {
           backgroundColor: 'white',
-          borderTopWidth: 1,
+          borderTopWidth: 2,
           borderTopColor: '#e5e7eb',
-          height: Platform.select({ ios: 85, android: 65, web: 65 }),
+          height: Platform.select({ ios: 85, android: 85, web: 85 }),
           paddingBottom: Platform.select({ ios: 25, default: 10 }),
           paddingTop: 10,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 14,
           fontWeight: '500',
         },
         headerShown: false,
@@ -25,14 +25,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: 'Accueil',
+          title: 'Accueilz',
           tabBarIcon: ({ color, size }) => (
             <span style={{ fontSize: size }}>🏠</span>
           ),
         }}
       />
       <Tabs.Screen
-        name="events"
+        name="events/index"
         options={{
           title: 'Events',
           tabBarIcon: ({ color, size }) => (
@@ -59,7 +59,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="profile/index"
         options={{
           title: 'Profil',
           tabBarIcon: ({ color, size }) => (
@@ -67,7 +67,40 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      {/* Routes masquées du menu mais avec menu visible */}
+      <Tabs.Screen
+        name="events/[id]"
+        options={{
+          href: null, // Masquer du menu
+          title: 'Détails événement',
+        }}
+      />
+      <Tabs.Screen
+        name="search"
+        options={{
+          href: null, // Masquer du menu
+          title: 'Recherche',
+        }}
+      />
+      <Tabs.Screen
+        name="create-event"
+        options={{
+          href: null, // Masquer du menu
+          title: 'Créer un événement',
+        }}
+      />
+      <Tabs.Screen
+        name="create-trade"
+        options={{
+          href: null, // Masquer du menu
+          title: 'Créer une annonce',
+        }}
+      />
+
     </Tabs>
+
+    
   );
 }
 

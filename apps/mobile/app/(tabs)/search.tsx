@@ -111,6 +111,9 @@ export default function SearchPage() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Text style={styles.backBtnText}>← Retour</Text>
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>🔍 Recherche</Text>
       </View>
 
@@ -181,7 +184,7 @@ export default function SearchPage() {
               <TouchableOpacity
                 key={event.id}
                 style={styles.resultCard}
-                onPress={() => router.push(`/events/${event.id}`)}
+                onPress={() => router.push(`/(tabs)/events/${event.id}`)}
               >
                 <Text style={styles.resultEmoji}>📅</Text>
                 <View style={styles.resultInfo}>
@@ -247,15 +250,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
+  backBtn: {
+    marginBottom: 12,
+  },
+  backBtnText: {
+    fontSize: 16,
+    color: '#3b82f6',
+    fontWeight: '500',
+  },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#6b7280',
   },
   searchContainer: {
     backgroundColor: 'white',
@@ -387,4 +393,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-

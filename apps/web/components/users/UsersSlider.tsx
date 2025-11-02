@@ -8,11 +8,12 @@ interface User {
   id: string;
   username: string;
   full_name: string;
-  bio: string;
-  avatar_url: string;
-  email: string;
-  created_at: string;
-  updated_at: string;
+  bio?: string;
+  avatar_url?: string;
+  email?: string;
+  city?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface UsersSliderProps {

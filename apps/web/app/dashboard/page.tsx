@@ -4,10 +4,11 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientSupabaseClient } from '../../lib/supabase-client';
 import { Button, Card, CardHeader, CardTitle, CardContent, LoadingSpinner } from '../../components/ui';
-import { EventsList } from '../../components/events';
+import { EventsSlider } from '../../components/events';
 import { GamesRecommendations } from '../../components/games';
 import { UsersRecommendations } from '../../components/users';
-import { ResponsiveLayout } from '../../components/layout';
+import { MarketplaceListings } from '../../components/marketplace';
+import { ResponsiveLayout, PageHeader, PageFooter } from '../../components/layout';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -69,21 +70,16 @@ export default function DashboardPage() {
 
   return (
     <ResponsiveLayout>
-      <div className="bg-gradient-to-br from-primary-50 to-secondary-50">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-6">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
-                <p className="text-gray-600">Bienvenue, {user.email}</p>
-              </div>
-              <Button onClick={handleLogout} variant="outline">
-                Se déconnecter
-              </Button>
-            </div>
-          </div>
-        </div>
+      <div className="bg-gradient-to-br from-primary-50 to-secondary-50 min-h-screen flex flex-col">
+        <PageHeader
+          title="Tableau de bord"
+          subtitle={`Bienvenue, ${user.email}`}
+          actions={
+            <Button onClick={handleLogout} variant="outline">
+              Se déconnecter
+            </Button>
+          }
+        />
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -106,32 +102,23 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Events Section - Format rectangulaire horizontal */}
+            {/* Events Section - Slider horizontal */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">📅 Événements à venir</h2>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => router.push('/events')}
+                >
                   Voir tous les événements
                 </Button>
               </div>
-              <EventsList />
+              <EventsSlider />
             </div>
 
-            {/* Games and Users in a grid layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Games Recommendations Section - Format carré */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-900">🎮 Recommandations de jeux</h2>
-                  <Button variant="outline" size="sm">
-                    Explorer plus
-                  </Button>
-                </div>
-                <GamesRecommendations />
-              </div>
-
-              {/* Users Recommendations Section - Format vertical compact */}
-              <div className="space-y-4">
+            {/* Users Recommendations Section - Format vertical compact */}
+            <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-bold text-gray-900">👥 Suggestions de joueurs</h2>
                   <Button variant="outline" size="sm">
@@ -140,9 +127,36 @@ export default function DashboardPage() {
                 </div>
                 <UsersRecommendations />
               </div>
-            </div>
+
+            {/* Marketplace Section - Annonces de vente et échange */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-gray-900">🛒 Annonces de vente et d'échange</h2>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => router.push('/create-trade')}
+                  >
+                    Créer une annonce
+                  </Button>
+                </div>
+                <MarketplaceListings limit={6} />
+              </div>
+
+            {/* Games Recommendations Section - Format carré */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-gray-900">🎮 Recommandations de jeux</h2>
+                  <Button variant="outline" size="sm">
+                    Explorer plus
+                  </Button>
+                </div>
+                <GamesRecommendations />
+              </div>
           </div>
         </div>
+
+        <PageFooter />
       </div>
     </ResponsiveLayout>
   );

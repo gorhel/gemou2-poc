@@ -1,30 +1,31 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   Platform,
   Alert,
-  RefreshControl
-} from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { supabase } from '../../../lib';
+  Image
+} from 'react-native'
+import { useLocalSearchParams, router } from 'expo-router'
+import { supabase } from '../../../lib'
+import { PageLayout } from '../../../components/layout'
 
 interface Event {
   id: string;
   title: string;
   description: string;
-  event_date: string;
+  date_time: string;
   location: string;
   max_participants: number;
   current_participants: number;
   status: string;
   creator_id: string;
+  image_url: string;
 }
 
 export default function EventDetailsPage() {
@@ -72,7 +73,7 @@ export default function EventDetailsPage() {
         .from('event_participants')
         .select('*')
         .eq('event_id', id)
-        .eq('profile_id', user.id)
+        .eq('user_id', user.id)
         .single();
 
       setIsParticipating(!!participationData);
@@ -82,7 +83,7 @@ export default function EventDetailsPage() {
         .from('event_participants')
         .select(`
           *,
-          profiles (
+          profiles:user_id (
             id,
             username,
             full_name,
@@ -110,33 +111,73 @@ export default function EventDetailsPage() {
   const handleParticipate = async () => {
     if (!user || !event) return;
 
+    // Si l'utilisateur est le créateur, rediriger vers la page d'édition
+    if (isCreator) {
+      router.push({
+        pathname: '/(tabs)/create-event',
+        params: { eventId: event.id }
+      });
+      return;
+    }
+
     setIsLoadingAction(true);
     try {
       if (isParticipating) {
-        // Annuler la participation
-        const { error } = await supabase
+        // Annuler la participation et décrémenter le compteur
+        const { error: deleteError } = await supabase
           .from('event_participants')
           .delete()
           .eq('event_id', event.id)
-          .eq('profile_id', user.id);
+          .eq('user_id', user.id);
 
-        if (error) throw error;
+        if (deleteError) throw deleteError;
+
+        // Décrémenter le compteur de participants
+        const { error: updateError } = await supabase
+          .from('events')
+          .update({ 
+            current_participants: Math.max(0, (event.current_participants || 0) - 1)
+          })
+          .eq('id', event.id);
+
+        if (updateError) throw updateError;
 
         setIsParticipating(false);
         if (Platform.OS !== 'web') {
           Alert.alert('Succès', 'Vous ne participez plus à cet événement');
         }
       } else {
-        // Participer
-        const { error } = await supabase
+        // Vérifier le quota avant de participer
+        const currentParticipantsCount = event.current_participants || 0;
+        if (currentParticipantsCount >= event.max_participants) {
+          if (Platform.OS === 'web') {
+            alert('Le quota de participants est atteint');
+          } else {
+            Alert.alert('Quota atteint', 'Le nombre maximum de participants est déjà atteint pour cet événement');
+          }
+          return;
+        }
+
+        // Participer et incrémenter le compteur
+        const { error: insertError } = await supabase
           .from('event_participants')
           .insert({
             event_id: event.id,
-            profile_id: user.id,
-            status: 'confirmed'
+            user_id: user.id,
+            status: 'registered'
           });
 
-        if (error) throw error;
+        if (insertError) throw insertError;
+
+        // Incrémenter le compteur de participants
+        const { error: updateError } = await supabase
+          .from('events')
+          .update({ 
+            current_participants: (event.current_participants || 0) + 1
+          })
+          .eq('id', event.id);
+
+        if (updateError) throw updateError;
 
         setIsParticipating(true);
         if (Platform.OS !== 'web') {
@@ -144,8 +185,8 @@ export default function EventDetailsPage() {
         }
       }
 
-      // Recharger les données
-      loadEvent();
+      // Recharger les données pour voir les changements immédiatement
+      await loadEvent();
     } catch (error: any) {
       const message = error.message || 'Une erreur est survenue';
       if (Platform.OS === 'web') {
@@ -161,6 +202,35 @@ export default function EventDetailsPage() {
   const onRefresh = () => {
     setRefreshing(true);
     loadEvent();
+  };
+
+  const formatDate = (dateTime: string) => {
+    if (!dateTime) return 'Date non définie';
+    
+    const d = new Date(dateTime);
+    
+    // Vérifier si la date est valide
+    if (isNaN(d.getTime())) {
+      return 'Date invalide';
+    }
+    
+    const dayOfWeek = d.toLocaleString('fr-FR', { weekday: 'long' });
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = d.toLocaleString('fr-FR', { month: 'long' });
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    
+    return `${dayOfWeek} ${day} ${month}, ${hours}:${minutes}`;
+  };
+
+  const getInitials = (name: string) => {
+    if (!name) return '??';
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   if (loading) {
@@ -185,67 +255,166 @@ export default function EventDetailsPage() {
   }
 
   const isCreator = user?.id === event.creator_id;
-  const isFull = (event.current_participants || participants.length) >= event.max_participants;
+  const isFull = (event.current_participants || 0) >= event.max_participants;
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+    <PageLayout showHeader={true} refreshing={refreshing} onRefresh={onRefresh}>
       {/* Header avec bouton retour */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>← Retour</Text>
-        </TouchableOpacity>
-      </View>
 
       {/* Event Details */}
       <View style={styles.content}>
-        <Text style={styles.title}>{event.title}</Text>
-        
-        <View style={styles.metaContainer}>
-          <View style={styles.metaItem}>
-            <Text style={styles.metaEmoji}>📅</Text>
-            <Text style={styles.metaText}>
-              {new Date(event.event_date).toLocaleDateString('fr-FR', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </Text>
-          </View>
 
-          <View style={styles.metaItem}>
-            <Text style={styles.metaEmoji}>📍</Text>
-            <Text style={styles.metaText}>{event.location}</Text>
-          </View>
-
-          <View style={styles.metaItem}>
-            <Text style={styles.metaEmoji}>👥</Text>
-            <Text style={styles.metaText}>
-              {participants.length}/{event.max_participants} participants
-            </Text>
-          </View>
-
-          {creator && (
-            <View style={styles.metaItem}>
-              <Text style={styles.metaEmoji}>👤</Text>
-              <Text style={styles.metaText}>
-                Organisé par {creator.full_name || creator.username}
-              </Text>
-            </View>
+      <View style={styles.eventImageContainer}>
+          {event.image_url ? (
+            <Image
+              source={{ uri: event.image_url }}
+              style={styles.eventImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <Text style={styles.eventImagePlaceholder}>📅</Text>
           )}
         </View>
 
+
+        <Text style={styles.title}>{event.title}</Text>
+        
+        <View style={styles.metaContainer}>
+        {creator && (
+            <View style={styles.metaItem}>
+              <View style={styles.organizerContainer}>
+                <View style={styles.organizerAvatar}>
+                  {creator.avatar_url ? (
+                    <Image
+                      source={{ uri: creator.avatar_url }}
+                      style={styles.avatarImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View 
+                      style={[
+                        styles.avatarFallback,
+                        { backgroundColor: `hsl(${creator.id.charCodeAt(0) * 137.5 % 360}, 70%, 50%)` }
+                      ]}
+                    >
+                      <Text style={styles.avatarInitials}>
+                        {getInitials(creator.full_name || creator.username)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.metaText}>
+                <span style={{ fontWeight:700 }}>Hôte</span> 
+                <br /> 
+                Organisé par {isCreator ? 'vous' : creator.full_name || creator.username}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          <View style={styles.metaItem}>
+            <Text style={styles.metaEmoji}>📍</Text>
+            <Text style={styles.metaText}>
+            <span style={{ fontWeight:700 }}>Lieu de l'événement</span> 
+            <br />
+              {event.location}
+              </Text>
+          </View>
+
+          <View style={styles.metaItem}>
+            <Text style={styles.metaEmoji}>📅</Text>
+            <Text style={styles.metaText}>
+            <span style={{ fontWeight:700 }}>Horaire</span> 
+            <br />
+              {formatDate(event.date_time)}
+            </Text>
+          </View>
+
+
+          <View style={styles.metaItem}>
+            <Text style={styles.metaEmoji}>👥</Text>
+            
+            <Text style={styles.metaText}>
+            <span style={{ fontWeight:700 }}>Capacité</span> 
+            <br />
+              {event.current_participants || 0}/{event.max_participants} participants
+            </Text>
+          </View>
+
+          <View style={styles.metaItem}>
+            <Text style={styles.metaEmoji}>💰​​</Text>
+            <Text style={styles.metaText}>
+            <span style={{ fontWeight:700 }}>Coût</span> 
+            <br />
+              Gratuit</Text>
+          </View>
+        </View>
+
+        <View style={styles.separator} />
+
         <View style={styles.descriptionContainer}>
-          <Text style={styles.descriptionTitle}>Description</Text>
+          <Text style={styles.descriptionTitle}>Description de l'événement</Text>
           <Text style={styles.description}>{event.description}</Text>
         </View>
+
+        <View style={styles.separator} />
+
+        <View style={styles.descriptionContainer}>
+            <Text style={styles.descriptionTitle}>Jeux</Text>
+            <TouchableOpacity 
+              style={styles.gameCard}
+              // onPress={() => router.push(`/games/${gameId}`)} // TODO: Implémenter la navigation vers le jeu
+            >
+              <View style={styles.gameInfo}>
+                <Text style={styles.gameTitle}>7 Wonders</Text>
+                <Text style={styles.gameCategory}>Jeu de stratégie</Text>
+              </View>
+              
+              <View style={styles.gameImageContainer}>
+                <Image
+                  source={{ uri: event.image_url }}
+                  style={styles.gameImage}
+                  resizeMode="cover"
+                />
+                
+              </View>
+              <View style={styles.arrowContainer}>
+                  <Text style={styles.arrow}>›</Text>
+                </View>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.separator} />
+
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.descriptionTitle}>Tag.s événement et jeu</Text>
+            <View style={styles.badgesContainer}>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Familial</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Narratif</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Pas de nourriture</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Strategie</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={[styles.badgeText]}>Yellow</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Indigo</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Purple</Text>
+              </View>
+              <View style={[styles.badge]}>
+                <Text style={styles.badgeText}>Pink</Text>
+              </View>
+            </View>
+          </View>
 
         {/* Participants */}
         {participants.length > 0 && (
@@ -255,14 +424,33 @@ export default function EventDetailsPage() {
             </Text>
             {participants.map((participant) => (
               <View key={participant.id} style={styles.participantCard}>
-                <Text style={styles.participantEmoji}>👤</Text>
+                <View style={styles.participantAvatar}>
+                  {participant.profiles?.avatar_url ? (
+                    <Image
+                      source={{ uri: participant.profiles.avatar_url }}
+                      style={styles.participantAvatarImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View 
+                      style={[
+                        styles.participantAvatarFallback,
+                        { backgroundColor: `hsl(${participant.profiles?.id?.charCodeAt(0) * 137.5 % 360 || 200}, 70%, 50%)` }
+                      ]}
+                    >
+                      <Text style={styles.participantAvatarInitials}>
+                        {getInitials(participant.profiles?.full_name || participant.profiles?.username || 'U')}
+                      </Text>
+                    </View>
+                  )}
+                </View>
                 <View style={styles.participantInfo}>
                   <Text style={styles.participantName}>
-                    {participant.profiles?.full_name || participant.profiles?.username || 'Utilisateur'}
+                    @{participant.profiles?.username || 'Utilisateur'}
                   </Text>
                   {participant.profiles?.city && (
                     <Text style={styles.participantCity}>
-                      📍 {participant.profiles.city}
+                  {isCreator ? 'vous' : participant.full_name || participant.username}
                     </Text>
                   )}
                 </View>
@@ -274,43 +462,77 @@ export default function EventDetailsPage() {
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
           {!isCreator && (
+
+          <View style={styles.creatorBadge}>
+            <TouchableOpacity
+            style={styles.GroupContactButton}
+            onPress={() => router.push('/')}> {/* // déclencher la conversation avec les participants TODO: implémenter la conversation avec les participants */}
+              <Text style={styles.creatorBadgeText}>
+                Contacter l'hôte
+              </Text>
+            </TouchableOpacity> 
+            
             <TouchableOpacity
               style={[
                 styles.participateButton,
-                isParticipating && styles.participateButtonActive,
+                isParticipating && !isCreator && styles.participateButtonActive,
                 isFull && !isParticipating && styles.participateButtonDisabled
               ]}
               onPress={handleParticipate}
-              disabled={isLoadingAction || (isFull && !isParticipating)}
+              disabled={isLoadingAction || (isFull && !isParticipating && !isCreator)}
             >
               {isLoadingAction ? (
                 <ActivityIndicator color="white" />
               ) : (
                 <Text style={styles.participateButtonText}>
-                  {isParticipating ? '✓ Je participe' : isFull ? 'Complet' : 'Participer'}
+                  {isParticipating ? 'Quitter le gémou' : isFull ? 'Complet' : 'Participer'}
                 </Text>
               )}
             </TouchableOpacity>
+          </View>
           )}
+          
 
           {isCreator && (
+
+            
             <View style={styles.creatorBadge}>
-              <Text style={styles.creatorBadgeText}>
-                ⭐ Vous êtes l'organisateur
-              </Text>
+              <TouchableOpacity
+              style={styles.GroupContactButton}
+              onPress={() => router.push('/')}> {/* // déclencher la conversation avec les participants TODO: implémenter la conversation avec les participants */}
+                <Text style={styles.creatorBadgeText}>
+                  Contacter les participants
+                </Text>
+              </TouchableOpacity> 
+
+              <TouchableOpacity
+              
+              style={[
+                styles.participateButton,
+                !isCreator && styles.participateButtonActive
+              ]}
+              onPress={handleParticipate}
+              disabled={isLoadingAction}
+            >
+              {isLoadingAction ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.participateButtonText}>
+                  Modifier le Gémou
+                </Text>
+              )}
+                
+              </TouchableOpacity>
             </View>
+            
           )}
         </View>
       </View>
-    </ScrollView>
-  );
+    </PageLayout>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f4f8',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -352,7 +574,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   header: {
-    backgroundColor: 'white',
     padding: 16,
     paddingTop: Platform.select({ ios: 60, android: 16, web: 16 }),
     borderBottomWidth: 1,
@@ -368,48 +589,70 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   content: {
-    padding: 20,
+    padding: 0,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 20,
+    padding: 16,
   },
   metaContainer: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     elevation: 2,
   },
   metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 5,
+  },
+  organizerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  organizerAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    marginRight: 12,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarFallback: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarInitials: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   metaEmoji: {
-    fontSize: 20,
+    fontSize: 38,
     marginRight: 12,
+    borderRadius:10,
+    backgroundColor: '#F0F2F5',
+    width: 56,
+    height: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    display: 'flex',
   },
   metaText: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#4b5563',
     flex: 1,
   },
   descriptionContainer: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     elevation: 2,
   },
   descriptionTitle: {
@@ -419,19 +662,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   description: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#4b5563',
     lineHeight: 22,
+    textAlign: 'justify',
   },
   participantsContainer: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     elevation: 2,
   },
   participantsTitle: {
@@ -447,9 +685,27 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },
-  participantEmoji: {
-    fontSize: 24,
+  participantAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  participantAvatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  participantAvatarFallback: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  participantAvatarInitials: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   participantInfo: {
     flex: 1,
@@ -467,6 +723,10 @@ const styles = StyleSheet.create({
   actionsContainer: {
     marginTop: 20,
     marginBottom: 40,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
   },
   participateButton: {
     backgroundColor: '#3b82f6',
@@ -475,7 +735,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   participateButtonActive: {
-    backgroundColor: '#10b981',
+    backgroundColor: '#ef4444',
   },
   participateButtonDisabled: {
     backgroundColor: '#9ca3af',
@@ -486,15 +746,122 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   creatorBadge: {
-    backgroundColor: '#fef3c7',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
   },
   creatorBadgeText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#92400e',
+    color: '#121417',
+  },
+  eventImageContainer: {
+    width: '100%',
+    height: 200,
+    overflow: 'hidden',
+    backgroundColor: '#E0E0E0'
+  },
+  eventImage: {
+    width: '100%',
+    height: '100%',
+  },
+  eventImagePlaceholder: {
+    fontSize: 24,
+    color: '#6b7280',
+  },
+  gameCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    elevation: 3,
+  },
+  gameInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  
+  gameTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  
+  gameCategory: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  
+  gameImageContainer: {
+    position: 'relative',
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    backgroundColor: '#2C3E50',
+    overflow: 'hidden',
+    marginRight: 12,
+  },
+  
+  gameImage: {
+    width: '100%',
+    height: '100%',
+  },
+  
+  arrowContainer: {
+    position: 'absolute',
+    right: 4,
+    top: '50%',
+    transform: [{ translateY: -12 }],
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  arrow: {
+    fontSize: 40,
+    color: '#1F2937',
+    fontWeight: 'bold',
+  },
+  badgesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginVertical: 12,
+  },
+  
+  badge: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    backgroundColor: '#F0F2F5',
+  },
+  
+  badgeText: {
+    color: '#121417',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 5,
+  },
+  GroupContactButton: {
+    backgroundColor: '#F0F2F5',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+  },
+  GroupContactButtonText: {
+    color: '#121417',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
