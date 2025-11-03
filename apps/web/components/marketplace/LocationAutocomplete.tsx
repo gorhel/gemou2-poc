@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { getLocationOptions, LocationOption } from '../../types/marketplace';
+import { useLocations, LocationOption } from '../../hooks/useLocations';
 
 export interface LocationAutocompleteProps {
   value: string;
@@ -20,23 +20,28 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 }) => {
   const [search, setSearch] = useState(value);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [options, setOptions] = useState<LocationOption[]>([]);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  
+  // Utiliser le hook pour récupérer les localisations depuis Supabase
+  const { locations, loading, searchLocations } = useLocations();
 
   useEffect(() => {
     setSearch(value);
   }, [value]);
 
+  // Rechercher les localisations quand l'utilisateur tape
   useEffect(() => {
-    if (search) {
-      const filteredOptions = getLocationOptions(search);
-      setOptions(filteredOptions);
-      setShowDropdown(filteredOptions.length > 0);
-    } else {
-      setOptions([]);
-      setShowDropdown(false);
-    }
-  }, [search]);
+    const delayDebounceFn = setTimeout(() => {
+      if (search && search.length >= 2) {
+        searchLocations(search);
+        setShowDropdown(true);
+      } else {
+        setShowDropdown(false);
+      }
+    }, 300); // Debounce de 300ms
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [search, searchLocations]);
 
   // Fermer le dropdown quand on clique en dehors
   useEffect(() => {
@@ -52,7 +57,8 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
   const handleSelect = (option: LocationOption) => {
     setSearch(option.label);
-    onChange(option.label, option.quarter, option.city);
+    // Passer le district comme quarter et city
+    onChange(option.label, option.district, option.city);
     setShowDropdown(false);
   };
 
@@ -76,7 +82,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           type="text"
           value={search}
           onChange={handleInputChange}
-          onFocus={() => search && setShowDropdown(options.length > 0)}
+          onFocus={() => search && setShowDropdown(locations.length > 0)}
           placeholder="Ex: Le Moufia, Saint-Denis"
           className={`
             w-full px-4 py-3 border rounded-lg transition-colors
@@ -95,24 +101,40 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       </div>
 
       {/* Dropdown avec suggestions */}
-      {showDropdown && options.length > 0 && (
+      {showDropdown && (
         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
-          {options.map((option, index) => (
-            <button
-              key={index}
-              type="button"
-              onClick={() => handleSelect(option)}
-              className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors first:rounded-t-lg last:rounded-b-lg"
-            >
-              <div className="flex items-center">
-                <svg className="h-4 w-4 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span className="text-sm text-gray-700">{option.label}</span>
-              </div>
-            </button>
-          ))}
+          {loading ? (
+            <div className="px-4 py-3 text-center text-gray-500">
+              <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600 mr-2"></div>
+              Recherche...
+            </div>
+          ) : locations.length > 0 ? (
+            locations.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => handleSelect(option)}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors first:rounded-t-lg last:rounded-b-lg"
+              >
+                <div className="flex items-center">
+                  <svg className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <div className="flex-1">
+                    <span className="text-sm text-gray-700">{option.label}</span>
+                    {option.postal_code && (
+                      <span className="text-xs text-gray-500 ml-2">({option.postal_code})</span>
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))
+          ) : (
+            <div className="px-4 py-3 text-center text-gray-500 text-sm">
+              Aucun résultat trouvé
+            </div>
+          )}
         </div>
       )}
 

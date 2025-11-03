@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, TextInput } from 'react-native'
+import { router } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import MarketplaceCard from './MarketplaceCard'
 
@@ -74,8 +75,7 @@ export default function MarketplaceList({ limit = 50 }: MarketplaceListProps) {
   }
 
   const handleViewDetails = (item: MarketplaceItem) => {
-    // TODO: Naviguer vers la page de détails
-    console.log('View details:', item.id)
+    router.push(`/trade/${item.id}`)
   }
 
   const handleClearSearch = () => {
@@ -342,6 +342,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 12,
+    paddingBottom: 100, // Espace pour le bouton fixe
   },
   emptyContainer: {
     flex: 1,

@@ -49,16 +49,11 @@ export const HEADER_CONFIGS: Record<string, HeaderConfig> = {
     ]
   },
   
-  '/events': {
-    title: '📅 Liste des Événements',
-    showBackButton: false
-  },
-
   '/(tabs)/events': {
     title: '📅 Événements',
     showBackButton: false,
     rightActions: [
-      { icon: '🔍', action: 'search' }
+      { icon: '➕', action: 'create-event' }
     ]
   },
   
@@ -74,7 +69,7 @@ export const HEADER_CONFIGS: Record<string, HeaderConfig> = {
     title: '🛒 Marketplace',
     showBackButton: false,
     rightActions: [
-      { icon: '➕', action: 'create-trade' }
+      { icon: '➕', action: '/create-trade' }
     ]
   },
   
