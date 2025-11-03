@@ -9,6 +9,7 @@ import {
 } from 'react-native'
 import { router, usePathname } from 'expo-router'
 import { getHeaderConfig, HeaderConfig } from '../config/headers.config'
+import { useDefaultActionHandlers } from '../hooks/useDefaultActionHandlers'
 
 interface TopHeaderProps {
   // Props optionnelles pour override la config
@@ -38,6 +39,7 @@ export function TopHeader({
 }: TopHeaderProps) {
   const pathname = usePathname()
   const config = getHeaderConfig(pathname)
+  const defaultHandlers = useDefaultActionHandlers()
 
   // Déterminer les valeurs finales
   const title = overrideTitle 
@@ -53,19 +55,24 @@ export function TopHeader({
 
   // Handler par défaut pour le bouton retour
   const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back()
-    } else {
-      router.push('/dashboard')
-    }
+    // Revenir à la page précédente dans l'historique de navigation
+    router.back()
   }
 
   // Handler pour les actions
+  // Priorité : actionHandlers passés en props > handlers par défaut
   const handleAction = (actionId: string) => {
-    const handler = actionHandlers[actionId]
-    if (handler) {
-      handler()
+    const customHandler = actionHandlers[actionId]
+    const defaultHandler = defaultHandlers[actionId]
+    
+    if (customHandler) {
+      // Si un handler custom est fourni, l'utiliser
+      customHandler()
+    } else if (defaultHandler) {
+      // Sinon utiliser le handler par défaut
+      defaultHandler()
     } else {
+      // Si aucun handler n'est trouvé, logger un warning
       console.warn(`No handler found for action: ${actionId}`)
     }
   }
@@ -99,19 +106,30 @@ export function TopHeader({
         <View style={styles.rightSection}>
           {rightActions && rightActions.length > 0 ? (
             <View style={styles.actionsContainer}>
-              {rightActions.map((action, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => handleAction(action.action)}
-                  style={styles.actionButton}
-                >
-                  {action.icon ? (
-                    <Text style={styles.actionIcon}>{action.icon}</Text>
-                  ) : (
-                    <Text style={styles.actionText}>{action.label}</Text>
-                  )}
-                </TouchableOpacity>
-              ))}
+              {rightActions.map((action, index) => {
+                // Gérer les deux types d'actions : avec 'onPress' ou avec 'action'
+                const handlePress = () => {
+                  if ('onPress' in action && action.onPress) {
+                    action.onPress()
+                  } else if ('action' in action && action.action) {
+                    handleAction(action.action)
+                  }
+                }
+                
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={handlePress}
+                    style={styles.actionButton}
+                  >
+                    {action.icon ? (
+                      <Text style={styles.actionIcon}>{action.icon}</Text>
+                    ) : (
+                      <Text style={styles.actionText}>{action.label}</Text>
+                    )}
+                  </TouchableOpacity>
+                )
+              })}
             </View>
           ) : (
             <View style={styles.spacer} />

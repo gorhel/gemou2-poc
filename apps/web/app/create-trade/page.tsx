@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClientSupabaseClient } from '../../lib/supabase-client';
 import { Button, Card, CardHeader, CardTitle, CardContent, Input, Textarea, LoadingSpinner } from '../../components/ui';
 import { Select } from '../../components/ui/Select';
@@ -21,11 +21,14 @@ import {
 
 export default function CreateTradePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get('id');
   const supabase = createClientSupabaseClient();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isEditMode, setIsEditMode] = useState(false);
 
   // État du formulaire
   const [type, setType] = useState<MarketplaceItemType>('sale');
@@ -42,7 +45,7 @@ export default function CreateTradePage() {
   const [deliveryAvailable, setDeliveryAvailable] = useState(false);
 
   useEffect(() => {
-    const getUser = async () => {
+    const initPage = async () => {
       try {
         const { data: { user }, error } = await supabase.auth.getUser();
         
@@ -52,6 +55,11 @@ export default function CreateTradePage() {
         }
 
         setUser(user);
+
+        // Si mode édition, charger les données de l'annonce
+        if (editId) {
+          await loadTradeData(editId, user.id);
+        }
       } catch (error) {
         console.error('Error:', error);
         router.push('/login');
@@ -60,8 +68,48 @@ export default function CreateTradePage() {
       }
     };
 
-    getUser();
-  }, [router, supabase.auth]);
+    initPage();
+  }, [router, supabase.auth, editId]);
+
+  const loadTradeData = async (tradeId: string, userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('marketplace_items')
+        .select('*')
+        .eq('id', tradeId)
+        .single();
+
+      if (error) {
+        console.error('Error loading trade:', error);
+        setErrors({ general: 'Impossible de charger l\'annonce' });
+        return;
+      }
+
+      // Vérifier que l'utilisateur est bien le propriétaire
+      if (data.seller_id !== userId) {
+        setErrors({ general: 'Vous n\'êtes pas autorisé à modifier cette annonce' });
+        return;
+      }
+
+      // Pré-remplir le formulaire
+      setIsEditMode(true);
+      setType(data.type || 'sale');
+      setTitle(data.title || '');
+      setGameId(data.game_id);
+      setCustomGameName(data.custom_game_name || '');
+      setCondition(data.condition || 'good');
+      setDescription(data.description || '');
+      setLocationQuarter(data.location_quarter || '');
+      setLocationCity(data.location_city || '');
+      setImages(data.images || []);
+      setPrice(data.price);
+      setWantedGame(data.wanted_game || '');
+      setDeliveryAvailable(data.delivery_available || false);
+    } catch (error) {
+      console.error('Error:', error);
+      setErrors({ general: 'Une erreur est survenue lors du chargement' });
+    }
+  };
 
   const handleLocationChange = (value: string, quarter?: string, city?: string) => {
     if (quarter && city) {
@@ -116,23 +164,47 @@ export default function CreateTradePage() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('marketplace_items')
-        .insert({
-          ...formData,
-          seller_id: user.id,
-        })
-        .select()
-        .single();
+      if (isEditMode && editId) {
+        // Mode édition : UPDATE
+        const { data, error } = await supabase
+          .from('marketplace_items')
+          .update({
+            ...formData,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', editId)
+          .eq('seller_id', user.id) // Sécurité supplémentaire
+          .select()
+          .single();
 
-      if (error) {
-        console.error('Error creating trade:', error);
-        setErrors({ general: 'Erreur lors de la création de l\'annonce' });
-        return;
+        if (error) {
+          console.error('Error updating trade:', error);
+          setErrors({ general: 'Erreur lors de la mise à jour de l\'annonce' });
+          return;
+        }
+
+        // Rediriger vers l'annonce modifiée
+        router.push(`/trade/${data.id}`);
+      } else {
+        // Mode création : INSERT
+        const { data, error } = await supabase
+          .from('marketplace_items')
+          .insert({
+            ...formData,
+            seller_id: user.id,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error creating trade:', error);
+          setErrors({ general: 'Erreur lors de la création de l\'annonce' });
+          return;
+        }
+
+        // Rediriger vers l'annonce créée
+        router.push(`/trade/${data.id}`);
       }
-
-      // Rediriger vers l'annonce créée
-      router.push(`/trade/${data.id}`);
     } catch (error) {
       console.error('Error:', error);
       setErrors({ general: 'Une erreur est survenue' });
@@ -174,8 +246,12 @@ export default function CreateTradePage() {
               </svg>
               Retour
             </button>
-            <h1 className="text-3xl font-bold text-gray-900">Créer une annonce</h1>
-            <p className="text-gray-600 mt-2">Vendez ou échangez vos jeux de société</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {isEditMode ? 'Modifier l\'annonce' : 'Créer une annonce'}
+            </h1>
+            <p className="text-gray-600 mt-2">
+              {isEditMode ? 'Modifiez les informations de votre annonce' : 'Vendez ou échangez vos jeux de société'}
+            </p>
           </div>
 
           <Card>
@@ -337,7 +413,10 @@ export default function CreateTradePage() {
                     disabled={submitting}
                     className="flex-1"
                   >
-                    {submitting ? 'Publication...' : 'Publier'}
+                    {submitting 
+                      ? (isEditMode ? 'Mise à jour...' : 'Publication...') 
+                      : (isEditMode ? 'Mettre à jour' : 'Publier')
+                    }
                   </Button>
                 </div>
               </form>

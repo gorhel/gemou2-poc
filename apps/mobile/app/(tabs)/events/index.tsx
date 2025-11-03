@@ -17,6 +17,10 @@ import {
 import { router } from 'expo-router'
 import { supabase } from '../../../lib'
 import { PageLayout } from '../../../components/layout'
+import LocationFilterModal from '../../../components/events/LocationFilterModal'
+import DateFilterModal from '../../../components/events/DateFilterModal'
+import TypeFilterModal from '../../../components/events/TypeFilterModal'
+import PlayersFilterModal from '../../../components/events/PlayersFilterModal'
 
 
 const { width } = Dimensions.get('window');
@@ -30,6 +34,7 @@ interface Event {
   max_participants: number;
   current_participants: number;
   status: string;
+  creator_id: string;
   image_url?: string;
   profiles?: {
     username: string;
@@ -38,7 +43,15 @@ interface Event {
   } | null;
 }
 
-type TabType = 'participating' | 'organizing' | 'past' | 'draft';
+type TabType = 'upcoming' | 'participating' | 'organizing' | 'past' | 'draft';
+
+interface FilterState {
+  cities: string[];
+  startDate: Date | null;
+  endDate: Date | null;
+  tags: number[];
+  maxPlayers: number | null;
+}
 
 export default function EventsPage() {
   const [user, setUser] = useState<any>(null);
@@ -47,13 +60,24 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<TabType>('participating');
-  const [selectedFilters, setSelectedFilters] = useState<{
-    date?: string;
-    location?: string;
-    type?: string;
-    players?: string;
-  }>({});
+  const [activeTab, setActiveTab] = useState<TabType>('upcoming');
+  const [participatingEventIds, setParticipatingEventIds] = useState<string[]>([]);
+  const [selectedFilters, setSelectedFilters] = useState<FilterState>({
+    cities: [],
+    startDate: null,
+    endDate: null,
+    tags: [],
+    maxPlayers: null
+  });
+
+  // États pour les modaux de filtres
+  const [locationModalVisible, setLocationModalVisible] = useState(false);
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [typeModalVisible, setTypeModalVisible] = useState(false);
+  const [playersModalVisible, setPlayersModalVisible] = useState(false);
+
+  // Map pour stocker les événements avec leurs tags
+  const [eventTagsMap, setEventTagsMap] = useState<Map<string, number[]>>(new Map());
 
   const loadUser = async () => {
     try {
@@ -73,6 +97,7 @@ export default function EventsPage() {
 
   const loadEvents = async () => {
     try {
+      // Charger les événements avec creator_id
       const { data, error } = await supabase
         .from('events')
         .select(`
@@ -84,6 +109,7 @@ export default function EventsPage() {
           max_participants,
           current_participants,
           status,
+          creator_id,
           image_url,
           profiles!creator_id (
             username,
@@ -100,6 +126,24 @@ export default function EventsPage() {
         profiles: Array.isArray(event.profiles) ? event.profiles[0] : event.profiles
       }));
       setEvents(eventsData);
+      
+      // Charger les participations de l'utilisateur si connecté
+      if (user) {
+        const { data: participations, error: participationsError } = await supabase
+          .from('event_participants')
+          .select('event_id')
+          .eq('user_id', user.id)
+          .eq('status', 'registered');
+
+        if (!participationsError && participations) {
+          const eventIds = participations.map(p => p.event_id);
+          setParticipatingEventIds(eventIds);
+        }
+      }
+
+      // Charger les tags pour tous les événements
+      await loadEventTags(eventsData.map(e => e.id));
+      
       setFilteredEvents(eventsData);
     } catch (error) {
       console.error('Error loading events:', error);
@@ -109,34 +153,85 @@ export default function EventsPage() {
     }
   };
 
+  const loadEventTags = async (eventIds: string[]) => {
+    try {
+      if (eventIds.length === 0) return;
+
+      const { data, error } = await supabase
+        .from('event_tags')
+        .select('event_id, tag_id')
+        .in('event_id', eventIds);
+
+      if (error) throw error;
+
+      const tagsMap = new Map<string, number[]>();
+      (data || []).forEach(item => {
+        const existingTags = tagsMap.get(item.event_id) || [];
+        tagsMap.set(item.event_id, [...existingTags, item.tag_id]);
+      });
+
+      setEventTagsMap(tagsMap);
+    } catch (error) {
+      console.error('Error loading event tags:', error);
+    }
+  };
+
   useEffect(() => {
     loadUser();
-    loadEvents();
   }, []);
 
   useEffect(() => {
+    if (user) {
+      loadEvents();
+    }
+  }, [user]);
+
+  useEffect(() => {
     filterEvents();
-  }, [events, searchQuery, activeTab, selectedFilters]);
+  }, [events, searchQuery, activeTab, selectedFilters, participatingEventIds, user, eventTagsMap]);
 
   const filterEvents = () => {
     let filtered = [...events];
+    const now = new Date();
 
     // Filtre par onglet
-    const now = new Date();
     switch (activeTab) {
+      case 'upcoming':
+        // "A venir" : tous les événements futurs publiés, peu importe l'hôte
+        filtered = filtered.filter(event => 
+          new Date(event.date_time) >= now && 
+          event.status !== 'draft' &&
+          event.status !== 'cancelled'
+        );
+        break;
+        
       case 'participating':
-        // Événements où l'utilisateur participe (pour simplifier, on montre tous les événements actifs)
-        filtered = filtered.filter(event => event.status === 'active' && new Date(event.date_time) >= now);
+        // "Je participe" : événements où l'utilisateur est participant
+        filtered = filtered.filter(event => 
+          participatingEventIds.includes(event.id)
+        );
         break;
+        
       case 'organizing':
-        // Événements organisés par l'utilisateur
-        filtered = filtered.filter(event => event.status === 'active' && new Date(event.date_time) >= now);
+        // "J'organise" : événements où l'utilisateur est l'hôte
+        filtered = filtered.filter(event => 
+          event.creator_id === user?.id
+        );
         break;
+        
       case 'past':
-        filtered = filtered.filter(event => new Date(event.date_time) < now);
+        // "Passés" : événements dont la date est avant maintenant
+        filtered = filtered.filter(event => 
+          new Date(event.date_time) < now
+        );
         break;
+        
       case 'draft':
-        filtered = filtered.filter(event => event.status === 'draft');
+        // "Brouillon" : événements non publiés dont l'utilisateur est l'hôte
+        filtered = filtered.filter(event => 
+          event.status === 'draft' && 
+          event.creator_id === user?.id
+        );
         break;
     }
 
@@ -144,8 +239,45 @@ export default function EventsPage() {
     if (searchQuery) {
       filtered = filtered.filter(event =>
         event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         event.location.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Filtre par villes (OR logique - si au moins une ville correspond)
+    if (selectedFilters.cities.length > 0) {
+      filtered = filtered.filter(event =>
+        selectedFilters.cities.some(city => 
+          event.location.toLowerCase().includes(city.toLowerCase())
+        )
+      );
+    }
+
+    // Filtre par dates (période)
+    if (selectedFilters.startDate && selectedFilters.endDate) {
+      const startDate = new Date(selectedFilters.startDate);
+      startDate.setHours(0, 0, 0, 0);
+      const endDate = new Date(selectedFilters.endDate);
+      endDate.setHours(23, 59, 59, 999);
+
+      filtered = filtered.filter(event => {
+        const eventDate = new Date(event.date_time);
+        return eventDate >= startDate && eventDate <= endDate;
+      });
+    }
+
+    // Filtre par tags (OR logique - si au moins un tag correspond)
+    if (selectedFilters.tags.length > 0) {
+      filtered = filtered.filter(event => {
+        const eventTags = eventTagsMap.get(event.id) || [];
+        return selectedFilters.tags.some(tagId => eventTags.includes(tagId));
+      });
+    }
+
+    // Filtre par nombre de joueurs (événements avec nombre de participants <= sélection)
+    if (selectedFilters.maxPlayers !== null) {
+      filtered = filtered.filter(event => 
+        event.current_participants <= selectedFilters.maxPlayers!
       );
     }
 
@@ -278,6 +410,7 @@ export default function EventsPage() {
       <View style={styles.tabsContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsScroll}>
           {[
+            { key: 'upcoming', label: 'A venir' },
             { key: 'participating', label: 'Je participe' },
             { key: 'organizing', label: "J'organise" },
             { key: 'past', label: 'Passés' },
@@ -305,37 +438,127 @@ export default function EventsPage() {
       {/* Filters */}
       <View style={styles.filtersContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll}>
-          {[
-            { key: 'date', icon: '📅', label: 'Date' },
-            { key: 'location', icon: '📍', label: 'Location' },
-            { key: 'type', icon: '🎲', label: 'Type' },
-            { key: 'players', icon: '👥', label: 'Play' }
-          ].map((filter) => (
-            <TouchableOpacity
-              key={filter.key}
-              style={[
-                styles.filterButton,
-                selectedFilters[filter.key as keyof typeof selectedFilters] && styles.activeFilterButton
-              ]}
-              onPress={() => {
-                // Toggle filter
-                setSelectedFilters(prev => ({
-                  ...prev,
-                  [filter.key]: prev[filter.key as keyof typeof selectedFilters] ? undefined : 'active'
-                }));
-              }}
-            >
-              <Text style={styles.filterIcon}>{filter.icon}</Text>
-              <Text style={[
-                styles.filterLabel,
-                selectedFilters[filter.key as keyof typeof selectedFilters] && styles.activeFilterLabel
-              ]}>
-                {filter.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {/* Filtre Date */}
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              (selectedFilters.startDate || selectedFilters.endDate) && styles.activeFilterButton
+            ]}
+            onPress={() => setDateModalVisible(true)}
+          >
+            <Text style={styles.filterIcon}>📅</Text>
+            <Text style={[
+              styles.filterLabel,
+              (selectedFilters.startDate || selectedFilters.endDate) && styles.activeFilterLabel
+            ]}>
+              Date
+            </Text>
+            {(selectedFilters.startDate || selectedFilters.endDate) && (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>1</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {/* Filtre Lieu */}
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              selectedFilters.cities.length > 0 && styles.activeFilterButton
+            ]}
+            onPress={() => setLocationModalVisible(true)}
+          >
+            <Text style={styles.filterIcon}>📍</Text>
+            <Text style={[
+              styles.filterLabel,
+              selectedFilters.cities.length > 0 && styles.activeFilterLabel
+            ]}>
+              Lieu
+            </Text>
+            {selectedFilters.cities.length > 0 && (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>{selectedFilters.cities.length}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {/* Filtre Type */}
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              selectedFilters.tags.length > 0 && styles.activeFilterButton
+            ]}
+            onPress={() => setTypeModalVisible(true)}
+          >
+            <Text style={styles.filterIcon}>🎲</Text>
+            <Text style={[
+              styles.filterLabel,
+              selectedFilters.tags.length > 0 && styles.activeFilterLabel
+            ]}>
+              Type
+            </Text>
+            {selectedFilters.tags.length > 0 && (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>{selectedFilters.tags.length}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {/* Filtre Joueurs */}
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              selectedFilters.maxPlayers !== null && styles.activeFilterButton
+            ]}
+            onPress={() => setPlayersModalVisible(true)}
+          >
+            <Text style={styles.filterIcon}>👥</Text>
+            <Text style={[
+              styles.filterLabel,
+              selectedFilters.maxPlayers !== null && styles.activeFilterLabel
+            ]}>
+              Joueurs
+            </Text>
+            {selectedFilters.maxPlayers !== null && (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>≤{selectedFilters.maxPlayers}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </ScrollView>
       </View>
+
+      {/* Modals de filtres */}
+      <LocationFilterModal
+        visible={locationModalVisible}
+        onClose={() => setLocationModalVisible(false)}
+        selectedCities={selectedFilters.cities}
+        onApply={(cities) => setSelectedFilters(prev => ({ ...prev, cities }))}
+      />
+
+      <DateFilterModal
+        visible={dateModalVisible}
+        onClose={() => setDateModalVisible(false)}
+        startDate={selectedFilters.startDate}
+        endDate={selectedFilters.endDate}
+        onApply={(startDate, endDate) => 
+          setSelectedFilters(prev => ({ ...prev, startDate, endDate }))
+        }
+      />
+
+      <TypeFilterModal
+        visible={typeModalVisible}
+        onClose={() => setTypeModalVisible(false)}
+        selectedTags={selectedFilters.tags}
+        onApply={(tags) => setSelectedFilters(prev => ({ ...prev, tags }))}
+      />
+
+      <PlayersFilterModal
+        visible={playersModalVisible}
+        onClose={() => setPlayersModalVisible(false)}
+        maxPlayers={selectedFilters.maxPlayers}
+        onApply={(maxPlayers) => setSelectedFilters(prev => ({ ...prev, maxPlayers }))}
+      />
 
       {/* Events List */}
       <FlatList
@@ -468,6 +691,21 @@ const styles = StyleSheet.create({
   activeFilterLabel: {
     color: 'white',
   },
+  filterBadge: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 6,
+    paddingHorizontal: 6
+  },
+  filterBadgeText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#3b82f6'
+  },
   eventsList: {
     flex: 1,
   },
@@ -539,6 +777,21 @@ const styles = StyleSheet.create({
   },
   eventImageEmoji: {
     fontSize: 32,
+  },
+  fixedButton: {
+    position: 'absolute',
+    bottom: 32,
+    left: 16,
+    right: 16,
+    zIndex: 1000,
+    elevation: 8, // Ombre sur Android
+    shadowColor: '#000', // Ombre sur iOS
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
   },
 });
 

@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { LoadingSpinner } from '../ui/Loading';
 import GameSelector from './GameSelector';
+import { LocationAutocomplete } from '../marketplace/LocationAutocomplete';
 
 interface CreateEventFormProps {
   onSuccess?: (eventId: string) => void;
@@ -435,22 +436,13 @@ export default function CreateEventForm({ onSuccess, onCancel }: CreateEventForm
           </div>
 
           {/* Lieu */}
-          <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-              Lieu *
-            </label>
-            <input
-              type="text"
-              id="location"
-              value={formData.location}
-              onChange={(e) => handleInputChange('location', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                errors.location ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Ex: 123 Rue de la Paix, Paris"
-            />
-            {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
-          </div>
+          <LocationAutocomplete
+            label="Lieu"
+            value={formData.location}
+            onChange={(value) => handleInputChange('location', value)}
+            required
+            error={errors.location}
+          />
 
           {/* Nombre de participants */}
           <div>

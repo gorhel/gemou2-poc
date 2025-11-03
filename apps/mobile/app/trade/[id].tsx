@@ -42,10 +42,13 @@ export default function TradeDetailsPage() {
       if (itemError) throw itemError;
       setItem(itemData);
 
+      // Support pour les deux noms de colonnes (migration en cours)
+      const sellerId = itemData.seller_id || itemData.user_id;
+
       const { data: sellerData } = await supabase
         .from('profiles')
         .select('id, username, full_name, avatar_url, city')
-        .eq('id', itemData.user_id)
+        .eq('id', sellerId)
         .single();
 
       setSeller(sellerData);
@@ -114,7 +117,9 @@ export default function TradeDetailsPage() {
     }
   };
 
-  const isOwner = user?.id === item.user_id;
+  // Support pour les deux noms de colonnes (migration en cours)
+  const sellerId = item?.seller_id || item?.user_id;
+  const isOwner = user?.id === sellerId;
 
   return (
     <ScrollView
@@ -192,9 +197,18 @@ export default function TradeDetailsPage() {
         )}
 
         {isOwner && (
-          <View style={styles.ownerBadge}>
-            <Text style={styles.ownerBadgeText}>⭐ Votre annonce</Text>
-          </View>
+          <>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => router.push(`/(tabs)/create-trade?id=${id}`)}
+            >
+              <Text style={styles.editButtonText}>✏️ Modifier l'annonce</Text>
+            </TouchableOpacity>
+            
+            <View style={styles.ownerBadge}>
+              <Text style={styles.ownerBadgeText}>⭐ Votre annonce</Text>
+            </View>
+          </>
         )}
       </View>
     </ScrollView>
@@ -371,6 +385,20 @@ const styles = StyleSheet.create({
   },
   contactButtonText: {
     color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  editButton: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 20,
+    borderWidth: 2,
+    borderColor: '#3b82f6',
+  },
+  editButtonText: {
+    color: '#3b82f6',
     fontSize: 16,
     fontWeight: 'bold',
   },

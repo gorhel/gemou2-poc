@@ -14,6 +14,7 @@ import {
 } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import { supabase } from '../../lib'
+import { ConfirmationModal, ModalVariant, LocationAutocomplete } from '../../components/ui'
 
 export default function CreateEventPage() {
   const { eventId } = useLocalSearchParams<{ eventId?: string }>()
@@ -30,6 +31,16 @@ export default function CreateEventPage() {
     visibility: 'public' as 'public' | 'private' | 'invitation'
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [modalVisible, setModalVisible] = useState(false)
+  const [modalConfig, setModalConfig] = useState<{
+    variant: ModalVariant
+    title: string
+    message: string
+  }>({
+    variant: 'success',
+    title: '',
+    message: ''
+  })
 
   useEffect(() => {
     const initialize = async () => {
@@ -151,15 +162,16 @@ export default function CreateEventPage() {
 
         if (error) throw error
 
-        if (Platform.OS === 'web') {
+        setModalConfig({
+          variant: 'success',
+          title: 'Événement modifié',
+          message: 'Votre événement a été modifié avec succès'
+        })
+        setModalVisible(true)
+        
+        setTimeout(() => {
           router.push(`/(tabs)/events/${eventId}`)
-        } else {
-          Alert.alert(
-            'Succès !',
-            'Votre événement a été modifié',
-            [{ text: 'OK', onPress: () => router.push(`/(tabs)/events/${eventId}`) }]
-          )
-        }
+        }, 2000)
       } else {
         // Mode création : créer un nouvel événement
         const { data, error } = await supabase
@@ -186,23 +198,25 @@ export default function CreateEventPage() {
             status: 'registered'
           })
 
-        if (Platform.OS === 'web') {
+        setModalConfig({
+          variant: 'success',
+          title: 'Événement créé !',
+          message: 'Votre événement a été créé avec succès'
+        })
+        setModalVisible(true)
+        
+        setTimeout(() => {
           router.push(`/(tabs)/events/${data.id}`)
-        } else {
-          Alert.alert(
-            'Succès !',
-            'Votre événement a été créé',
-            [{ text: 'OK', onPress: () => router.push(`/(tabs)/events/${data.id}`) }]
-          )
-        }
+        }, 2000)
       }
     } catch (error: any) {
       const message = error.message || 'Une erreur est survenue'
-      if (Platform.OS === 'web') {
-        alert(message)
-      } else {
-        Alert.alert('Erreur', message)
-      }
+      setModalConfig({
+        variant: 'error',
+        title: 'Erreur',
+        message
+      })
+      setModalVisible(true)
     } finally {
       setSubmitting(false)
     }
@@ -278,16 +292,14 @@ export default function CreateEventPage() {
         </View>
 
         {/* Location */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Lieu *</Text>
-          <TextInput
-            style={[styles.input, errors.location && styles.inputError]}
-            placeholder="Adresse de l'événement"
-            value={formData.location}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, location: text }))}
-          />
-          {errors.location && <Text style={styles.errorText}>{errors.location}</Text>}
-        </View>
+        <LocationAutocomplete
+          label="Lieu"
+          value={formData.location}
+          onChange={(value) => setFormData(prev => ({ ...prev, location: value }))}
+          required
+          error={errors.location}
+          placeholder="Ex: Le Moufia, Saint-Denis"
+        />
 
         {/* Max Participants */}
         <View style={styles.inputContainer}>
@@ -364,6 +376,14 @@ export default function CreateEventPage() {
           </TouchableOpacity>
         </View>
       </View>
+
+      <ConfirmationModal
+        visible={modalVisible}
+        variant={modalConfig.variant}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        onClose={() => setModalVisible(false)}
+      />
     </ScrollView>
   )
 }

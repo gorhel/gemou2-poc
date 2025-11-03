@@ -150,7 +150,7 @@ export default function TradePage() {
         <PageHeader
           icon="🛒"
           title={item?.game_name || 'Détail de l\'annonce'}
-          subtitle={item ? `${TYPE_LABELS[item.type]} • ${formatPrice(item.price, item.type)}` : ''}
+          subtitle={item ? `${TYPE_LABELS[item.type]} • ${item.type === 'sale' ? formatPrice(item.price) : item.type === 'exchange' ? 'Échange' : 'Don'}` : ''}
           showBackButton
         />
 
@@ -316,9 +316,19 @@ export default function TradePage() {
                     </Button>
                   )}
 
+                  {/* Boutons propriétaire */}
                   {item.seller_id === user?.id && (
-                    <div className="text-center py-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600">C'est votre annonce</p>
+                    <div className="space-y-3">
+                      <Button
+                        onClick={() => router.push(`/create-trade?id=${item.id}`)}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        ✏️ Modifier l'annonce
+                      </Button>
+                      <div className="text-center py-3 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-600">C'est votre annonce</p>
+                      </div>
                     </div>
                   )}
                 </CardContent>

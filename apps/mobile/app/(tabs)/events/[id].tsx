@@ -8,12 +8,12 @@ import {
   StyleSheet,
   ActivityIndicator,
   Platform,
-  Alert,
   Image
 } from 'react-native'
 import { useLocalSearchParams, router } from 'expo-router'
 import { supabase } from '../../../lib'
 import { PageLayout } from '../../../components/layout'
+import { ConfirmationModal, ModalVariant } from '../../../components/ui'
 
 interface Event {
   id: string;
@@ -38,6 +38,16 @@ export default function EventDetailsPage() {
   const [isLoadingAction, setIsLoadingAction] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [participants, setParticipants] = useState<any[]>([]);
+  const [modalVisible, setModalVisible] = useState(false)
+  const [modalConfig, setModalConfig] = useState<{
+    variant: ModalVariant
+    title: string
+    message: string
+  }>({
+    variant: 'success',
+    title: '',
+    message: ''
+  })
 
   const loadEvent = async () => {
     try {
@@ -143,18 +153,22 @@ export default function EventDetailsPage() {
         if (updateError) throw updateError;
 
         setIsParticipating(false);
-        if (Platform.OS !== 'web') {
-          Alert.alert('Succès', 'Vous ne participez plus à cet événement');
-        }
+        setModalConfig({
+          variant: 'info',
+          title: 'Participation annulée',
+          message: 'Vous ne participez plus à cet événement'
+        })
+        setModalVisible(true)
       } else {
         // Vérifier le quota avant de participer
         const currentParticipantsCount = event.current_participants || 0;
         if (currentParticipantsCount >= event.max_participants) {
-          if (Platform.OS === 'web') {
-            alert('Le quota de participants est atteint');
-          } else {
-            Alert.alert('Quota atteint', 'Le nombre maximum de participants est déjà atteint pour cet événement');
-          }
+          setModalConfig({
+            variant: 'warning',
+            title: 'Quota atteint',
+            message: 'Le nombre maximum de participants est déjà atteint pour cet événement'
+          })
+          setModalVisible(true)
           return;
         }
 
@@ -180,20 +194,24 @@ export default function EventDetailsPage() {
         if (updateError) throw updateError;
 
         setIsParticipating(true);
-        if (Platform.OS !== 'web') {
-          Alert.alert('Succès', 'Vous participez maintenant à cet événement !');
-        }
+        setModalConfig({
+          variant: 'success',
+          title: 'Inscription confirmée !',
+          message: 'Vous participez maintenant à cet événement !'
+        })
+        setModalVisible(true)
       }
 
       // Recharger les données pour voir les changements immédiatement
       await loadEvent();
     } catch (error: any) {
       const message = error.message || 'Une erreur est survenue';
-      if (Platform.OS === 'web') {
-        alert(message);
-      } else {
-        Alert.alert('Erreur', message);
-      }
+      setModalConfig({
+        variant: 'error',
+        title: 'Erreur',
+        message
+      })
+      setModalVisible(true)
     } finally {
       setIsLoadingAction(false);
     }
@@ -272,7 +290,7 @@ export default function EventDetailsPage() {
               resizeMode="cover"
             />
           ) : (
-            <Text style={styles.eventImagePlaceholder}>📅</Text>
+            <Text style={styles.eventImagePlaceholder}>🎲</Text>
           )}
         </View>
 
@@ -528,6 +546,14 @@ export default function EventDetailsPage() {
           )}
         </View>
       </View>
+
+      <ConfirmationModal
+        visible={modalVisible}
+        variant={modalConfig.variant}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        onClose={() => setModalVisible(false)}
+      />
     </PageLayout>
   )
 }
@@ -766,8 +792,11 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   eventImagePlaceholder: {
-    fontSize: 24,
+    fontSize: 124,
     color: '#6b7280',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F0F2F5',
   },
   gameCard: {
     flexDirection: 'row',

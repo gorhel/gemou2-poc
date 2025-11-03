@@ -12,26 +12,30 @@ import {
   Platform,
   Alert
 } from 'react-native'
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { supabase } from '../../lib'
+import { LocationAutocomplete } from '../../components/ui'
 
 export default function CreateTradePage() {
+  const { id: editId } = useLocalSearchParams<{ id?: string }>()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
   const [formData, setFormData] = useState({
     type: 'sale' as 'sale' | 'exchange' | 'donation',
     title: '',
     description: '',
     condition: 'good' as 'new' | 'excellent' | 'good' | 'acceptable',
     price: '',
+    location_quarter: '',
     location_city: '',
     wanted_game: ''
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    const getUser = async () => {
+    const initPage = async () => {
       try {
         const { data: { user }, error } = await supabase.auth.getUser()
         
@@ -41,6 +45,11 @@ export default function CreateTradePage() {
         }
 
         setUser(user)
+
+        // Si mode édition, charger les données
+        if (editId) {
+          await loadTradeData(editId, user.id)
+        }
       } catch (error) {
         console.error('Error:', error)
         router.replace('/login')
@@ -49,8 +58,47 @@ export default function CreateTradePage() {
       }
     }
 
-    getUser()
-  }, [])
+    initPage()
+  }, [editId])
+
+  const loadTradeData = async (tradeId: string, userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('marketplace_items')
+        .select('*')
+        .eq('id', tradeId)
+        .single()
+
+      if (error) {
+        console.error('Error loading trade:', error)
+        Alert.alert('Erreur', 'Impossible de charger l\'annonce')
+        return
+      }
+
+      // Vérifier que l'utilisateur est bien le propriétaire
+      if (data.user_id !== userId && data.seller_id !== userId) {
+        Alert.alert('Erreur', 'Vous n\'êtes pas autorisé à modifier cette annonce')
+        router.back()
+        return
+      }
+
+      // Pré-remplir le formulaire
+      setIsEditMode(true)
+      setFormData({
+        type: data.type || 'sale',
+        title: data.title || '',
+        description: data.description || '',
+        condition: data.condition || 'good',
+        price: data.price ? String(data.price) : '',
+        location_quarter: data.location_quarter || '',
+        location_city: data.location_city || '',
+        wanted_game: data.wanted_game || ''
+      })
+    } catch (error) {
+      console.error('Error:', error)
+      Alert.alert('Erreur', 'Une erreur est survenue lors du chargement')
+    }
+  }
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
@@ -63,8 +111,8 @@ export default function CreateTradePage() {
       newErrors.description = 'La description est obligatoire'
     }
 
-    if (!formData.location_city.trim()) {
-      newErrors.location_city = 'La ville est obligatoire'
+    if (!formData.location_quarter.trim() && !formData.location_city.trim()) {
+      newErrors.location_city = 'La localisation est obligatoire'
     }
 
     if (formData.type === 'sale' && !formData.price) {
@@ -85,34 +133,60 @@ export default function CreateTradePage() {
     setSubmitting(true)
     try {
       const itemData = {
-        user_id: user.id,
+        seller_id: user.id,
         type: formData.type,
         title: formData.title,
         description: formData.description,
         condition: formData.condition,
         price: formData.type === 'sale' ? parseFloat(formData.price) : null,
-        location_city: formData.location_city,
+        location_quarter: formData.location_quarter || null,
+        location_city: formData.location_city || null,
         wanted_game: formData.type === 'exchange' ? formData.wanted_game : null,
-        status: 'active',
-        images: []
+        status: 'available',
+        images: [],
+        custom_game_name: formData.title, // Utiliser le titre comme nom de jeu temporaire
+        game_id: null
       }
 
-      const { data, error } = await supabase
-        .from('marketplace_items')
-        .insert([itemData])
-        .select()
-        .single()
+      if (isEditMode && editId) {
+        // Mode édition : UPDATE
+        const { data, error } = await supabase
+          .from('marketplace_items')
+          .update({
+            ...itemData,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editId)
+          .eq('seller_id', user.id)
+          .select()
+          .single()
 
-      if (error) throw error
+        if (error) throw error
 
-      if (Platform.OS === 'web') {
-        router.push(`/trade/${data.id}`)
-      } else {
         Alert.alert(
           'Succès !',
-          'Votre annonce a été publiée',
-          [{ text: 'OK', onPress: () => router.push('/marketplace') }]
+          'Votre annonce a été mise à jour',
+          [{ text: 'OK', onPress: () => router.push(`/trade/${data.id}`) }]
         )
+      } else {
+        // Mode création : INSERT
+        const { data, error } = await supabase
+          .from('marketplace_items')
+          .insert([itemData])
+          .select()
+          .single()
+
+        if (error) throw error
+
+        if (Platform.OS === 'web') {
+          router.push(`/trade/${data.id}`)
+        } else {
+          Alert.alert(
+            'Succès !',
+            'Votre annonce a été publiée',
+            [{ text: 'OK', onPress: () => router.push(`/trade/${data.id}`) }]
+          )
+        }
       }
     } catch (error: any) {
       const message = error.message || 'Une erreur est survenue'
@@ -145,11 +219,15 @@ export default function CreateTradePage() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>← Retour</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Créer une annonce</Text>
+        <Text style={styles.headerTitle}>
+          {isEditMode ? 'Modifier l\'annonce' : 'Créer une annonce'}
+        </Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Nouvelle annonce 🛒</Text>
+        <Text style={styles.cardTitle}>
+          {isEditMode ? 'Modification 🛒' : 'Nouvelle annonce 🛒'}
+        </Text>
 
         {/* Type */}
         <View style={styles.inputContainer}>
@@ -235,16 +313,28 @@ export default function CreateTradePage() {
         )}
 
         {/* Location */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Ville *</Text>
-          <TextInput
-            style={[styles.input, errors.location_city && styles.inputError]}
-            placeholder="Paris"
-            value={formData.location_city}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, location_city: text }))}
-          />
-          {errors.location_city && <Text style={styles.errorText}>{errors.location_city}</Text>}
-        </View>
+        <LocationAutocomplete
+          label="Localisation"
+          value={formData.location_quarter ? `${formData.location_quarter}, ${formData.location_city}` : formData.location_city}
+          onChange={(value, district, city) => {
+            if (district && city) {
+              setFormData(prev => ({ 
+                ...prev, 
+                location_quarter: district, 
+                location_city: city 
+              }))
+            } else {
+              setFormData(prev => ({ 
+                ...prev, 
+                location_quarter: '',
+                location_city: value 
+              }))
+            }
+          }}
+          required
+          error={errors.location_city}
+          placeholder="Ex: Le Moufia, Saint-Denis"
+        />
 
         {/* Condition */}
         <View style={styles.inputContainer}>
@@ -282,7 +372,9 @@ export default function CreateTradePage() {
             {submitting ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text style={styles.submitButtonText}>Publier</Text>
+              <Text style={styles.submitButtonText}>
+                {isEditMode ? 'Mettre à jour' : 'Publier'}
+              </Text>
             )}
           </TouchableOpacity>
         </View>
