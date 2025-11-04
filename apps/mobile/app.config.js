@@ -38,7 +38,16 @@ export default {
     },
     
     // Expo Router
-    plugins: ["expo-router"],
+    plugins: [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "L'application accède à vos photos pour vous permettre de les ajouter à vos événements et annonces.",
+          "cameraPermission": "L'application accède à votre caméra pour prendre des photos."
+        }
+      ]
+    ],
     scheme: "gemou2",
     experiments: {
       typedRoutes: true
