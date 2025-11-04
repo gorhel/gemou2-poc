@@ -115,3 +115,6 @@ jspm_packages/
 
 # Supabase
 .supabase/
+
+# Turbo
+.turbo/
