@@ -10,9 +10,11 @@ import {
   StyleSheet,
   ActivityIndicator,
   Platform,
-  Alert
+  Alert,
+  Image
 } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
+import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../../lib'
 import { LocationAutocomplete } from '../../components/ui'
 
@@ -33,6 +35,8 @@ export default function CreateTradePage() {
     wanted_game: ''
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [images, setImages] = useState<string[]>([])
+  const [uploadingImages, setUploadingImages] = useState(false)
 
   useEffect(() => {
     const initPage = async () => {
@@ -100,6 +104,114 @@ export default function CreateTradePage() {
     }
   }
 
+  const requestPermissions = async () => {
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission requise',
+          'Nous avons besoin de votre permission pour accéder à vos photos.'
+        )
+        return false
+      }
+    }
+    return true
+  }
+
+  const pickImages = async () => {
+    const hasPermission = await requestPermissions()
+    if (!hasPermission) return
+
+    if (images.length >= 5) {
+      Alert.alert('Limite atteinte', 'Vous pouvez ajouter maximum 5 images')
+      return
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      quality: 0.8,
+      allowsEditing: false,
+    })
+
+    if (!result.canceled && result.assets) {
+      const newImages = result.assets.slice(0, 5 - images.length).map(asset => asset.uri)
+      setImages([...images, ...newImages])
+    }
+  }
+
+  const takePhoto = async () => {
+    const hasPermission = await requestPermissions()
+    if (!hasPermission) return
+
+    if (images.length >= 5) {
+      Alert.alert('Limite atteinte', 'Vous pouvez ajouter maximum 5 images')
+      return
+    }
+
+    const { status } = await ImagePicker.requestCameraPermissionsAsync()
+    if (status !== 'granted') {
+      Alert.alert(
+        'Permission requise',
+        'Nous avons besoin de votre permission pour accéder à votre caméra.'
+      )
+      return
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.8,
+    })
+
+    if (!result.canceled && result.assets && result.assets[0]) {
+      setImages([...images, result.assets[0].uri])
+    }
+  }
+
+  const removeImage = (index: number) => {
+    setImages(images.filter((_, i) => i !== index))
+  }
+
+  const uploadImagesToStorage = async (): Promise<string[]> => {
+    if (images.length === 0 || !user) return []
+
+    setUploadingImages(true)
+    const uploadedUrls: string[] = []
+
+    try {
+      for (const imageUri of images) {
+        const fileExt = imageUri.split('.').pop()
+        const fileName = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
+
+        const response = await fetch(imageUri)
+        const blob = await response.blob()
+
+        const { data, error } = await supabase.storage
+          .from('marketplace-images')
+          .upload(fileName, blob, {
+            contentType: `image/${fileExt}`,
+            upsert: false
+          })
+
+        if (error) throw error
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('marketplace-images')
+          .getPublicUrl(data.path)
+
+        uploadedUrls.push(publicUrl)
+      }
+
+      return uploadedUrls
+    } catch (error) {
+      console.error('Erreur upload images:', error)
+      throw error
+    } finally {
+      setUploadingImages(false)
+    }
+  }
+
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
 
@@ -132,6 +244,24 @@ export default function CreateTradePage() {
 
     setSubmitting(true)
     try {
+      // Upload des images si présentes
+      let uploadedImageUrls: string[] = []
+      if (images.length > 0) {
+        try {
+          uploadedImageUrls = await uploadImagesToStorage()
+        } catch (uploadError) {
+          Alert.alert(
+            'Erreur',
+            'Impossible d\'uploader les images. Voulez-vous continuer sans images ?',
+            [
+              { text: 'Annuler', style: 'cancel', onPress: () => { setSubmitting(false); return; } },
+              { text: 'Continuer', onPress: async () => { uploadedImageUrls = [] } }
+            ]
+          )
+          return
+        }
+      }
+
       const itemData = {
         seller_id: user.id,
         type: formData.type,
@@ -143,7 +273,7 @@ export default function CreateTradePage() {
         location_city: formData.location_city || null,
         wanted_game: formData.type === 'exchange' ? formData.wanted_game : null,
         status: 'available',
-        images: [],
+        images: uploadedImageUrls,
         custom_game_name: formData.title, // Utiliser le titre comme nom de jeu temporaire
         game_id: null
       }
@@ -281,6 +411,58 @@ export default function CreateTradePage() {
             textAlignVertical="top"
           />
           {errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
+        </View>
+
+        {/* Images */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Photos ({images.length}/5)</Text>
+          
+          {images.length > 0 && (
+            <ScrollView horizontal style={styles.imagesPreview} showsHorizontalScrollIndicator={false}>
+              {images.map((imageUri, index) => (
+                <View key={index} style={styles.imagePreviewContainer}>
+                  <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+                  <TouchableOpacity
+                    style={styles.imageRemoveButton}
+                    onPress={() => removeImage(index)}
+                  >
+                    <Text style={styles.imageRemoveText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </ScrollView>
+          )}
+
+          {images.length < 5 && (
+            <View style={styles.imageButtonsContainer}>
+              <TouchableOpacity
+                style={styles.imageButton}
+                onPress={pickImages}
+                disabled={uploadingImages}
+              >
+                <Text style={styles.imageButtonIcon}>📷</Text>
+                <Text style={styles.imageButtonText}>Galerie</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.imageButton}
+                onPress={takePhoto}
+                disabled={uploadingImages}
+              >
+                <Text style={styles.imageButtonIcon}>📸</Text>
+                <Text style={styles.imageButtonText}>Photo</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {uploadingImages && (
+            <View style={styles.uploadingContainer}>
+              <ActivityIndicator size="small" color="#3b82f6" />
+              <Text style={styles.uploadingText}>Upload en cours...</Text>
+            </View>
+          )}
+
+          <Text style={styles.helpText}>Ajoutez jusqu'à 5 photos, max 10MB par image</Text>
         </View>
 
         {/* Price (si vente) */}
@@ -476,6 +658,78 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#ef4444',
     marginTop: 4,
+  },
+  helpText: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 4,
+  },
+  imagesPreview: {
+    marginVertical: 12,
+  },
+  imagePreviewContainer: {
+    position: 'relative',
+    marginRight: 12,
+  },
+  imagePreview: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    backgroundColor: '#f3f4f6',
+  },
+  imageRemoveButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#ef4444',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  imageRemoveText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  imageButtonsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 8,
+  },
+  imageButton: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    padding: 14,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  imageButtonIcon: {
+    fontSize: 20,
+  },
+  imageButtonText: {
+    fontSize: 15,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  uploadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginVertical: 8,
+  },
+  uploadingText: {
+    fontSize: 14,
+    color: '#6b7280',
   },
   typeButtons: {
     flexDirection: 'row',

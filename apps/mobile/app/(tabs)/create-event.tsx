@@ -10,9 +10,11 @@ import {
   StyleSheet,
   ActivityIndicator,
   Platform,
-  Alert
+  Alert,
+  Image
 } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
+import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../../lib'
 import { ConfirmationModal, ModalVariant, LocationAutocomplete } from '../../components/ui'
 
@@ -31,6 +33,8 @@ export default function CreateEventPage() {
     visibility: 'public' as 'public' | 'private' | 'invitation'
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [imageUri, setImageUri] = useState<string | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
   const [modalConfig, setModalConfig] = useState<{
     variant: ModalVariant
@@ -140,11 +144,118 @@ export default function CreateEventPage() {
     return Object.keys(newErrors).length === 0
   }
 
+  const requestPermissions = async () => {
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission requise',
+          'Nous avons besoin de votre permission pour accéder à vos photos.'
+        )
+        return false
+      }
+    }
+    return true
+  }
+
+  const pickImage = async () => {
+    const hasPermission = await requestPermissions()
+    if (!hasPermission) return
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 0.8,
+    })
+
+    if (!result.canceled && result.assets && result.assets[0]) {
+      setImageUri(result.assets[0].uri)
+    }
+  }
+
+  const takePhoto = async () => {
+    const hasPermission = await requestPermissions()
+    if (!hasPermission) return
+
+    const { status } = await ImagePicker.requestCameraPermissionsAsync()
+    if (status !== 'granted') {
+      Alert.alert(
+        'Permission requise',
+        'Nous avons besoin de votre permission pour accéder à votre caméra.'
+      )
+      return
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 0.8,
+    })
+
+    if (!result.canceled && result.assets && result.assets[0]) {
+      setImageUri(result.assets[0].uri)
+    }
+  }
+
+  const uploadImageToStorage = async (): Promise<string | null> => {
+    if (!imageUri || !user) return null
+
+    setUploadingImage(true)
+    try {
+      const fileExt = imageUri.split('.').pop()
+      const fileName = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
+
+      const response = await fetch(imageUri)
+      const blob = await response.blob()
+
+      const { data, error } = await supabase.storage
+        .from('event-images')
+        .upload(fileName, blob, {
+          contentType: `image/${fileExt}`,
+          upsert: false
+        })
+
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('event-images')
+        .getPublicUrl(data.path)
+
+      return publicUrl
+    } catch (error) {
+      console.error('Erreur upload image:', error)
+      Alert.alert('Erreur', 'Impossible d\'uploader l\'image')
+      return null
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
   const handleSubmit = async () => {
     if (!validateForm() || !user) return
 
     setSubmitting(true)
     try {
+      // Upload de l'image si présente
+      let imageUrl: string | null = null
+      if (imageUri) {
+        imageUrl = await uploadImageToStorage()
+        if (!imageUrl && imageUri) {
+          // Si l'upload échoue, demander confirmation
+          Alert.alert(
+            'Erreur d\'upload',
+            'Impossible d\'uploader l\'image. Voulez-vous continuer sans image ?',
+            [
+              { text: 'Annuler', style: 'cancel', onPress: () => { setSubmitting(false); return; } },
+              { text: 'Continuer', onPress: async () => { imageUrl = null } }
+            ]
+          )
+          return
+        }
+      }
+
       if (isEditMode && eventId) {
         // Mode édition : mettre à jour l'événement existant
         const { error } = await supabase
@@ -155,7 +266,8 @@ export default function CreateEventPage() {
             date_time: formData.date_time,
             location: formData.location,
             max_participants: formData.max_participants,
-            visibility: formData.visibility
+            visibility: formData.visibility,
+            image_url: imageUrl
           })
           .eq('id', eventId)
           .eq('creator_id', user.id) // Sécurité supplémentaire
@@ -179,6 +291,7 @@ export default function CreateEventPage() {
           .insert([
             {
               ...formData,
+              image_url: imageUrl,
               creator_id: user.id,
               status: 'active',
               current_participants: 1
@@ -276,6 +389,54 @@ export default function CreateEventPage() {
             textAlignVertical="top"
           />
           {errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
+        </View>
+
+        {/* Image */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Photo de l'événement (optionnelle)</Text>
+          
+          {imageUri && (
+            <View style={styles.imagePreviewContainer}>
+              <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+              <TouchableOpacity
+                style={styles.imageRemoveButton}
+                onPress={() => setImageUri(null)}
+              >
+                <Text style={styles.imageRemoveText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {!imageUri && (
+            <View style={styles.imageButtonsContainer}>
+              <TouchableOpacity
+                style={styles.imageButton}
+                onPress={pickImage}
+                disabled={uploadingImage}
+              >
+                <Text style={styles.imageButtonIcon}>📷</Text>
+                <Text style={styles.imageButtonText}>Galerie</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.imageButton}
+                onPress={takePhoto}
+                disabled={uploadingImage}
+              >
+                <Text style={styles.imageButtonIcon}>📸</Text>
+                <Text style={styles.imageButtonText}>Photo</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {uploadingImage && (
+            <View style={styles.uploadingContainer}>
+              <ActivityIndicator size="small" color="#3b82f6" />
+              <Text style={styles.uploadingText}>Upload en cours...</Text>
+            </View>
+          )}
+
+          <Text style={styles.helpText}>Format 16:9 recommandé, max 5MB</Text>
         </View>
 
         {/* Date & Time */}
@@ -486,6 +647,71 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6b7280',
     marginTop: 4,
+  },
+  imagePreviewContainer: {
+    position: 'relative',
+    marginVertical: 12,
+    alignSelf: 'center',
+  },
+  imagePreview: {
+    width: 300,
+    height: 169, // 16:9 ratio
+    borderRadius: 8,
+    backgroundColor: '#f3f4f6',
+  },
+  imageRemoveButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#ef4444',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  imageRemoveText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  imageButtonsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 8,
+  },
+  imageButton: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    padding: 14,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  imageButtonIcon: {
+    fontSize: 20,
+  },
+  imageButtonText: {
+    fontSize: 15,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  uploadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginVertical: 8,
+  },
+  uploadingText: {
+    fontSize: 14,
+    color: '#6b7280',
   },
   visibilityButtons: {
     flexDirection: 'row',
