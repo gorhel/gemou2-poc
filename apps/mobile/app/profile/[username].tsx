@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '../../lib';
+import { ConfirmationModal, ModalVariant } from '../../components/ui';
 
 export default function PublicProfilePage() {
   const { username } = useLocalSearchParams<{ username: string }>();
@@ -25,6 +26,47 @@ export default function PublicProfilePage() {
     eventsParticipated: 0,
     gamesOwned: 0
   });
+  
+  // États pour la gestion des amis
+  const [friendshipStatus, setFriendshipStatus] = useState<'none' | 'pending' | 'accepted' | 'loading'>('none');
+  const [friendshipId, setFriendshipId] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    variant: ModalVariant;
+    title: string;
+    message: string;
+  }>({
+    variant: 'success',
+    title: '',
+    message: ''
+  });
+
+  const loadFriendshipStatus = async (userId: string, profileId: string) => {
+    try {
+      setFriendshipStatus('loading');
+      
+      const { data, error } = await supabase
+        .from('friends')
+        .select('id, friendship_status')
+        .or(`user_id.eq.${userId},friend_id.eq.${userId}`)
+        .or(`user_id.eq.${profileId},friend_id.eq.${profileId}`)
+        .is('deleted_at', null)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setFriendshipId(data.id);
+        setFriendshipStatus(data.friendship_status as 'pending' | 'accepted');
+      } else {
+        setFriendshipStatus('none');
+      }
+    } catch (error) {
+      console.error('Error loading friendship status:', error);
+      setFriendshipStatus('none');
+    }
+  };
 
   const loadProfile = async () => {
     try {
@@ -39,6 +81,11 @@ export default function PublicProfilePage() {
 
       if (profileError) throw profileError;
       setProfile(profileData);
+
+      // Charger le statut d'amitié si ce n'est pas son propre profil
+      if (user && user.id !== profileData.id) {
+        await loadFriendshipStatus(user.id, profileData.id);
+      }
 
       // Charger les stats
       const [eventsCreated, eventsParticipated, gamesOwned] = await Promise.all([
@@ -58,6 +105,64 @@ export default function PublicProfilePage() {
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const handleSendFriendRequest = async () => {
+    if (!user || !profile) return;
+
+    try {
+      setActionLoading(true);
+      
+      const { data, error } = await supabase.rpc('send_friend_request', {
+        friend_uuid: profile.id
+      });
+
+      if (error) throw error;
+
+      const result = data as { success: boolean; error?: string; auto_accepted?: boolean };
+      
+      if (!result.success) {
+        let message = 'Impossible d\'envoyer la demande';
+        if (result.error === 'rate_limit_exceeded') {
+          message = 'Vous avez atteint la limite de 50 demandes par jour';
+        } else if (result.error === 'already_friends') {
+          message = 'Vous êtes déjà amis';
+        } else if (result.error === 'request_already_sent') {
+          message = 'Demande déjà envoyée';
+        }
+        
+        setModalConfig({
+          variant: 'error',
+          title: 'Erreur',
+          message
+        });
+        setModalVisible(true);
+        return;
+      }
+
+      // Recharger le statut d'amitié
+      await loadFriendshipStatus(user.id, profile.id);
+      
+      setModalConfig({
+        variant: 'success',
+        title: result.auto_accepted ? 'Vous êtes amis !' : 'Demande envoyée',
+        message: result.auto_accepted 
+          ? `Vous et ${profile.full_name || profile.username} êtes maintenant amis`
+          : `Demande d'ami envoyée à ${profile.full_name || profile.username}`
+      });
+      setModalVisible(true);
+      
+    } catch (error) {
+      console.error('Error sending friend request:', error);
+      setModalConfig({
+        variant: 'error',
+        title: 'Erreur',
+        message: 'Impossible d\'envoyer la demande'
+      });
+      setModalVisible(true);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -156,11 +261,40 @@ export default function PublicProfilePage() {
             <Text style={styles.actionButtonText}>💬 Envoyer un message</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButtonSecondary}>
-            <Text style={styles.actionButtonSecondaryText}>👥 Ajouter en ami</Text>
+          <TouchableOpacity 
+            style={[
+              styles.actionButtonSecondary,
+              friendshipStatus === 'accepted' && styles.actionButtonFriend,
+              friendshipStatus === 'pending' && styles.actionButtonPending,
+              (actionLoading || friendshipStatus === 'loading') && styles.actionButtonDisabled
+            ]}
+            onPress={handleSendFriendRequest}
+            disabled={friendshipStatus !== 'none' || actionLoading}
+          >
+            {(actionLoading || friendshipStatus === 'loading') ? (
+              <ActivityIndicator size="small" color="#6b7280" />
+            ) : (
+              <Text style={[
+                styles.actionButtonSecondaryText,
+                friendshipStatus === 'accepted' && styles.actionButtonFriendText,
+                friendshipStatus === 'pending' && styles.actionButtonPendingText
+              ]}>
+                {friendshipStatus === 'none' && '👥 Ajouter en ami'}
+                {friendshipStatus === 'pending' && '⏳ Demande en attente'}
+                {friendshipStatus === 'accepted' && '✅ Amis'}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
       )}
+
+      <ConfirmationModal
+        visible={modalVisible}
+        variant={modalConfig.variant}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        onClose={() => setModalVisible(false)}
+      />
     </ScrollView>
   );
 }
@@ -331,6 +465,23 @@ const styles = StyleSheet.create({
     color: '#374151',
     fontSize: 16,
     fontWeight: '600',
+  },
+  actionButtonFriend: {
+    backgroundColor: '#d1fae5',
+    borderColor: '#10b981',
+  },
+  actionButtonFriendText: {
+    color: '#059669',
+  },
+  actionButtonPending: {
+    backgroundColor: '#fef3c7',
+    borderColor: '#f59e0b',
+  },
+  actionButtonPendingText: {
+    color: '#d97706',
+  },
+  actionButtonDisabled: {
+    opacity: 0.5,
   },
 });
 
