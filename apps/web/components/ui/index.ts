@@ -30,6 +30,7 @@ export { Select } from './Select';
 export type { SelectProps, SelectOption } from './Select';
 export { Toggle } from './Toggle';
 export type { ToggleProps } from './Toggle';
+export { DateTimePicker } from './DateTimePicker';
 
 // Composants de chargement
 export {
@@ -69,6 +70,8 @@ export type {
   ModalProps,
   ConfirmModalProps
 } from './Modal';
+export { SuccessModal } from './SuccessModal';
+export type { SuccessModalProps } from './SuccessModal';
 
 // Composants de données
 export {

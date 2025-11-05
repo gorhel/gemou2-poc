@@ -44,7 +44,7 @@ export default function RootLayout() {
         />
         <Stack.Screen 
           name="trade/[id]" 
-          options={{ title: 'Détail annonce', headerShown: true }} 
+          options={{ title: 'Détail annonce', headerShown: false }} 
         />
         <Stack.Screen 
           name="profile/[username]" 

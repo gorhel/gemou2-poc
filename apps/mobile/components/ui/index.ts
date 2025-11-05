@@ -9,4 +9,7 @@ export { default as SmallPill } from './SmallPill';
 export { ConfirmationModal } from './ConfirmationModal';
 export type { ModalVariant } from './ConfirmationModal';
 export { LocationAutocomplete } from './LocationAutocomplete';
+export { DateTimePicker } from './DateTimePicker';
+export { SuccessModal } from './SuccessModal';
+export type { SuccessModalProps } from './SuccessModal';
 

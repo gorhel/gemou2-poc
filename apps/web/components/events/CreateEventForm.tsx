@@ -5,6 +5,7 @@ import { createClientSupabaseClient } from '../../lib/supabase-client';
 import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { LoadingSpinner } from '../ui/Loading';
+import { DateTimePicker } from '../ui/DateTimePicker';
 import GameSelector from './GameSelector';
 import { LocationAutocomplete } from '../marketplace/LocationAutocomplete';
 
@@ -419,21 +420,15 @@ export default function CreateEventForm({ onSuccess, onCancel }: CreateEventForm
           </div>
 
           {/* Date et heure */}
-          <div>
-            <label htmlFor="date_time" className="block text-sm font-medium text-gray-700 mb-2">
-              Date et heure *
-            </label>
-            <input
-              type="datetime-local"
-              id="date_time"
-              value={formData.date_time}
-              onChange={(e) => handleInputChange('date_time', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                errors.date_time ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-            {errors.date_time && <p className="text-red-500 text-sm mt-1">{errors.date_time}</p>}
-          </div>
+          <DateTimePicker
+            label="Date et heure"
+            value={formData.date_time}
+            onChange={(value) => handleInputChange('date_time', value)}
+            required
+            error={errors.date_time}
+            minDate={new Date().toISOString()}
+            placeholder="Sélectionnez la date et l'heure de l'événement"
+          />
 
           {/* Lieu */}
           <LocationAutocomplete
