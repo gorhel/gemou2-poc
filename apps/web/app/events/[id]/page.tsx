@@ -9,6 +9,7 @@ import { Button } from '../../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
 import { LoadingSpinner } from '../../../components/ui/Loading';
 import { ResponsiveLayout, PageHeader, PageFooter } from '../../../components/layout';
+import { ConfirmModal, SuccessModal, useModal } from '../../../components/ui';
 
 interface Event {
   id: string;
@@ -55,6 +56,11 @@ export default function EventPageOptimized() {
   
   // États pour le slider des participants
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // États pour la suppression
+  const [isDeleting, setIsDeleting] = useState(false);
+  const confirmDeleteModal = useModal();
+  const successModal = useModal();
 
   // Fonctions pour gérer les participants
   const fetchParticipants = useCallback(async () => {
@@ -409,6 +415,41 @@ export default function EventPageOptimized() {
       alert('Erreur lors de l\'action: ' + (error.message || 'Erreur inconnue'));
     } finally {
       setIsLoadingAction(false);
+    }
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!event || !user) return;
+
+    setIsDeleting(true);
+
+    try {
+      // Appeler la fonction de soft delete
+      const { error } = await supabase.rpc('soft_delete_event', {
+        event_id: event.id
+      });
+
+      if (error) {
+        console.error('Error deleting event:', error);
+        alert('Erreur lors de la suppression de l\'événement');
+        return;
+      }
+
+      // Fermer la modale de confirmation
+      confirmDeleteModal.close();
+
+      // Afficher la modale de succès
+      successModal.open();
+
+      // Rediriger après 2 secondes
+      setTimeout(() => {
+        router.push('/events');
+      }, 2000);
+    } catch (err) {
+      console.error('Error:', err);
+      alert('Une erreur est survenue');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -767,6 +808,24 @@ export default function EventPageOptimized() {
               >
                 🔐 Se connecter pour participer
               </Button>
+            ) : user.id === event.creator_id ? (
+              // Boutons pour le créateur
+              <>
+                <Button
+                  onClick={() => router.push(`/create-event?id=${event.id}`)}
+                  variant="outline"
+                  className="flex-1 sm:flex-none sm:px-8"
+                >
+                  ✏️ Modifier l'événement
+                </Button>
+                <Button
+                  onClick={confirmDeleteModal.open}
+                  variant="destructive"
+                  className="flex-1 sm:flex-none sm:px-8"
+                >
+                  🗑️ Supprimer l'événement
+                </Button>
+              </>
             ) : (
               <Button
                 onClick={handleJoinEvent}
@@ -823,6 +882,30 @@ export default function EventPageOptimized() {
 
         <PageFooter />
       </div>
+
+      {/* Modales */}
+      <ConfirmModal
+        isOpen={confirmDeleteModal.isOpen}
+        onClose={confirmDeleteModal.close}
+        onConfirm={handleDeleteEvent}
+        title="Supprimer l'événement"
+        description="Êtes-vous sûr de vouloir supprimer définitivement cet événement ? Cette action est irréversible et tous les participants seront notifiés."
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        confirmVariant="destructive"
+        loading={isDeleting}
+      />
+
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => {
+          successModal.close();
+          router.push('/events');
+        }}
+        title="Événement supprimé"
+        description="Votre événement a été supprimé avec succès. Vous allez être redirigé vers la liste des événements."
+        confirmText="OK"
+      />
     </ResponsiveLayout>
   );
 }

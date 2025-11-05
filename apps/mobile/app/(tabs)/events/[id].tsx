@@ -13,7 +13,7 @@ import {
 import { useLocalSearchParams, router } from 'expo-router'
 import { supabase } from '../../../lib'
 import { PageLayout } from '../../../components/layout'
-import { ConfirmationModal, ModalVariant } from '../../../components/ui'
+import { ConfirmationModal, ModalVariant, ConfirmModal, SuccessModal } from '../../../components/ui'
 
 interface Event {
   id: string;
@@ -48,6 +48,9 @@ export default function EventDetailsPage() {
     title: '',
     message: ''
   })
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
 
   const loadEvent = async () => {
     try {
@@ -214,6 +217,49 @@ export default function EventDetailsPage() {
       setModalVisible(true)
     } finally {
       setIsLoadingAction(false);
+    }
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!event || !user) return;
+
+    setIsDeleting(true);
+
+    try {
+      // Appeler la fonction de soft delete
+      const { error } = await supabase.rpc('soft_delete_event', {
+        event_id: event.id
+      });
+
+      if (error) {
+        console.error('Error deleting event:', error);
+        setModalConfig({
+          variant: 'error',
+          title: 'Erreur',
+          message: 'Impossible de supprimer l\'événement'
+        })
+        setModalVisible(true)
+        return;
+      }
+
+      // Fermer la modale de confirmation et afficher la modale de succès
+      setShowConfirmDelete(false);
+      setShowSuccess(true);
+
+      // Rediriger après 2 secondes
+      setTimeout(() => {
+        router.push('/(tabs)/events');
+      }, 2000);
+    } catch (err) {
+      console.error('Error:', err);
+      setModalConfig({
+        variant: 'error',
+        title: 'Erreur',
+        message: 'Une erreur est survenue'
+      })
+      setModalVisible(true)
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -541,6 +587,15 @@ export default function EventDetailsPage() {
               )}
                 
               </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => setShowConfirmDelete(true)}
+              >
+                <Text style={styles.deleteButtonText}>
+                  🗑️ Supprimer le Gémou
+                </Text>
+              </TouchableOpacity>
             </View>
             
           )}
@@ -553,6 +608,30 @@ export default function EventDetailsPage() {
         title={modalConfig.title}
         message={modalConfig.message}
         onClose={() => setModalVisible(false)}
+      />
+
+      {/* Modales de suppression */}
+      <ConfirmModal
+        isOpen={showConfirmDelete}
+        onClose={() => setShowConfirmDelete(false)}
+        onConfirm={handleDeleteEvent}
+        title="Supprimer l'événement"
+        description="Êtes-vous sûr de vouloir supprimer définitivement cet événement ? Cette action est irréversible et tous les participants seront notifiés."
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        confirmVariant="destructive"
+        loading={isDeleting}
+      />
+
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => {
+          setShowSuccess(false);
+          router.push('/(tabs)/events');
+        }}
+        title="Événement supprimé"
+        description="Votre événement a été supprimé avec succès. Vous allez être redirigé vers la liste des événements."
+        confirmText="OK"
       />
     </PageLayout>
   )
@@ -889,6 +968,18 @@ const styles = StyleSheet.create({
   },
   GroupContactButtonText: {
     color: '#121417',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  deleteButton: {
+    backgroundColor: '#dc2626',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  deleteButtonText: {
+    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },

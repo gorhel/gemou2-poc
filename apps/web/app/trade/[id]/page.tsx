@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClientSupabaseClient } from '../../../lib/supabase-client';
-import { Button, Card, CardContent, LoadingSpinner } from '../../../components/ui';
+import { Button, Card, CardContent, LoadingSpinner, ConfirmModal, SuccessModal, useModal } from '../../../components/ui';
 import { ResponsiveLayout, PageHeader, PageFooter } from '../../../components/layout';
 import {
   MarketplaceItemEnriched,
@@ -29,6 +29,11 @@ export default function TradePage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [creatingConversation, setCreatingConversation] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Modales
+  const confirmDeleteModal = useModal();
+  const successModal = useModal();
 
   useEffect(() => {
     const loadData = async () => {
@@ -102,6 +107,41 @@ export default function TradePage() {
       alert('Une erreur est survenue');
     } finally {
       setCreatingConversation(false);
+    }
+  };
+
+  const handleDeleteItem = async () => {
+    if (!item || !user) return;
+
+    setIsDeleting(true);
+
+    try {
+      // Appeler la fonction de soft delete
+      const { error } = await supabase.rpc('soft_delete_marketplace_item', {
+        item_id: item.id
+      });
+
+      if (error) {
+        console.error('Error deleting item:', error);
+        alert('Erreur lors de la suppression de l\'annonce');
+        return;
+      }
+
+      // Fermer la modale de confirmation
+      confirmDeleteModal.close();
+
+      // Afficher la modale de succès
+      successModal.open();
+
+      // Rediriger après 2 secondes
+      setTimeout(() => {
+        router.push('/marketplace');
+      }, 2000);
+    } catch (err) {
+      console.error('Error:', err);
+      alert('Une erreur est survenue');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -326,6 +366,13 @@ export default function TradePage() {
                       >
                         ✏️ Modifier l'annonce
                       </Button>
+                      <Button
+                        onClick={confirmDeleteModal.open}
+                        variant="destructive"
+                        className="w-full"
+                      >
+                        🗑️ Supprimer l'annonce
+                      </Button>
                       <div className="text-center py-3 bg-gray-50 rounded-lg">
                         <p className="text-sm text-gray-600">C'est votre annonce</p>
                       </div>
@@ -382,6 +429,30 @@ export default function TradePage() {
 
         <PageFooter />
       </div>
+
+      {/* Modales */}
+      <ConfirmModal
+        isOpen={confirmDeleteModal.isOpen}
+        onClose={confirmDeleteModal.close}
+        onConfirm={handleDeleteItem}
+        title="Supprimer l'annonce"
+        description="Êtes-vous sûr de vouloir supprimer définitivement cette annonce ? Cette action est irréversible."
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        confirmVariant="destructive"
+        loading={isDeleting}
+      />
+
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => {
+          successModal.close();
+          router.push('/marketplace');
+        }}
+        title="Annonce supprimée"
+        description="Votre annonce a été supprimée avec succès. Vous allez être redirigé vers le marketplace."
+        confirmText="OK"
+      />
     </ResponsiveLayout>
   );
 }

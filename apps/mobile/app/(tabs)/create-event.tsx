@@ -16,7 +16,7 @@ import {
 import { router, useLocalSearchParams } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../../lib'
-import { ConfirmationModal, ModalVariant, LocationAutocomplete } from '../../components/ui'
+import { ConfirmationModal, ModalVariant, LocationAutocomplete, DateTimePicker } from '../../components/ui'
 
 export default function CreateEventPage() {
   const { eventId } = useLocalSearchParams<{ eventId?: string }>()
@@ -440,17 +440,15 @@ export default function CreateEventPage() {
         </View>
 
         {/* Date & Time */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Date et heure *</Text>
-          <TextInput
-            style={[styles.input, errors.date_time && styles.inputError]}
-            placeholder="2024-12-31 19:00"
-            value={formData.date_time}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, date_time: text }))}
-          />
-          <Text style={styles.helpText}>Format : AAAA-MM-JJ HH:MM</Text>
-          {errors.date_time && <Text style={styles.errorText}>{errors.date_time}</Text>}
-        </View>
+        <DateTimePicker
+          label="Date et heure"
+          value={formData.date_time}
+          onChange={(value) => setFormData(prev => ({ ...prev, date_time: value }))}
+          required
+          error={errors.date_time}
+          minDate={new Date().toISOString()}
+          placeholder="Sélectionnez la date et l'heure de l'événement"
+        />
 
         {/* Location */}
         <LocationAutocomplete

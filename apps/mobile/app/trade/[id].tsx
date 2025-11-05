@@ -10,11 +10,14 @@ import {
   ActivityIndicator,
   Platform,
   Alert,
-  RefreshControl
+  RefreshControl,
+  Image
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '../../lib';
+import { PageLayout } from '../../components/layout'
 import { TopHeader } from '../../components/TopHeader';
+import {  ConfirmationModal, ModalVariant, ConfirmModal, SuccessModal } from '../../components/ui';
 
 export default function TradeDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -23,6 +26,9 @@ export default function TradeDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const loadTrade = async () => {
     try {
@@ -60,6 +66,24 @@ export default function TradeDetailsPage() {
       setRefreshing(false);
     }
   };
+  const formatDate = (dateTime: string) => {
+    if (!dateTime) return 'Date non définie';
+    
+    const d = new Date(dateTime);
+    
+    // Vérifier si la date est valide
+    if (isNaN(d.getTime())) {
+      return 'Date invalide';
+    }
+    
+    const dayOfWeek = d.toLocaleString('fr-FR', { weekday: 'long' });
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = d.toLocaleString('fr-FR', { month: 'long' });
+    // const hours = String(d.getHours()).padStart(2, '0');
+    // const minutes = String(d.getMinutes()).padStart(2, '0');
+    
+    return `${dayOfWeek} ${day} ${month}`;
+  };
 
   useEffect(() => {
     if (id) {
@@ -79,6 +103,50 @@ export default function TradeDetailsPage() {
           { text: 'Contacter', onPress: () => {} }
         ]
       );
+    }
+  };
+
+  const getInitials = (name: string) => {
+    if (!name) return '??';
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+
+  const handleDeleteItem = async () => {
+    if (!item || !user) return;
+
+    setIsDeleting(true);
+
+    try {
+      // Appeler la fonction de soft delete
+      const { error } = await supabase.rpc('soft_delete_marketplace_item', {
+        item_id: item.id
+      });
+
+      if (error) {
+        console.error('Error deleting item:', error);
+        Alert.alert('Erreur', 'Impossible de supprimer l\'annonce');
+        return;
+      }
+
+      // Fermer la modale de confirmation et afficher la modale de succès
+      setShowConfirmDelete(false);
+      setShowSuccess(true);
+
+      // Rediriger après 2 secondes
+      setTimeout(() => {
+        router.push('/(tabs)/marketplace');
+      }, 2000);
+    } catch (err) {
+      console.error('Error:', err);
+      Alert.alert('Erreur', 'Une erreur est survenue');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -122,22 +190,25 @@ export default function TradeDetailsPage() {
   const isOwner = user?.id === sellerId;
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <View style={styles.header}>
-        <TopHeader />  {/* Auto-configuration ! */}
-        <ScrollView>
-          {/* Contenu */}
-        </ScrollView>
-      </View>
-      
+    <PageLayout showHeader={true} refreshing={refreshing} onRefresh={onRefresh} showFooter={false}>
 
       <View style={styles.content}>
-        <View style={styles.typeContainer}>
+      <View style={styles.eventImageContainer}>
+          {item.image_url ? (
+            <Image
+              source={{ uri: item.image_url }}
+              style={styles.eventImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <Text style={styles.eventImagePlaceholder}>shop</Text>
+          )}
+        </View>
+        
+        
+      <Text style={styles.title}>{item.title}</Text>
+
+      <View style={styles.typeContainer}>
           <Text style={styles.typeEmoji}>{getTypeEmoji(item.type)}</Text>
           <View style={styles.typeBadge}>
             <Text style={styles.typeBadgeText}>
@@ -146,66 +217,101 @@ export default function TradeDetailsPage() {
           </View>
         </View>
 
-        <Text style={styles.title}>{item.title}</Text>
-
-        {item.price && (
-          <Text style={styles.price}>{item.price}€</Text>
-        )}
-
         <View style={styles.metaContainer}>
-        <View style={styles.metaItem}>
-            <Text style={styles.metaLabel}>Jeu identifié :</Text>
-            <Text style={styles.metaValue}>
-              Identifier le jeu en question
-            </Text>
+          {isOwner &&(
+            <View style={styles.metaItem}>
+            <View style={styles.organizerContainer}>
+              <View style={styles.organizerAvatar}>
+                {seller.avatar_url ? (
+                  <Image
+                    source={{ uri: seller.avatar_url }}
+                    style={styles.avatarImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View 
+                    style={[
+                      styles.avatarFallback,
+                      { backgroundColor: `hsl(${seller.id.charCodeAt(0) * 137.5 % 360}, 70%, 50%)` }
+                    ]}
+                  >
+                    <Text style={styles.avatarInitials}>
+                      {getInitials(seller.full_name || seller.username)}
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <Text style={styles.metaText}>
+              <span style={{ fontWeight:700 }}>Vendeur</span> 
+              <br /> 
+              Organisé par {isOwner ? 'vous' : user.full_name || user.username}
+              </Text>
+            </View>
           </View>
+          
 
-          <View style={styles.separator} />
+          )}
 
+           <View style={styles.metaItem}>
+            <Text style={styles.metaEmoji}>📍</Text>
+            <Text style={styles.metaText}>
+              <span style={{ fontWeight:700 }}>Lieu :</span>
+              <br />
+              {item.location_city}
+            </Text>
+           </View>
 
-
-          <View style={styles.metaItem}>
-            <Text style={styles.metaLabel}>État :</Text>
-            <Text style={styles.metaValue}>
+           <View style={styles.metaItem}>
+            <Text style={styles.metaEmoji}>
+            {item.condition === 'new' ? '✨' : item.condition === 'excellent' ? '🎀​' : item.condition === 'good' ? '👍​' : '♻️'}
+            </Text>
+            <Text style={styles.metaText}>
+              <span style={{ fontWeight:700 }}>Etat :</span>
+              <br />
               {item.condition === 'new' ? 'Neuf' : item.condition === 'excellent' ? 'Excellent' : item.condition === 'good' ? 'Bon' : 'Acceptable'}
             </Text>
-          </View>
+           </View>
 
-          <View style={styles.separator} />
+           {item.price && (
+            <View style={styles.metaItem}>
+            <Text style={styles.metaEmoji}>💰</Text>
+            <Text style={styles.metaText}>
+              <span style={{ fontWeight:700 }}>Prix :</span>
+              <br />
+              {item.price}€
+            </Text>
+           </View>
+           )}
+
+           {item.wanted_game && (
+            
+          <View style={styles.metaItem}>
+            <Text style={styles.metaEmoji}>🔄</Text>
+            <Text style={styles.metaText}>
+            <span style={{ fontWeight:700 }}> Jeu souhaité en échange :</span>
+            <br />
+            {item.wanted_game}
+            </Text>
+          </View>
+          )}
 
           <View style={styles.metaItem}>
-            <Text style={styles.metaLabel}>Lieu :</Text>
-            <Text style={styles.metaValue}>📍 {item.location_city}</Text>
+          <Text style={styles.metaEmoji}>📅</Text>
+            <Text style={styles.metaText}>
+            <span style={{ fontWeight:700 }}>Publié le :</span>
+            <br />
+            {formatDate(item.created_at)}
+            </Text>
           </View>
 
-          <View style={styles.separator} />
-
-
-          {seller && (
-            <View style={styles.metaItem}>
-              <Text style={styles.metaLabel}>Vendeur :</Text>
-              <TouchableOpacity onPress={() => router.push(`/profile/${seller.username}`)}>
-                <Text style={styles.metaLink}>@{seller.username}</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+        </View>
 
         <View style={styles.separator} />
 
-          <View style={styles.descriptionContainer}>
-            <Text style={styles.descriptionTitle}>Description</Text>
-            <Text style={styles.description}>{item.description}</Text>
-          </View>
+        <View style={styles.descriptionContainer}>
+          <Text style={styles.descriptionTitle}>Description de l'événement</Text>
+          <Text style={styles.description}>{item.description}</Text>
         </View>
-
-        
-
-        {item.wanted_game && (
-          <View style={styles.wantedContainer}>
-            <Text style={styles.wantedTitle}>Jeu souhaité en échange</Text>
-            <Text style={styles.wantedText}>{item.wanted_game}</Text>
-          </View>
-        )}
 
         {!isOwner && (
           <TouchableOpacity
@@ -225,13 +331,47 @@ export default function TradeDetailsPage() {
               <Text style={styles.editButtonText}>✏️ Modifier l'annonce</Text>
             </TouchableOpacity>
             
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => setShowConfirmDelete(true)}
+            >
+              <Text style={styles.deleteButtonText}>🗑️ Supprimer l'annonce</Text>
+            </TouchableOpacity>
+            
             <View style={styles.ownerBadge}>
               <Text style={styles.ownerBadgeText}>⭐ Votre annonce</Text>
             </View>
           </>
         )}
+
       </View>
-    </ScrollView>
+
+      <ConfirmModal
+        isOpen={showConfirmDelete}
+        onClose={() => setShowConfirmDelete(false)}
+        onConfirm={handleDeleteItem}
+        title="Supprimer l'annonce"
+        description="Êtes-vous sûr de vouloir supprimer définitivement cette annonce ? Cette action est irréversible."
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        confirmVariant="destructive"
+        loading={isDeleting}
+      />
+
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => {
+          setShowSuccess(false);
+          router.push('/(tabs)/marketplace');
+        }}
+        title="Annonce supprimée"
+        description="Votre annonce a été supprimée avec succès. Vous allez être redirigé vers le marketplace."
+        confirmText="OK"
+      />
+      
+
+      
+    </PageLayout>
   );
 }
 
@@ -279,21 +419,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  header: {
-    backgroundColor: 'white',
-    padding: 16,
-    paddingTop: Platform.select({ ios: 60, android: 16, web: 16 }),
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-    flex: 1,
-  },
-  backBtn: {
-    fontSize: 16,
-    color: '#3b82f6',
-    fontWeight: '500',
-  },
   content: {
-    padding: 20,
+    padding: 0,
   },
   typeContainer: {
     flexDirection: 'row',
@@ -422,6 +549,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  deleteButton: {
+    backgroundColor: '#dc2626',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  deleteButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   ownerBadge: {
     backgroundColor: '#fef3c7',
     borderRadius: 8,
@@ -434,10 +573,70 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#92400e',
   },
+  eventImageContainer: {
+    width: '100%',
+    height: 200,
+    overflow: 'hidden',
+    backgroundColor: '#E0E0E0'
+  },
+  eventImage: {
+    width: '100%',
+    height: '100%',
+  },
+  eventImagePlaceholder: {
+    fontSize: 124,
+    color: '#6b7280',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F0F2F5',
+  },
+  organizerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  organizerAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    marginRight: 12,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarFallback: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarInitials: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  metaEmoji: {
+    fontSize: 38,
+    marginRight: 12,
+    borderRadius:10,
+    backgroundColor: '#F0F2F5',
+    width: 56,
+    height: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    display: 'flex',
+  },
+  metaText: {
+    fontSize: 16,
+    color: '#4b5563',
+    flex: 1,
+  },
   separator: {
     height: 1,
     backgroundColor: '#E0E0E0',
-    marginVertical: 10,
-  }
+    marginVertical: 5,
+  },
 });
 
