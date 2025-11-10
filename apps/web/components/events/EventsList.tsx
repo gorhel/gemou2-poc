@@ -78,64 +78,15 @@ export default function EventsList() {
         return;
       }
 
-      // Vérifier si l'utilisateur participe déjà
-      const { data: existingParticipation } = await supabase
-        .from('event_participants')
-        .select('*')
-        .eq('event_id', eventId)
-        .eq('user_id', user.id)
-        .single();
+      const { error } = await supabase.rpc('update_event_participation', {
+        p_event_id: eventId,
+        p_join: true
+      });
 
-      if (existingParticipation) {
-        alert('Vous participez déjà à cet événement');
+      if (error) {
+        const message = error.message || 'Erreur lors de l\'ajout à l\'événement';
+        alert(message);
         return;
-      }
-
-      // Vérifier si l'événement est complet
-      const { data: event } = await supabase
-        .from('events')
-        .select('current_participants, max_participants, status')
-        .eq('id', eventId)
-        .single();
-
-      if (!event) {
-        alert('Événement non trouvé');
-        return;
-      }
-
-      if (event.status !== 'active') {
-        alert('Cet événement n\'est plus actif');
-        return;
-      }
-
-      if (event.current_participants >= event.max_participants) {
-        alert('Cet événement est complet');
-        return;
-      }
-
-      // Ajouter le participant
-      const { error: insertError } = await supabase
-        .from('event_participants')
-        .insert({
-          event_id: eventId,
-          user_id: user.id,
-          status: 'registered'
-        });
-
-      if (insertError) {
-        throw insertError;
-      }
-
-      // Mettre à jour le compteur de participants
-      const { error: updateError } = await supabase
-        .from('events')
-        .update({ 
-          current_participants: event.current_participants + 1 
-        })
-        .eq('id', eventId);
-
-      if (updateError) {
-        throw updateError;
       }
 
       // Rafraîchir la liste des événements

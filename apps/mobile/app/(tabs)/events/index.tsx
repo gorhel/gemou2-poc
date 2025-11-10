@@ -290,40 +290,64 @@ export default function EventsPage() {
   };
 
   const getTimeSection = (dateTime: string) => {
-    const eventDate = new Date(dateTime);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-  
-    // Calculer les limites de temps
-    const in7Days = new Date(today);
-    in7Days.setDate(today.getDate() + 7);
-    
-    const in14Days = new Date(today);
-    in14Days.setDate(today.getDate() + 14);
-    
-    const in30Days = new Date(today);
-    in30Days.setDate(today.getDate() + 30);
-  
-    // Normaliser eventDate pour comparaison
-    const eventDateOnly = new Date(eventDate);
-    eventDateOnly.setHours(0, 0, 0, 0);
-  
-    if (eventDateOnly.getTime() === today.getTime()) {
-      return 'Aujourd\'hui';
-    } else if (eventDateOnly.getTime() === tomorrow.getTime()) {
-      return 'Demain';
-    } else if (eventDate < in7Days) {
-      return 'Cette semaine';
-    } else if (eventDate < in14Days) {
-      return 'Semaine prochaine';
-    } else if (eventDate < in30Days) {
-      return 'Mois prochain';
-    } else {
-      return 'Dans plus d\'un mois';
-    }
+  const eventDate = new Date(dateTime)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const eventDateOnly = new Date(eventDate)
+  eventDateOnly.setHours(0, 0, 0, 0)
+
+  const startOfWeek = new Date(today)
+  const day = startOfWeek.getDay() === 0 ? 6 : startOfWeek.getDay() - 1
+  startOfWeek.setDate(startOfWeek.getDate() - day)
+
+  const startOfLastWeek = new Date(startOfWeek)
+  startOfLastWeek.setDate(startOfLastWeek.getDate() - 7)
+
+  const startOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+  const startOfLastMonth = new Date(startOfCurrentMonth)
+  startOfLastMonth.setMonth(startOfLastMonth.getMonth() - 1)
+
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  const in7Days = new Date(today)
+  in7Days.setDate(today.getDate() + 7)
+
+  const in14Days = new Date(today)
+  in14Days.setDate(today.getDate() + 14)
+
+  const in30Days = new Date(today)
+  in30Days.setDate(today.getDate() + 30)
+
+  if (eventDateOnly.getTime() === today.getTime()) {
+    return 'Aujourd\'hui'
+  }
+
+  if (eventDateOnly.getTime() === tomorrow.getTime()) {
+    return 'Demain'
+  }
+
+  if (eventDateOnly > today) {
+    if (eventDate < in7Days) return 'Cette semaine'
+    if (eventDate < in14Days) return 'Semaine prochaine'
+    if (eventDate < in30Days) return 'Mois prochain'
+    return 'Dans plus d\'un mois'
+  }
+
+  if (eventDateOnly >= startOfWeek) {
+    return 'Cette semaine'
+  }
+
+  if (eventDateOnly >= startOfLastWeek) {
+    return 'La semaine dernière'
+  }
+
+  if (eventDateOnly >= startOfLastMonth) {
+    return 'Le mois dernier'
+  }
+
+  return 'Plus loin'
   };
 
   const formatDate = (dateTime: string) => {
@@ -375,9 +399,8 @@ export default function EventsPage() {
           {item.image_url ? (
             <Image source={{ uri: item.image_url }} style={styles.eventImage} />
           ) : (
-            <View style={styles.eventImagePlaceholder}>
-              <Text style={styles.eventImageEmoji}>🎲</Text>
-            </View>
+          <Image source={{ uri: '../../../assets/eventImagePlaceholder.png' }} style={styles.eventImage} />
+            
           )}
         </View>
       </View>

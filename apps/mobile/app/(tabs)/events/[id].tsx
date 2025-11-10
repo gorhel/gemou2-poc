@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { useLocalSearchParams, router } from 'expo-router'
 import { supabase } from '../../../lib'
 import { PageLayout } from '../../../components/layout'
 import { ConfirmationModal, ModalVariant, ConfirmModal, SuccessModal } from '../../../components/ui'
+import EventTags from '../../../components/events/EventTags'
 
 interface Event {
   id: string;
@@ -39,6 +40,7 @@ export default function EventDetailsPage() {
   const [user, setUser] = useState<any>(null);
   const [participants, setParticipants] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false)
+  const [eventTags, setEventTags] = useState<any[]>([])
   const [modalConfig, setModalConfig] = useState<{
     variant: ModalVariant
     title: string
@@ -51,6 +53,14 @@ export default function EventDetailsPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [showConfirmDelete, setShowConfirmDelete] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+
+  const navigateToProfile = useCallback((username?: string) => {
+    if (!username) {
+      return
+    }
+
+    router.push(`/profile/${username}`)
+  }, [])
 
   const loadEvent = async () => {
     try {
@@ -81,17 +91,18 @@ export default function EventDetailsPage() {
 
       setCreator(creatorData);
 
-      // Vérifier si l'utilisateur participe
+      // Vérifier si l'utilisateur participe (exclure les participants avec le statut 'cancelled')
       const { data: participationData } = await supabase
         .from('event_participants')
         .select('*')
         .eq('event_id', id)
         .eq('user_id', user.id)
+        .neq('status', 'cancelled')
         .single();
 
       setIsParticipating(!!participationData);
 
-      // Charger les participants
+      // Charger les participants (exclure les participants avec le statut 'cancelled')
       const { data: participantsData } = await supabase
         .from('event_participants')
         .select(`
@@ -103,10 +114,33 @@ export default function EventDetailsPage() {
             avatar_url
           )
         `)
-        .eq('event_id', id);
+        .eq('event_id', id)
+        .neq('status', 'cancelled');
 
       setParticipants(participantsData || []);
+      // Charger les tags de l'événement
+      const { data: tagsData, error: tagsError } = await supabase
+        .from('event_tags')
+        .select(`
+          tag_id,
+          tags (
+            id,
+            name
+          )
+        `)
+        .eq('event_id', id)
 
+      if (!tagsError && tagsData) {
+        const tagsList = tagsData
+          .filter((et: any) => et.tags)
+          .map((et: any) => ({
+            id: et.tag_id,
+            name: et.tags.name
+          }))
+        setEventTags(tagsList)
+      } else if (tagsError) {
+        console.error('Erreur lors du chargement des tags:', tagsError)
+      }
     } catch (error) {
       console.error('Error loading event:', error);
     } finally {
@@ -135,36 +169,8 @@ export default function EventDetailsPage() {
 
     setIsLoadingAction(true);
     try {
-      if (isParticipating) {
-        // Annuler la participation et décrémenter le compteur
-        const { error: deleteError } = await supabase
-          .from('event_participants')
-          .delete()
-          .eq('event_id', event.id)
-          .eq('user_id', user.id);
-
-        if (deleteError) throw deleteError;
-
-        // Décrémenter le compteur de participants
-        const { error: updateError } = await supabase
-          .from('events')
-          .update({ 
-            current_participants: Math.max(0, (event.current_participants || 0) - 1)
-          })
-          .eq('id', event.id);
-
-        if (updateError) throw updateError;
-
-        setIsParticipating(false);
-        setModalConfig({
-          variant: 'info',
-          title: 'Participation annulée',
-          message: 'Vous ne participez plus à cet événement'
-        })
-        setModalVisible(true)
-      } else {
-        // Vérifier le quota avant de participer
-        const currentParticipantsCount = event.current_participants || 0;
+      if (!isParticipating) {
+        const currentParticipantsCount = event.current_participants || 0
         if (currentParticipantsCount >= event.max_participants) {
           setModalConfig({
             variant: 'warning',
@@ -172,41 +178,38 @@ export default function EventDetailsPage() {
             message: 'Le nombre maximum de participants est déjà atteint pour cet événement'
           })
           setModalVisible(true)
-          return;
+          return
         }
-
-        // Participer et incrémenter le compteur
-        const { error: insertError } = await supabase
-          .from('event_participants')
-          .insert({
-            event_id: event.id,
-            user_id: user.id,
-            status: 'registered'
-          });
-
-        if (insertError) throw insertError;
-
-        // Incrémenter le compteur de participants
-        const { error: updateError } = await supabase
-          .from('events')
-          .update({ 
-            current_participants: (event.current_participants || 0) + 1
-          })
-          .eq('id', event.id);
-
-        if (updateError) throw updateError;
-
-        setIsParticipating(true);
-        setModalConfig({
-          variant: 'success',
-          title: 'Inscription confirmée !',
-          message: 'Vous participez maintenant à cet événement !'
-        })
-        setModalVisible(true)
       }
 
-      // Recharger les données pour voir les changements immédiatement
-      await loadEvent();
+      const { error } = await supabase.rpc('update_event_participation', {
+        p_event_id: event.id,
+        p_join: !isParticipating
+      })
+
+      if (error) {
+        const message = error.message || 'Une erreur est survenue'
+        const isQuotaReached = message.toLowerCase().includes('quota')
+        setModalConfig({
+          variant: isQuotaReached ? 'warning' : 'error',
+          title: isQuotaReached ? 'Quota atteint' : 'Erreur',
+          message
+        })
+        setModalVisible(true)
+        return
+      }
+
+      setModalConfig({
+        variant: isParticipating ? 'info' : 'success',
+        title: isParticipating ? 'Participation annulée' : 'Inscription confirmée !',
+        message: isParticipating
+          ? 'Vous ne participez plus à cet événement'
+          : 'Vous participez maintenant à cet événement !'
+      })
+      setModalVisible(true)
+      setIsParticipating(!isParticipating)
+
+      await loadEvent()
     } catch (error: any) {
       const message = error.message || 'Une erreur est survenue';
       setModalConfig({
@@ -320,6 +323,7 @@ export default function EventDetailsPage() {
 
   const isCreator = user?.id === event.creator_id;
   const isFull = (event.current_participants || 0) >= event.max_participants;
+  
 
   return (
     <PageLayout showHeader={true} refreshing={refreshing} onRefresh={onRefresh}>
@@ -336,7 +340,7 @@ export default function EventDetailsPage() {
               resizeMode="cover"
             />
           ) : (
-            <Text style={styles.eventImagePlaceholder}>🎲</Text>
+            <Image source={require('../../../assets/img/eventImagePlaceholder.png')} style={styles.eventImage} />
           )}
         </View>
 
@@ -372,9 +376,21 @@ export default function EventDetailsPage() {
                 <br /> 
                 Organisé par {isCreator ? 'vous' : creator.full_name || creator.username}
                 </Text>
+                          {isCreator && (
+
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => setShowConfirmDelete(true)}
+              >
+                <Text style={styles.deleteButtonText}>
+                  🗑️ 
+                </Text>
+              </TouchableOpacity>
+          )}
               </View>
             </View>
           )}
+
 
           <View style={styles.metaItem}>
             <Text style={styles.metaEmoji}>📍</Text>
@@ -416,6 +432,8 @@ export default function EventDetailsPage() {
 
         <View style={styles.separator} />
 
+
+
         <View style={styles.descriptionContainer}>
           <Text style={styles.descriptionTitle}>Description de l'événement</Text>
           <Text style={styles.description}>{event.description}</Text>
@@ -449,7 +467,14 @@ export default function EventDetailsPage() {
           </View>
 
           <View style={styles.separator} />
+          
 
+        {eventTags.length > 0 && (
+          <>
+            <View style={styles.separator} />
+            <EventTags tags={eventTags} />
+          </>
+        )}
           <View style={styles.descriptionContainer}>
             <Text style={styles.descriptionTitle}>Tag.s événement et jeu</Text>
             <View style={styles.badgesContainer}>
@@ -486,40 +511,55 @@ export default function EventDetailsPage() {
             <Text style={styles.participantsTitle}>
               Participants ({participants.length})
             </Text>
-            {participants.map((participant) => (
-              <View key={participant.id} style={styles.participantCard}>
-                <View style={styles.participantAvatar}>
-                  {participant.profiles?.avatar_url ? (
-                    <Image
-                      source={{ uri: participant.profiles.avatar_url }}
-                      style={styles.participantAvatarImage}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <View 
-                      style={[
-                        styles.participantAvatarFallback,
-                        { backgroundColor: `hsl(${participant.profiles?.id?.charCodeAt(0) * 137.5 % 360 || 200}, 70%, 50%)` }
-                      ]}
-                    >
-                      <Text style={styles.participantAvatarInitials}>
-                        {getInitials(participant.profiles?.full_name || participant.profiles?.username || 'U')}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <View style={styles.participantInfo}>
-                  <Text style={styles.participantName}>
-                    @{participant.profiles?.username || 'Utilisateur'}
-                  </Text>
-                  {participant.profiles?.city && (
-                    <Text style={styles.participantCity}>
-                  {isCreator ? 'vous' : participant.full_name || participant.username}
+            {participants.map((participant) => {
+              const profileUsername = participant.profiles?.username
+
+              return (
+                <TouchableOpacity
+                  key={participant.id}
+                  style={styles.participantCard}
+                  activeOpacity={profileUsername ? 0.8 : 1}
+                  accessibilityRole="button"
+                  disabled={!profileUsername}
+                  onPress={
+                    profileUsername
+                      ? () => navigateToProfile(profileUsername)
+                      : undefined
+                  }
+                >
+                  <View style={styles.participantAvatar}>
+                    {participant.profiles?.avatar_url ? (
+                      <Image
+                        source={{ uri: participant.profiles.avatar_url }}
+                        style={styles.participantAvatarImage}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View
+                        style={[
+                          styles.participantAvatarFallback,
+                          { backgroundColor: `hsl(${participant.profiles?.id?.charCodeAt(0) * 137.5 % 360 || 200}, 70%, 50%)` }
+                        ]}
+                      >
+                        <Text style={styles.participantAvatarInitials}>
+                          {getInitials(participant.profiles?.full_name || participant.profiles?.username || 'U')}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  <View style={styles.participantInfo}>
+                    <Text style={styles.participantName}>
+                      @{participant.profiles?.username || 'Utilisateur'}
                     </Text>
-                  )}
-                </View>
-              </View>
-            ))}
+                    {participant.profiles?.city && (
+                      <Text style={styles.participantCity}>
+                        {isCreator ? 'vous' : participant.full_name || participant.username}
+                      </Text>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              )
+            })}
           </View>
         )}
 
@@ -582,7 +622,7 @@ export default function EventDetailsPage() {
                 <ActivityIndicator color="white" />
               ) : (
                 <Text style={styles.participateButtonText}>
-                  Modifier le Gémou
+                  {isCreator ? 'Modifier' : isFull ? 'Complet' : 'Participer'}
                 </Text>
               )}
                 
@@ -830,7 +870,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     paddingHorizontal: 20,
   },
   participateButton: {
@@ -854,6 +894,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-around',
+    width: '100%',
   },
   creatorBadgeText: {
     fontSize: 16,
@@ -984,4 +1025,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-

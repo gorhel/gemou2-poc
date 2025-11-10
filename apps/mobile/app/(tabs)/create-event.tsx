@@ -17,6 +17,8 @@ import { router, useLocalSearchParams } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../../lib'
 import { ConfirmationModal, ModalVariant, LocationAutocomplete, DateTimePicker } from '../../components/ui'
+import GameSelector from '../../components/events/GameSelector'
+import TagSelector from '../../components/events/TagSelector'
 
 export default function CreateEventPage() {
   const { eventId } = useLocalSearchParams<{ eventId?: string }>()
@@ -35,6 +37,8 @@ export default function CreateEventPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [imageUri, setImageUri] = useState<string | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [selectedGames, setSelectedGames] = useState<any[]>([])
   const [modalVisible, setModalVisible] = useState(false)
   const [modalConfig, setModalConfig] = useState<{
     variant: ModalVariant
@@ -100,6 +104,49 @@ export default function CreateEventPage() {
         max_participants: event.max_participants || 4,
         visibility: event.visibility || 'public'
       })
+
+      // Charger l'image si présente
+      if (event.image_url) {
+        setImageUri(event.image_url)
+      }
+
+      // Charger les jeux associés à l'événement
+      const { data: eventGames, error: gamesError } = await supabase
+        .from('event_games')
+        .select('*')
+        .eq('event_id', id)
+
+      if (!gamesError && eventGames) {
+        setSelectedGames(eventGames.map(game => ({
+          id: game.id,
+          game_id: game.game_id,
+          game_name: game.game_name,
+          game_thumbnail: game.game_thumbnail,
+          game_image: game.game_image,
+          year_published: game.year_published,
+          min_players: game.min_players,
+          max_players: game.max_players,
+          playing_time: game.playing_time,
+          complexity: game.complexity,
+          is_custom: game.is_custom,
+          is_optional: game.is_optional,
+          experience_level: game.experience_level,
+          estimated_duration: game.estimated_duration,
+          brought_by_user_id: game.brought_by_user_id,
+          notes: game.notes
+        })))
+      }
+      // Charger les tags associés à l'événement
+      const { data: eventTags, error: tagsError } = await supabase
+        .from('event_tags')
+        .select('tag_id')
+        .eq('event_id', id)
+
+      if (!tagsError && eventTags) {
+        setSelectedTags(eventTags.map((et: any) => et.tag_id))
+      } else if (tagsError) {
+        console.error('Erreur lors du chargement des tags:', tagsError)
+      }
     } catch (error: any) {
       console.error('Error loading event:', error)
       Alert.alert('Erreur', 'Impossible de charger l\'événement')
@@ -274,6 +321,63 @@ export default function CreateEventPage() {
 
         if (error) throw error
 
+        // Supprimer les anciens jeux et ajouter les nouveaux
+        await supabase
+          .from('event_games')
+          .delete()
+          .eq('event_id', eventId)
+
+        // Ajouter les jeux sélectionnés
+        if (selectedGames.length > 0) {
+          const gamesToInsert = selectedGames.map(game => ({
+            event_id: eventId,
+            game_id: game.game_id,
+            game_name: game.game_name,
+            game_thumbnail: game.game_thumbnail,
+            game_image: game.game_image,
+            year_published: game.year_published,
+            min_players: game.min_players,
+            max_players: game.max_players,
+            playing_time: game.playing_time,
+            complexity: game.complexity,
+            is_custom: game.is_custom,
+            is_optional: game.is_optional,
+            experience_level: game.experience_level,
+            estimated_duration: game.estimated_duration,
+            brought_by_user_id: game.brought_by_user_id,
+            notes: game.notes
+          }))
+
+          const { error: gamesError } = await supabase
+            .from('event_games')
+            .insert(gamesToInsert)
+
+          if (gamesError) throw gamesError
+        }
+
+        // Supprimer les anciens tags et ajouter les nouveaux
+        await supabase
+          .from('event_tags')
+          .delete()
+          .eq('event_id', eventId)
+
+        // Ajouter les tags sélectionnés
+        if (selectedTags.length > 0) {
+          const tagsToInsert = selectedTags.map(tagId => ({
+            event_id: eventId,
+            tag_id: tagId
+          }))
+
+          const { error: tagsError } = await supabase
+            .from('event_tags')
+            .insert(tagsToInsert)
+
+          if (tagsError) {
+            console.error('Erreur lors de l\'ajout des tags:', tagsError)
+            // Ne pas bloquer la modification si les tags échouent
+          }
+        }
+
         setModalConfig({
           variant: 'success',
           title: 'Événement modifié',
@@ -294,7 +398,7 @@ export default function CreateEventPage() {
               image_url: imageUrl,
               creator_id: user.id,
               status: 'active',
-              current_participants: 1
+              current_participants: 0
             }
           ])
           .select()
@@ -310,6 +414,51 @@ export default function CreateEventPage() {
             user_id: user.id,
             status: 'registered'
           })
+
+        // Ajouter les jeux sélectionnés
+        if (selectedGames.length > 0) {
+          const gamesToInsert = selectedGames.map(game => ({
+            event_id: data.id,
+            game_id: game.game_id,
+            game_name: game.game_name,
+            game_thumbnail: game.game_thumbnail,
+            game_image: game.game_image,
+            year_published: game.year_published,
+            min_players: game.min_players,
+            max_players: game.max_players,
+            playing_time: game.playing_time,
+            complexity: game.complexity,
+            is_custom: game.is_custom,
+            is_optional: game.is_optional,
+            experience_level: game.experience_level,
+            estimated_duration: game.estimated_duration,
+            brought_by_user_id: game.brought_by_user_id,
+            notes: game.notes
+          }))
+
+          const { error: gamesError } = await supabase
+            .from('event_games')
+            .insert(gamesToInsert)
+
+          if (gamesError) throw gamesError
+        }
+
+        // Ajouter les tags sélectionnés
+        if (selectedTags.length > 0) {
+          const tagsToInsert = selectedTags.map(tagId => ({
+            event_id: data.id,
+            tag_id: tagId
+          }))
+
+          const { error: tagsError } = await supabase
+            .from('event_tags')
+            .insert(tagsToInsert)
+
+          if (tagsError) {
+            console.error('Erreur lors de l\'ajout des tags:', tagsError)
+            // Ne pas bloquer la création si les tags échouent
+          }
+        }
 
         setModalConfig({
           variant: 'success',
@@ -508,6 +657,26 @@ export default function CreateEventPage() {
               </Text>
             </TouchableOpacity>
           </View>
+        </View>
+
+        {/* Tags (optionnel) */}
+        <View style={styles.inputContainer}>
+          <TagSelector
+            selectedTags={selectedTags}
+            onTagsChange={setSelectedTags}
+            error={errors.tags}
+            maxTags={3}
+          />
+        </View>
+
+        {/* Jeux qui seront joués (optionnel) */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Jeux qui seront joués (optionnel)</Text>
+          <GameSelector
+            eventId={eventId}
+            onGamesChange={setSelectedGames}
+            initialGames={selectedGames}
+          />
         </View>
 
         {/* Buttons */}

@@ -41,6 +41,8 @@ export function useEventParticipation({ eventId, onSuccess, onError }: UseEventP
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       setUser(currentUser);
 
+      setUser(currentUser);
+
       if (!currentUser) {
         setIsParticipating(false);
         return;
@@ -92,140 +94,84 @@ export function useEventParticipation({ eventId, onSuccess, onError }: UseEventP
     };
   }, [eventId, checkUserParticipation, fetchEventData, supabase.auth]);
 
-  const joinEvent = async () => {
-    if (!user) {
-      onError?.('Vous devez être connecté pour rejoindre un événement');
-      return;
-    }
-
+  const mutateParticipation = useCallback(async (shouldJoin: boolean) => {
     try {
       setIsLoading(true);
 
-      // Vérifier si l'utilisateur participe déjà
-      if (isParticipating) {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) {
+        onError?.(shouldJoin
+          ? 'Vous devez être connecté pour rejoindre un événement'
+          : 'Vous devez être connecté pour quitter un événement');
+        return;
+      }
+
+      if (shouldJoin && isParticipating) {
         onError?.('Vous participez déjà à cet événement');
         return;
       }
 
-      // Récupérer les données actuelles de l'événement
-      const event = await fetchEventData();
-      if (!event) {
-        onError?.('Événement non trouvé');
-        return;
-      }
-
-      if (event.status !== 'active') {
-        onError?.('Cet événement n\'est plus actif');
-        return;
-      }
-
-      if (event.current_participants >= event.max_participants) {
-        onError?.('Cet événement est complet');
-        return;
-      }
-
-      // Utiliser une transaction pour s'assurer de la cohérence
-      const { data: participation, error: insertError } = await supabase
-        .from('event_participants')
-        .insert({
-          event_id: eventId,
-          user_id: user.id,
-          status: 'registered'
-        })
-        .select()
-        .single();
-
-      if (insertError) {
-        if (insertError.code === '23505') {
-          // Contrainte unique violée - l'utilisateur participe déjà
-          onError?.('Vous participez déjà à cet événement');
-          return;
-        }
-        throw insertError;
-      }
-
-      // Mettre à jour le compteur de participants
-      const { error: updateError } = await supabase
-        .from('events')
-        .update({ 
-          current_participants: event.current_participants + 1 
-        })
-        .eq('id', eventId);
-
-      if (updateError) {
-        // Rollback: supprimer la participation si la mise à jour échoue
-        await supabase
-          .from('event_participants')
-          .delete()
-          .eq('id', participation.id);
-        throw updateError;
-      }
-
-      setIsParticipating(true);
-      setEventData(prev => prev ? { ...prev, current_participants: prev.current_participants + 1 } : null);
-      onSuccess?.();
-    } catch (error: any) {
-      console.error('Error joining event:', error);
-      onError?.(error.message || 'Erreur lors de l\'ajout à l\'événement');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const leaveEvent = async () => {
-    if (!user) {
-      onError?.('Vous devez être connecté pour quitter un événement');
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-
-      if (!isParticipating) {
+      if (!shouldJoin && !isParticipating) {
         onError?.('Vous ne participez pas à cet événement');
         return;
       }
 
-      // Récupérer les données actuelles de l'événement
       const event = await fetchEventData();
       if (!event) {
         onError?.('Événement non trouvé');
         return;
       }
 
-      // Supprimer le participant
-      const { error: deleteError } = await supabase
-        .from('event_participants')
-        .delete()
-        .eq('event_id', eventId)
-        .eq('user_id', user.id);
-
-      if (deleteError) {
-        throw deleteError;
+      if (shouldJoin && event.status !== 'active') {
+        onError?.('Cet événement n\'est plus actif');
+        return;
       }
 
-      // Mettre à jour le compteur de participants (avec protection contre les valeurs négatives)
-      const newCount = Math.max(0, event.current_participants - 1);
-      const { error: updateError } = await supabase
-        .from('events')
-        .update({ 
-          current_participants: newCount
-        })
-        .eq('id', eventId);
-
-      if (updateError) {
-        throw updateError;
+      if (shouldJoin && event.current_participants >= event.max_participants) {
+        onError?.('Cet événement est complet');
+        return;
       }
 
-      setIsParticipating(false);
-      setEventData(prev => prev ? { ...prev, current_participants: newCount } : null);
+      const { error } = await supabase.rpc('update_event_participation', {
+        p_event_id: eventId,
+        p_join: shouldJoin
+      });
+
+      if (error) {
+        const message = error.message || 'Erreur lors de la mise à jour de la participation';
+        onError?.(message);
+        return;
+      }
+
+      setIsParticipating(shouldJoin);
+
+      const freshEvent = await fetchEventData();
+      if (freshEvent) {
+        setEventData(freshEvent);
+      } else {
+        setEventData(prev => {
+          if (!prev) return prev;
+          const delta = shouldJoin ? 1 : -1;
+          const nextCount = Math.max(0, prev.current_participants + delta);
+          return { ...prev, current_participants: nextCount };
+        });
+      }
+
       onSuccess?.();
     } catch (error: any) {
-      console.error('Error leaving event:', error);
-      onError?.(error.message || 'Erreur lors de la sortie de l\'événement');
+      console.error('Error updating participation:', error);
+      onError?.(error.message || 'Erreur lors de la mise à jour de la participation');
     } finally {
       setIsLoading(false);
     }
+  }, [eventId, fetchEventData, isParticipating, onError, onSuccess, supabase]);
+
+  const joinEvent = async () => {
+    await mutateParticipation(true);
+  };
+
+  const leaveEvent = async () => {
+    await mutateParticipation(false);
   };
 
   const toggleParticipation = async () => {

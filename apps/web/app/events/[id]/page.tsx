@@ -82,7 +82,8 @@ export default function EventPageOptimized() {
               city
             )
           `)
-          .eq('event_id', eventId),
+          .eq('event_id', eventId)
+          .neq('status', 'cancelled'),
         supabase
           .from('event_tags')
           .select(`
@@ -216,12 +217,13 @@ export default function EventPageOptimized() {
     }
 
     try {
-      // Vérification de la participation pour l'utilisateur - optimisée
+      // Vérification de la participation pour l'utilisateur - optimisée (exclure les participants avec le statut 'cancelled')
       const { data: participation, error } = await supabase
         .from('event_participants')
         .select('id') // Seulement l'ID pour optimiser
         .eq('event_id', eventId)
         .eq('user_id', user.id)
+        .neq('status', 'cancelled')
         .single();
 
       if (error && error.code !== 'PGRST116') {

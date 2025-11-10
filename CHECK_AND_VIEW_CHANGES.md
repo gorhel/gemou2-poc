@@ -300,3 +300,6 @@ Si après toutes ces vérifications, ça ne fonctionne toujours pas, fournissez 
 
 **Dernière mise à jour :** 30 octobre 2025
 
+
+
+

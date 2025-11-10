@@ -88,3 +88,6 @@ COMMENT ON COLUMN public.events.deleted_at IS 'Date de suppression logique de l'
 COMMENT ON FUNCTION public.soft_delete_marketplace_item IS 'Supprime logiquement une annonce marketplace (soft delete). Seul le propriétaire peut supprimer son annonce.';
 COMMENT ON FUNCTION public.soft_delete_event IS 'Supprime logiquement un événement (soft delete). Seul le créateur peut supprimer son événement.';
 
+
+
+

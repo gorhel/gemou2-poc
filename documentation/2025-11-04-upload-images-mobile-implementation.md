@@ -630,3 +630,6 @@ L'implémentation de l'upload d'images sur mobile est **terminée et fonctionnel
 **Version** : 1.0.0  
 **Date** : 4 novembre 2025
 
+
+
+

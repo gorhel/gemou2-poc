@@ -52,3 +52,6 @@ COMMENT ON POLICY "marketplace_items_hide_deleted" ON public.marketplace_items I
 COMMENT ON POLICY "events_hide_deleted" ON public.events IS 
   'Empêche la lecture des événements supprimés (soft delete). Seuls les créateurs peuvent voir leurs propres événements supprimés via la politique "events_creators_see_deleted".';
 
+
+
+

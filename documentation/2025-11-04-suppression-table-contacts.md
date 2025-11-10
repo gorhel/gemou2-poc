@@ -136,3 +136,6 @@ Le système d'amitié a été développé avec la table `friends` qui est beauco
 **Action requise :** Exécuter la migration  
 **Risque :** Aucun
 
+
+
+

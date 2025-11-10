@@ -1,13 +1,13 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Modal as RNModal,
   View,
   Text,
   TouchableOpacity,
   ScrollView,
-  Platform,
   Pressable,
   Dimensions,
+  StyleSheet,
 } from 'react-native';
 import { Button } from './Button';
 
@@ -21,7 +21,6 @@ export interface ModalProps {
   showCloseButton?: boolean;
   closeOnOverlayClick?: boolean;
   footer?: React.ReactNode;
-  className?: string;
 }
 
 const getModalSizeStyle = (size: ModalProps['size'] = 'md') => {
@@ -48,7 +47,6 @@ export const Modal: React.FC<ModalProps> = ({
   showCloseButton = true,
   closeOnOverlayClick = true,
   footer,
-  className = '',
 }) => {
   const modalSizeStyle = getModalSizeStyle(size);
 
@@ -60,29 +58,26 @@ export const Modal: React.FC<ModalProps> = ({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <View className="flex-1 items-center justify-center bg-black/50">
+      <View style={styles.modalOverlay}>
         {/* Overlay - pour fermer au clic */}
         <Pressable
-          className="absolute inset-0"
+          style={styles.overlayPressable}
           onPress={closeOnOverlayClick ? onClose : undefined}
         />
 
         {/* Modal content */}
-        <View
-          className={`bg-white rounded-lg shadow-xl overflow-hidden ${className}`}
-          style={[modalSizeStyle, { maxHeight: '90%' }]}
-        >
+        <View style={[styles.modalContent, modalSizeStyle, { maxHeight: '90%' }]}>
           {/* Header */}
           {(title || showCloseButton) && (
-            <View className="flex-row items-center justify-between p-6 border-b border-gray-200">
-              <View className="flex-1">
+            <View style={styles.modalHeader}>
+              <View style={styles.modalHeaderContent}>
                 {title && (
-                  <Text className="text-lg font-semibold text-gray-900">
+                  <Text style={styles.modalTitle}>
                     {title}
                   </Text>
                 )}
                 {description && (
-                  <Text className="mt-1 text-sm text-gray-600">
+                  <Text style={styles.modalDescription}>
                     {description}
                   </Text>
                 )}
@@ -91,24 +86,34 @@ export const Modal: React.FC<ModalProps> = ({
               {showCloseButton && (
                 <TouchableOpacity
                   onPress={onClose}
-                  className="p-2 rounded-md bg-gray-100"
+                  style={styles.closeButton}
                   activeOpacity={0.7}
                 >
-                  <Text className="text-gray-600 text-xl">×</Text>
+                  <Text style={styles.closeButtonText}>×</Text>
                 </TouchableOpacity>
               )}
             </View>
           )}
 
           {/* Content */}
-          <ScrollView className="p-6" showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.modalScrollView} showsVerticalScrollIndicator={false}>
             {children}
           </ScrollView>
 
           {/* Footer */}
           {footer && (
-            <View className="flex-row items-center justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
-              {footer}
+            <View style={styles.modalFooter}>
+              {React.Children.map(React.Children.toArray(footer), (child, index) => {
+                if (index > 0) {
+                  return (
+                    <React.Fragment key={index}>
+                      <View style={{ width: 12 }} />
+                      {child}
+                    </React.Fragment>
+                  )
+                }
+                return child
+              })}
             </View>
           )}
         </View>
@@ -156,13 +161,14 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={title}
-      description={description}
+      description={undefined}
       size="sm"
       footer={
-        <View className="flex-row space-x-3">
+        <View style={styles.confirmModalFooter}>
           <Button variant="ghost" onPress={onClose} disabled={loading}>
             {cancelText}
           </Button>
+          <View style={styles.confirmModalFooterSpacer} />
           <Button
             variant={buttonVariant}
             onPress={handleConfirm}
@@ -173,11 +179,11 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         </View>
       }
     >
-      <View className="items-center py-4">
-        <View className="items-center justify-center h-12 w-12 rounded-full bg-gray-100 mb-4">
-          <Text className="text-2xl text-gray-600">⚠️</Text>
+      <View style={styles.confirmModalContent}>
+        <View style={styles.confirmModalIconContainer}>
+          <Text style={styles.confirmModalIcon}>⚠️</Text>
         </View>
-        <Text className="text-sm text-gray-600 text-center">
+        <Text style={styles.confirmModalMessage}>
           {description || 'Êtes-vous sûr de vouloir continuer ?'}
         </Text>
       </View>
@@ -200,4 +206,103 @@ export const useModal = (initialState = false) => {
     toggle,
   };
 };
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  overlayPressable: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  modalHeaderContent: {
+    flex: 1,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  modalDescription: {
+    marginTop: 4,
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  closeButton: {
+    padding: 8,
+    borderRadius: 6,
+    backgroundColor: '#f3f4f6',
+  },
+  closeButtonText: {
+    color: '#6b7280',
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  modalScrollView: {
+    padding: 24,
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    padding: 24,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+    backgroundColor: '#f9fafb',
+  },
+  confirmModalContent: {
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  confirmModalIconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#f3f4f6',
+    marginBottom: 16,
+  },
+  confirmModalIcon: {
+    fontSize: 24,
+    color: '#6b7280',
+  },
+  confirmModalMessage: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  confirmModalFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  confirmModalFooterSpacer: {
+    width: 12,
+  },
+});
 

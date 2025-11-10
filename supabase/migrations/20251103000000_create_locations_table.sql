@@ -199,3 +199,6 @@ COMMENT ON COLUMN public.locations.latitude IS 'Latitude (optionnel pour géoloc
 COMMENT ON COLUMN public.locations.longitude IS 'Longitude (optionnel pour géolocalisation future)';
 
 
+
+
+

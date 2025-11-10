@@ -251,3 +251,6 @@ apps/mobile/app/trade/[id].tsx
 
 **Status** : ✅ **RÉSOLU**
 
+
+
+

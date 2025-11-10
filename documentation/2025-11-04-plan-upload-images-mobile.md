@@ -319,3 +319,6 @@ imageRemoveButton: {
 **Approche** : Incrémentale (Phase par phase)  
 **Risque conflit** : Minimal (version testée)
 
+
+
+

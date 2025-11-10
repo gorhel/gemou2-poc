@@ -332,3 +332,6 @@ L'utilisateur peut maintenant affiner sa recherche d'événements selon plusieur
 **Date :** 3 novembre 2025  
 **Projet :** Gemou2 POC
 
+
+
+

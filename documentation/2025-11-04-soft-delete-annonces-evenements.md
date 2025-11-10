@@ -366,3 +366,6 @@ WHERE deleted_at < NOW() - INTERVAL '30 days';
 
 La fonctionnalité de soft delete est maintenant complètement implémentée pour les annonces et événements sur les deux plateformes (web et mobile). Elle offre une expérience utilisateur fluide avec des confirmations appropriées et garantit la sécurité des données grâce aux politiques RLS.
 
+
+
+
