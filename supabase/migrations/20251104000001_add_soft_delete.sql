@@ -91,3 +91,5 @@ COMMENT ON FUNCTION public.soft_delete_event IS 'Supprime logiquement un événe
 
 
 
+
+

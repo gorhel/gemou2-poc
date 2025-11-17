@@ -36,7 +36,6 @@ export default function TagSelector({
           .from('tags')
           .select('id, name, color')
           .order('name', { ascending: true })
-          .eq('category', 'Evenement')
 
         if (error) {
           console.error('Erreur lors du chargement des tags:', error)
@@ -44,6 +43,7 @@ export default function TagSelector({
           return
         }
 
+        console.log('✅ Tags chargés:', data?.length || 0, data)
         setTags(data || [])
       } catch (err) {
         console.error('Erreur:', err)

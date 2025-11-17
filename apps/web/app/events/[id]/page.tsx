@@ -32,6 +32,69 @@ interface EventCreator {
   avatar_url?: string;
 }
 
+
+interface GameDataTag {
+  id: string;
+  name: string;
+  source: 'type' | 'mechanism';
+  gameId: string;
+}
+
+interface GameWithData {
+  id: string;
+  bgg_id: string | null;
+  name: string;
+  data: any;
+}
+
+/**
+ * Extrait les tags (type et mechanisms) depuis la colonne JSONB data des jeux
+ */
+function extractGameTagsFromData(games: GameWithData[]): GameDataTag[] {
+  const tags: GameDataTag[] = []
+  const seenTags = new Set<string>()
+
+  for (const game of games) {
+    if (!game.data || typeof game.data !== 'object') {
+      continue
+    }
+
+    // Extraire le type (string)
+    if (game.data.type && typeof game.data.type === 'string') {
+      const typeKey = `type-${game.data.type.toLowerCase()}`
+      if (!seenTags.has(typeKey)) {
+        tags.push({
+          id: `type-${game.id}-${game.data.type}`,
+          name: game.data.type,
+          source: 'type',
+          gameId: game.id
+        })
+        seenTags.add(typeKey)
+      }
+    }
+
+    // Extraire les mécaniques (array)
+    if (Array.isArray(game.data.mechanisms)) {
+      for (const mechanism of game.data.mechanisms) {
+        if (typeof mechanism === 'string') {
+          const mechanismKey = `mechanism-${mechanism.toLowerCase()}`
+          if (!seenTags.has(mechanismKey)) {
+            tags.push({
+              id: `mechanism-${game.id}-${mechanism}`,
+              name: mechanism,
+              source: 'mechanism',
+              gameId: game.id
+            })
+            seenTags.add(mechanismKey)
+          }
+        }
+      }
+    }
+  }
+
+  return tags
+}
+
 export default function EventPageOptimized() {
   const params = useParams();
   const router = useRouter();
@@ -53,6 +116,8 @@ export default function EventPageOptimized() {
 
   // États pour les tags de l'événement
   const [eventTags, setEventTags] = useState<any[]>([]);
+  // États pour les tags des jeux
+  const [gameTags, setGameTags] = useState<any[]>([]);
   
   // États pour le slider des participants
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -106,24 +171,109 @@ export default function EventPageOptimized() {
         setParticipants([]);
       }
 
-      // Traiter les tags
+                  // Traiter les tags
       if (tagsResult.status === 'fulfilled') {
         const { data: tagsData, error: tagsError } = tagsResult.value;
         if (tagsError) {
           console.warn('Erreur lors du chargement des tags:', tagsError);
           setEventTags([]);
         } else {
-          setEventTags(tagsData || []);
+          // Formater les tags pour avoir une structure cohérente
+          const formattedTags = (tagsData || []).map((et: any) => ({
+            tag_id: et.tag_id,
+            id: et.tag_id,
+            name: et.tags?.name,
+            tags: et.tags
+          }));
+          console.log('✅ Tags de l\'événement chargés:', formattedTags.length, formattedTags);
+          setEventTags(formattedTags);
         }
       } else {
         console.warn('Erreur lors du chargement des tags:', tagsResult.reason);
         setEventTags([]);
       }
 
+      // Récupérer les jeux de l'événement et leurs tags
+      console.log('🔍 Récupération des jeux pour l\'événement:', eventId);
+      const { data: gamesData, error: gamesError } = await supabase
+        .from('event_games')
+        .select('*')
+        .eq('event_id', eventId);
+
+      console.log('📦 Jeux récupérés:', { gamesData, gamesError, count: gamesData?.length || 0 });
+
+      if (!gamesError && gamesData && gamesData.length > 0) {
+        // Récupérer les IDs des jeux depuis la table games
+        const gameBggIds = gamesData
+          .map(g => g.game_id)
+          .filter((id): id is string => !!id);
+        
+        console.log('🎮 BGG IDs des jeux:', gameBggIds);
+        
+        if (gameBggIds.length > 0) {
+          const { data: gamesInDb, error: gamesInDbError } = await supabase
+            .from('games')
+            .select('id, bgg_id, name, data')
+            .in('bgg_id', gameBggIds);
+          
+          console.log('🎯 Jeux trouvés dans la table games:', { gamesInDb, gamesInDbError, count: gamesInDb?.length || 0 });
+          
+          if (!gamesInDbError && gamesInDb && gamesInDb.length > 0) {
+            // Pour les jeux non trouvés par bgg_id, essayer par nom
+            const missingGames = gamesData.filter(eg => 
+              !gamesInDb.some(g => g.bgg_id === eg.game_id)
+            );
+            
+            console.log('🔍 Jeux non trouvés par bgg_id:', missingGames.length);
+            
+            if (missingGames.length > 0) {
+              const missingGameNames = missingGames.map(eg => eg.game_name);
+              const { data: gamesByName, error: gamesByNameError } = await supabase
+                .from('games')
+                .select('id, bgg_id, name, data')
+                .in('name', missingGameNames);
+              
+              console.log('📝 Jeux trouvés par nom:', { gamesByName, gamesByNameError, count: gamesByName?.length || 0 });
+              
+              if (!gamesByNameError && gamesByName) {
+                gamesInDb.push(...gamesByName);
+              }
+            }
+            
+            // Extraire les tags depuis la colonne data JSONB
+            console.log('🆔 Extraction des tags depuis data JSONB pour', gamesInDb.length, 'jeu(x)');
+            
+            const extractedTags = extractGameTagsFromData(gamesInDb as GameWithData[]);
+            console.log('✅ Tags extraits depuis data:', extractedTags.length, extractedTags);
+            
+            // Transformer en format compatible avec l'affichage existant
+            const formattedTags = extractedTags.map(tag => ({
+              id: tag.id,
+              tag_id: tag.id,
+              name: tag.name,
+              source: tag.source,
+              gameId: tag.gameId
+            }));
+            
+            setGameTags(formattedTags);
+          } else {
+            console.warn('⚠️ Aucun jeu trouvé dans la table games pour cet événement');
+            setGameTags([]);
+          }
+        } else {
+          console.warn('⚠️ Aucun game_id (bgg_id) trouvé dans les jeux de l\'événement');
+          setGameTags([]);
+        }
+      } else {
+        console.warn('⚠️ Aucun jeu trouvé pour cet événement ou erreur:', gamesError);
+        setGameTags([]);
+      }
+
     } catch (error: any) {
       console.error('Erreur lors du chargement des participants:', error);
       setParticipants([]);
       setEventTags([]);
+      setGameTags([]);
     } finally {
       setLoadingParticipants(false);
     }
@@ -798,6 +948,59 @@ export default function EventPageOptimized() {
                 </div>
               )}
             </CardContent>
+
+          {/* Section Tags événement et jeu */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="text-xl">🏷️ Tags événement et jeu</CardTitle>
+            </CardHeader>
+            <CardContent>
+                            <div className="flex flex-wrap gap-2">
+                {/* Tags de l'événement */}
+                {eventTags.length > 0 ? (
+                  eventTags.map((eventTag) => {
+                    const tagName = eventTag.tags?.name || eventTag.name || 'Tag inconnu';
+                    const tagKey = eventTag.tag_id || eventTag.id || eventTag.tags?.id || Math.random();
+                    return (
+                      <span
+                        key={tagKey}
+                        className="inline-block bg-gray-100 px-3 py-1 rounded-full text-sm font-medium text-gray-800"
+                      >
+                        {tagName}
+                      </span>
+                    );
+                  })
+                ) : (
+                  <p className="text-gray-500 text-sm">Aucun tag d'événement</p>
+                )}
+                {/* Tags des jeux - Type (bleu) et Mécaniques (violet) */}
+                {gameTags.length > 0 ? (
+                  gameTags.map((gameTag) => {
+                    const tagName = gameTag.name || 'Tag inconnu';
+                    const tagKey = gameTag.tag_id || gameTag.id || Math.random();
+                    const isType = gameTag.source === 'type';
+                    return (
+                      <span
+                        key={tagKey}
+                        className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                          isType
+                            ? 'bg-blue-100 border border-blue-300 text-blue-800'
+                            : 'bg-purple-100 border border-purple-300 text-purple-800'
+                        }`}
+                        title={isType ? 'Type de jeu' : 'Mécanique de jeu'}
+                      >
+                        {isType ? '📋 ' : '⚙️ '}{tagName}
+                      </span>
+                    );
+                  })
+                ) : null}
+                {eventTags.length === 0 && gameTags.length === 0 && (
+                  <p className="text-gray-500 text-sm">Aucun tag pour cet événement</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
           </Card>
 
           {/* Actions */}

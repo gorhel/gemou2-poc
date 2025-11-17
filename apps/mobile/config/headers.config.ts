@@ -36,7 +36,7 @@ export const HEADER_CONFIGS: Record<string, HeaderConfig> = {
     subtitle: 'dynamic', // Sera remplacé par l'email de l'utilisateur
     showBackButton: false,
     rightActions: [
-      { label: 'Déconnexion', action: 'logout' }
+      { label: '⍈', action: 'logout' }
     ]
   },
 
@@ -149,14 +149,6 @@ export const HEADER_CONFIGS: Record<string, HeaderConfig> = {
   // Pages de détail dynamiques
   // ═══════════════════════════════════════════════════════
   
-  '/events/[id]': {
-    title: '📅 Événement',
-    showBackButton: true,
-    rightActions: [
-      { icon: '⋮', action: 'event-menu' }
-    ]
-  },
-
   '/(tabs)/events/[id]': {
     title: 'Détails de l\'événement',
     showBackButton: true,

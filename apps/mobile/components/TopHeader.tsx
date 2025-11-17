@@ -49,14 +49,22 @@ export function TopHeader({
   const subtitle = overrideSubtitle
     || (config.subtitle === 'dynamic' ? dynamicSubtitle : config.subtitle)
 
-  const showBackButton = overrideShowBackButton ?? config.showBackButton
+  // ✨ NOUVEAU : Vérifier automatiquement s'il y a un historique de navigation
+  // Le bouton de retour s'affiche si :
+  // 1. Un override explicite est fourni (overrideShowBackButton)
+  // 2. OU la config dit de l'afficher (config.showBackButton)
+  // 3. OU il y a un historique de navigation (router.canGoBack())
+  const canNavigateBack = router.canGoBack()
+  const showBackButton = overrideShowBackButton ?? (config.showBackButton || canNavigateBack)
 
   const rightActions = overrideRightActions || config.rightActions
 
   // Handler par défaut pour le bouton retour
   const handleBack = () => {
     // Revenir à la page précédente dans l'historique de navigation
-    router.back()
+    if (canNavigateBack) {
+      router.back()
+    }
   }
 
   // Handler pour les actions
@@ -196,9 +204,9 @@ const styles = StyleSheet.create({
   actionButton: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 8,
+    //borderWidth: 1,
+    //borderColor: '#e5e7eb',
+    //borderRadius: 8,
     backgroundColor: 'white',
   },
   actionIcon: {

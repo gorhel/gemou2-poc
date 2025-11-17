@@ -94,3 +94,5 @@ Cette correction est cohérente avec :
 - Les participants avec le statut `'cancelled'` restent dans la table pour des raisons d'historique et d'audit
 - Cette modification n'affecte pas les autres fonctionnalités de l'application
 
+
+

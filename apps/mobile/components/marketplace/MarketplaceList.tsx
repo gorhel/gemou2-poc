@@ -340,7 +340,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f4f8',
   },
   listContent: {
-    paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 100, // Espace pour le bouton fixe
   },

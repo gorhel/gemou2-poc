@@ -49,7 +49,7 @@ interface FilterState {
   cities: string[];
   startDate: Date | null;
   endDate: Date | null;
-  tags: number[];
+  tags: (number | string)[];
   maxPlayers: number | null;
 }
 
@@ -77,7 +77,7 @@ export default function EventsPage() {
   const [playersModalVisible, setPlayersModalVisible] = useState(false);
 
   // Map pour stocker les événements avec leurs tags
-  const [eventTagsMap, setEventTagsMap] = useState<Map<string, number[]>>(new Map());
+  const [eventTagsMap, setEventTagsMap] = useState<Map<string, (number | string)[]>>(new Map());
 
   const loadUser = async () => {
     try {
@@ -157,6 +157,7 @@ export default function EventsPage() {
     try {
       if (eventIds.length === 0) return;
 
+      // 1. Charger les tags d'événements
       const { data, error } = await supabase
         .from('event_tags')
         .select('event_id, tag_id')
@@ -164,11 +165,73 @@ export default function EventsPage() {
 
       if (error) throw error;
 
-      const tagsMap = new Map<string, number[]>();
+      const tagsMap = new Map<string, (number | string)[]>();
       (data || []).forEach(item => {
         const existingTags = tagsMap.get(item.event_id) || [];
         tagsMap.set(item.event_id, [...existingTags, item.tag_id]);
       });
+
+      // 2. Charger les tags des jeux depuis la colonne JSONB data
+      const { data: eventGamesData } = await supabase
+        .from('event_games')
+        .select('event_id, game_id, game_name')
+        .in('event_id', eventIds);
+
+      if (eventGamesData && eventGamesData.length > 0) {
+        // Extraire les BGG IDs uniques
+        const gameBggIds = [...new Set(eventGamesData
+          .map(eg => eg.game_id)
+          .filter(Boolean))];
+
+        if (gameBggIds.length > 0) {
+          // Récupérer les jeux avec leur colonne data
+          const { data: gamesInDb } = await supabase
+            .from('games')
+            .select('id, bgg_id, name, data')
+            .in('bgg_id', gameBggIds);
+
+          if (gamesInDb && gamesInDb.length > 0) {
+            // Créer un mapping game_id -> tags
+            const gameTagsMap = new Map<string, string[]>();
+            
+            gamesInDb.forEach(game => {
+              const gameTags: string[] = [];
+              
+              if (game.data && typeof game.data === 'object') {
+                // Extraire le type
+                if (game.data.type && typeof game.data.type === 'string') {
+                  gameTags.push(`type-${game.data.type}`);
+                }
+                
+                // Extraire les mécaniques
+                if (Array.isArray(game.data.mechanisms)) {
+                  game.data.mechanisms.forEach((mechanism: string) => {
+                    if (typeof mechanism === 'string') {
+                      gameTags.push(`mechanism-${mechanism}`);
+                    }
+                  });
+                }
+              }
+              
+              if (game.bgg_id) {
+                gameTagsMap.set(game.bgg_id, gameTags);
+              }
+            });
+
+            // Associer les tags de jeux aux événements
+            eventGamesData.forEach(eventGame => {
+              if (eventGame.game_id) {
+                const gameTags = gameTagsMap.get(eventGame.game_id);
+                if (gameTags && gameTags.length > 0) {
+                  const existingTags = tagsMap.get(eventGame.event_id) || [];
+                  const updatedTags = [...new Set([...existingTags, ...gameTags])];
+                  tagsMap.set(eventGame.event_id, updatedTags);
+                }
+              }
+            });
+          }
+        }
+      }
 
       setEventTagsMap(tagsMap);
     } catch (error) {
@@ -223,6 +286,10 @@ export default function EventsPage() {
         // "Passés" : événements dont la date est avant maintenant
         filtered = filtered.filter(event => 
           new Date(event.date_time) < now
+        );
+        // Tri spécifique pour les événements passés : du plus récent au plus ancien
+        filtered.sort((a, b) => 
+          new Date(b.date_time).getTime() - new Date(a.date_time).getTime()
         );
         break;
         
@@ -355,10 +422,11 @@ export default function EventsPage() {
     
     const day = String(d.getDate()).padStart(2, '0');
     const month = d.toLocaleString('fr-FR', { month: 'long' });
+    const year = d.getFullYear();
     const hours = String(d.getHours()).padStart(2, '0');
     const minutes = String(d.getMinutes()).padStart(2, '0');
     
-    return `${day} ${month}, ${hours}:${minutes}`;
+    return `${day} ${month} ${year}, ${hours}:${minutes}`;
   };
 
   if (loading) {

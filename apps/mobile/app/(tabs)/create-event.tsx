@@ -368,14 +368,20 @@ export default function CreateEventPage() {
             tag_id: tagId
           }))
 
-          const { error: tagsError } = await supabase
+          console.log('🏷️ Insertion des tags (édition):', tagsToInsert)
+          const { data: insertedTags, error: tagsError } = await supabase
             .from('event_tags')
             .insert(tagsToInsert)
+            .select()
 
           if (tagsError) {
-            console.error('Erreur lors de l\'ajout des tags:', tagsError)
-            // Ne pas bloquer la modification si les tags échouent
+            console.error('❌ Erreur lors de l\'ajout des tags:', tagsError)
+            Alert.alert('Attention', `Les tags n'ont pas pu être ajoutés: ${tagsError.message}`)
+          } else {
+            console.log('✅ Tags ajoutés avec succès:', insertedTags)
           }
+        } else {
+          console.log('ℹ️ Aucun tag sélectionné pour cet événement')
         }
 
         setModalConfig({
@@ -450,14 +456,20 @@ export default function CreateEventPage() {
             tag_id: tagId
           }))
 
-          const { error: tagsError } = await supabase
+          console.log('🏷️ Insertion des tags:', tagsToInsert)
+          const { data: insertedTags, error: tagsError } = await supabase
             .from('event_tags')
             .insert(tagsToInsert)
+            .select()
 
           if (tagsError) {
-            console.error('Erreur lors de l\'ajout des tags:', tagsError)
-            // Ne pas bloquer la création si les tags échouent
+            console.error('❌ Erreur lors de l\'ajout des tags:', tagsError)
+            Alert.alert('Attention', `Les tags n'ont pas pu être ajoutés: ${tagsError.message}`)
+          } else {
+            console.log('✅ Tags ajoutés avec succès:', insertedTags)
           }
+        } else {
+          console.log('ℹ️ Aucun tag sélectionné pour cet événement')
         }
 
         setModalConfig({

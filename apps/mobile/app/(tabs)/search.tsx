@@ -14,6 +14,11 @@ import {
 import { router } from 'expo-router';
 import { supabase } from '../../lib';
 
+interface Tag {
+  id: number;
+  name: string;
+}
+
 export default function SearchPage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -25,6 +30,10 @@ export default function SearchPage() {
   });
   const [searching, setSearching] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'events' | 'users' | 'games'>('all');
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<number[]>([]);
+  const [loadingTags, setLoadingTags] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -48,33 +57,264 @@ export default function SearchPage() {
     getUser();
   }, []);
 
-  const performSearch = async (query: string) => {
-    if (!query.trim()) {
+  // Charger les tags disponibles au montage du composant
+  useEffect(() => {
+    loadAvailableTags();
+  }, []);
+
+  /**
+   * Récupère les tags utilisés par les événements et les jeux dans ces événements
+   */
+  const loadAvailableTags = async () => {
+    setLoadingTags(true);
+    try {
+      // 1. Récupérer les tags des événements
+      const { data: eventTagsData, error: eventTagsError } = await supabase
+        .from('event_tags')
+        .select(`
+          tag_id,
+          tags (
+            id,
+            name
+          )
+        `);
+
+      if (eventTagsError) {
+        console.error('Erreur lors du chargement des tags d\'événements:', eventTagsError);
+      }
+
+      // 2. Récupérer les jeux associés aux événements
+      const { data: eventGamesData, error: eventGamesError } = await supabase
+        .from('event_games')
+        .select('game_id, game_name');
+
+      if (eventGamesError) {
+        console.error('Erreur lors du chargement des jeux d\'événements:', eventGamesError);
+      }
+
+      // 3. Récupérer les tags des jeux
+      let gameTagsData: any[] = [];
+      if (eventGamesData && eventGamesData.length > 0) {
+        // Extraire les BGG IDs
+        const gameBggIds = eventGamesData
+          .map(eg => eg.game_id)
+          .filter(Boolean);
+
+        if (gameBggIds.length > 0) {
+          // Trouver les jeux dans la base de données par BGG ID
+          const { data: gamesInDb } = await supabase
+            .from('games')
+            .select('id, bgg_id, name')
+            .in('bgg_id', gameBggIds);
+
+          // Fallback: chercher par nom pour les jeux non trouvés par BGG ID
+          const foundBggIds = gamesInDb?.map(g => g.bgg_id).filter(Boolean) || [];
+          const missingGames = eventGamesData.filter(eg => 
+            eg.game_id && !foundBggIds.includes(eg.game_id)
+          );
+
+          if (missingGames.length > 0) {
+            const gameNames = missingGames.map(eg => eg.game_name).filter(Boolean);
+            if (gameNames.length > 0) {
+              const { data: gamesByName } = await supabase
+                .from('games')
+                .select('id, bgg_id, name')
+                .in('name', gameNames);
+              
+              if (gamesByName) {
+                gamesInDb?.push(...gamesByName);
+              }
+            }
+          }
+
+          // Récupérer les tags de ces jeux
+          if (gamesInDb && gamesInDb.length > 0) {
+            const gameIds = gamesInDb.map(g => g.id);
+            const { data: gameTags } = await supabase
+              .from('game_tags')
+              .select(`
+                tag_id,
+                tags (
+                  id,
+                  name
+                )
+              `)
+              .in('game_id', gameIds);
+
+            if (gameTags) {
+              gameTagsData = gameTags;
+            }
+          }
+        }
+      }
+
+      // 4. Combiner et dédupliquer les tags
+      const allTags = new Map<number, Tag>();
+
+      // Ajouter les tags d'événements
+      if (eventTagsData) {
+        eventTagsData.forEach((et: any) => {
+          if (et.tags && et.tags.id && et.tags.name) {
+            allTags.set(et.tags.id, {
+              id: et.tags.id,
+              name: et.tags.name
+            });
+          }
+        });
+      }
+
+      // Ajouter les tags de jeux
+      if (gameTagsData) {
+        gameTagsData.forEach((gt: any) => {
+          if (gt.tags && gt.tags.id && gt.tags.name) {
+            allTags.set(gt.tags.id, {
+              id: gt.tags.id,
+              name: gt.tags.name
+            });
+          }
+        });
+      }
+
+      // Convertir en tableau et trier par nom
+      const tagsArray = Array.from(allTags.values()).sort((a, b) => 
+        a.name.localeCompare(b.name)
+      );
+
+      setAvailableTags(tagsArray);
+      console.log(`✅ ${tagsArray.length} tags disponibles chargés`);
+    } catch (error) {
+      console.error('Erreur lors du chargement des tags:', error);
+    } finally {
+      setLoadingTags(false);
+    }
+  };
+
+  /**
+   * Toggle la sélection d'un tag
+   */
+  const toggleTag = (tagId: number) => {
+    setSelectedTags(prev => {
+      if (prev.includes(tagId)) {
+        return prev.filter(id => id !== tagId);
+      } else {
+        return [...prev, tagId];
+      }
+    });
+  };
+
+  /**
+   * Réinitialiser tous les filtres
+   */
+  const clearFilters = () => {
+    setSelectedTags([]);
+  };
+
+  const performSearch = async (query: string, tagFilters: number[] = selectedTags) => {
+    if (!query.trim() && tagFilters.length === 0) {
       setSearchResults({ events: [], users: [], games: [] });
       return;
     }
 
     setSearching(true);
     try {
-      const searchTerm = `%${query}%`;
+      let events: any[] = [];
+      let users: any[] = [];
 
       // Rechercher des événements
-      const { data: events } = await supabase
-        .from('events')
-        .select('*')
-        .or(`title.ilike.${searchTerm},description.ilike.${searchTerm}`)
-        .limit(10);
+      if (query.trim()) {
+        const searchTerm = `%${query}%`;
+        const { data: eventsData } = await supabase
+          .from('events')
+          .select('*')
+          .or(`title.ilike.${searchTerm},description.ilike.${searchTerm}`)
+          .limit(50);
 
-      // Rechercher des utilisateurs
-      const { data: users } = await supabase
-        .from('profiles')
-        .select('*')
-        .or(`username.ilike.${searchTerm},full_name.ilike.${searchTerm}`)
-        .limit(10);
+        events = eventsData || [];
+
+        // Rechercher des utilisateurs
+        const { data: usersData } = await supabase
+          .from('profiles')
+          .select('*')
+          .or(`username.ilike.${searchTerm},full_name.ilike.${searchTerm}`)
+          .limit(10);
+
+        users = usersData || [];
+      }
+
+      // Filtrer par tags si des tags sont sélectionnés
+      if (tagFilters.length > 0) {
+        // Récupérer les événements qui ont au moins un des tags sélectionnés
+        const { data: eventsByTags } = await supabase
+          .from('event_tags')
+          .select('event_id')
+          .in('tag_id', tagFilters);
+
+        const eventIds = new Set(eventsByTags?.map(et => et.event_id) || []);
+
+        // Récupérer aussi les événements qui contiennent des jeux avec ces tags
+        const { data: gameTagsData } = await supabase
+          .from('game_tags')
+          .select(`
+            game_id,
+            games (
+              bgg_id,
+              name
+            )
+          `)
+          .in('tag_id', tagFilters);
+
+        if (gameTagsData && gameTagsData.length > 0) {
+          // Extraire les BGG IDs et noms des jeux qui ont ces tags
+          const gameBggIds = gameTagsData
+            .map(gt => gt.games?.bgg_id)
+            .filter(Boolean);
+          
+          const gameNames = gameTagsData
+            .map(gt => gt.games?.name)
+            .filter(Boolean);
+
+          // Trouver les événements contenant ces jeux
+          const { data: eventGamesData } = await supabase
+            .from('event_games')
+            .select('event_id, game_id, game_name');
+
+          if (eventGamesData && eventGamesData.length > 0) {
+            eventGamesData.forEach(eg => {
+              // Matcher par BGG ID ou par nom de jeu
+              if (
+                (eg.game_id && gameBggIds.includes(eg.game_id)) ||
+                (eg.game_name && gameNames.some(name => 
+                  name.toLowerCase() === eg.game_name.toLowerCase()
+                ))
+              ) {
+                eventIds.add(eg.event_id);
+              }
+            });
+          }
+        }
+
+        // Si on a une recherche textuelle, filtrer les résultats
+        if (query.trim() && events.length > 0) {
+          events = events.filter(event => eventIds.has(event.id));
+        } else {
+          // Sinon, charger directement les événements filtrés
+          if (eventIds.size > 0) {
+            const { data: filteredEvents } = await supabase
+              .from('events')
+              .select('*')
+              .in('id', Array.from(eventIds))
+              .limit(50);
+            
+            events = filteredEvents || [];
+          } else {
+            events = [];
+          }
+        }
+      }
 
       setSearchResults({
-        events: events || [],
-        users: users || [],
+        events: events,
+        users: users,
         games: []
       });
     } catch (error) {
@@ -86,11 +326,11 @@ export default function SearchPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      performSearch(searchQuery);
+      performSearch(searchQuery, selectedTags);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, selectedTags]);
 
   if (loading) {
     return (
@@ -129,6 +369,91 @@ export default function SearchPage() {
         {searching && <ActivityIndicator style={styles.searchLoader} />}
       </View>
 
+      {/* Filtres par tags */}
+      <View style={styles.filtersContainer}>
+        <TouchableOpacity
+          style={[
+            styles.filterToggleBtn,
+            selectedTags.length > 0 && styles.filterToggleBtnActive
+          ]}
+          onPress={() => setShowFilters(!showFilters)}
+        >
+          <View style={styles.filterToggleBtnContent}>
+            <Text style={[
+              styles.filterToggleText,
+              selectedTags.length > 0 && styles.filterToggleTextActive
+            ]}>
+              🏷️ Type {selectedTags.length > 0 && `(${selectedTags.length})`}
+            </Text>
+            {availableTags.length > 0 && !showFilters && selectedTags.length === 0 && (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>{availableTags.length}</Text>
+              </View>
+            )}
+          </View>
+          <Text style={[
+            styles.filterToggleIcon,
+            selectedTags.length > 0 && styles.filterToggleIconActive
+          ]}>
+            {showFilters ? '▲' : '▼'}
+          </Text>
+        </TouchableOpacity>
+
+        {showFilters && (
+          <View style={styles.tagsPanel}>
+            {loadingTags ? (
+              <View style={styles.tagsPanelLoading}>
+                <ActivityIndicator size="small" color="#3b82f6" />
+                <Text style={styles.tagsPanelLoadingText}>Chargement...</Text>
+              </View>
+            ) : availableTags.length === 0 ? (
+              <View style={styles.tagsPanelEmpty}>
+                <Text style={styles.tagsPanelEmptyText}>
+                  Aucun tag disponible
+                </Text>
+              </View>
+            ) : (
+              <>
+                <View style={styles.tagsPanelHeader}>
+                  <Text style={styles.tagsPanelTitle}>
+                    Filtrer par type d'événement ou de jeu
+                  </Text>
+                  {selectedTags.length > 0 && (
+                    <TouchableOpacity onPress={clearFilters}>
+                      <Text style={styles.clearFiltersBtn}>Effacer</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+                <View style={styles.tagsGrid}>
+                  {availableTags.map((tag) => {
+                    const isSelected = selectedTags.includes(tag.id);
+                    return (
+                      <TouchableOpacity
+                        key={tag.id}
+                        style={[
+                          styles.tagChip,
+                          isSelected && styles.tagChipSelected
+                        ]}
+                        onPress={() => toggleTag(tag.id)}
+                      >
+                        <Text
+                          style={[
+                            styles.tagChipText,
+                            isSelected && styles.tagChipTextSelected
+                          ]}
+                        >
+                          {tag.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </>
+            )}
+          </View>
+        )}
+      </View>
+
       {/* Tabs */}
       <View style={styles.tabs}>
         <TouchableOpacity
@@ -161,12 +486,12 @@ export default function SearchPage() {
 
       {/* Results */}
       <ScrollView style={styles.scrollView}>
-        {!searchQuery ? (
+        {!searchQuery && selectedTags.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>🔍</Text>
             <Text style={styles.emptyTitle}>Commencez votre recherche</Text>
             <Text style={styles.emptyText}>
-              Recherchez des événements, des joueurs ou des jeux
+              Recherchez des événements, des joueurs ou utilisez les filtres par type
             </Text>
           </View>
         ) : resultsToShow.length === 0 ? (
@@ -174,7 +499,7 @@ export default function SearchPage() {
             <Text style={styles.emptyEmoji}>😕</Text>
             <Text style={styles.emptyTitle}>Aucun résultat</Text>
             <Text style={styles.emptyText}>
-              Essayez une autre recherche
+              Essayez une autre recherche ou modifiez vos filtres
             </Text>
           </View>
         ) : (
@@ -191,7 +516,7 @@ export default function SearchPage() {
                   <Text style={styles.resultType}>Événement</Text>
                   <Text style={styles.resultTitle}>{event.title}</Text>
                   <Text style={styles.resultSubtitle} numberOfLines={1}>
-                    {new Date(event.event_date).toLocaleDateString('fr-FR')} • {event.location}
+                    {new Date(event.date_time).toLocaleDateString('fr-FR')} • {event.location}
                   </Text>
                 </View>
                 <Text style={styles.resultArrow}>→</Text>
@@ -391,5 +716,128 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6b7280',
     textAlign: 'center',
+  },
+  filtersContainer: {
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  filterToggleBtn: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'white',
+  },
+  filterToggleBtnActive: {
+    backgroundColor: '#eff6ff',
+    borderLeftWidth: 3,
+    borderLeftColor: '#3b82f6',
+  },
+  filterToggleBtnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  filterToggleText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1f2937',
+  },
+  filterToggleTextActive: {
+    color: '#3b82f6',
+  },
+  filterToggleIcon: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  filterToggleIconActive: {
+    color: '#3b82f6',
+  },
+  filterBadge: {
+    backgroundColor: '#3b82f6',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    minWidth: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterBadgeText: {
+    color: 'white',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  tagsPanel: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#f9fafb',
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  tagsPanelLoading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  tagsPanelLoadingText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  tagsPanelEmpty: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  tagsPanelEmptyText: {
+    fontSize: 14,
+    color: '#9ca3af',
+    textAlign: 'center',
+  },
+  tagsPanelHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  tagsPanelTitle: {
+    fontSize: 13,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  clearFiltersBtn: {
+    fontSize: 13,
+    color: '#3b82f6',
+    fontWeight: '600',
+  },
+  tagsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  tagChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  tagChipSelected: {
+    backgroundColor: '#3b82f6',
+    borderColor: '#3b82f6',
+  },
+  tagChipText: {
+    fontSize: 13,
+    color: '#4b5563',
+    fontWeight: '500',
+  },
+  tagChipTextSelected: {
+    color: 'white',
+    fontWeight: '600',
   },
 });

@@ -15,6 +15,9 @@ import {
 import { router } from 'expo-router'
 import { supabase } from '../../lib'
 import { PageLayout } from '../../components/layout'
+import { ConversationsList } from '../../components/conversations/ConversationsList'
+
+type TabType = 'players' | 'conversations'
 
 export default function CommunityPage() {
   const [user, setUser] = useState<any>(null);
@@ -22,6 +25,7 @@ export default function CommunityPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<TabType>('players');
 
   const loadData = async () => {
     try {
@@ -78,70 +82,96 @@ export default function CommunityPage() {
 
   return (
     <PageLayout showHeader={true} refreshing={refreshing} onRefresh={onRefresh}>
-      {/* Search */}
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Rechercher un joueur..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
+      {/* Tabs */}
+      <View style={styles.tabsContainer}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'players' && styles.activeTab]}
+          onPress={() => setActiveTab('players')}
+        >
+          <Text style={[styles.tabText, activeTab === 'players' && styles.activeTabText]}>
+            Joueurs
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'conversations' && styles.activeTab]}
+          onPress={() => setActiveTab('conversations')}
+        >
+          <Text style={[styles.tabText, activeTab === 'conversations' && styles.activeTabText]}>
+            Conversations
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Users List */}
-      <View style={styles.usersContainer}>
-        {filteredUsers.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>👥</Text>
-            <Text style={styles.emptyTitle}>Aucun joueur trouvé</Text>
-            <Text style={styles.emptyText}>
-              {searchQuery ? 'Essayez une autre recherche' : 'Soyez le premier de votre communauté !'}
-            </Text>
+      {activeTab === 'players' ? (
+        <>
+          {/* Search */}
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Rechercher un joueur..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
           </View>
-        ) : (
-          <View style={styles.usersList}>
-            {filteredUsers.map((userItem) => (
-              <TouchableOpacity
-                key={userItem.id}
-                style={styles.userCard}
-                onPress={() => router.push(`/profile/${userItem.username}`)}
-              >
 
-                <View style={styles.userInfo}>
-                  <Text style={styles.userName}>
-                    @{userItem.username || 'Utilisateur'}
-                  </Text>
-                  {userItem.city && (
-                    <Text style={styles.userCity}>📍 {userItem.city} - 2km</Text>
-                  )}
+          {/* Users List */}
+          <View style={styles.usersContainer}>
+            {filteredUsers.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyEmoji}>👥</Text>
+                <Text style={styles.emptyTitle}>Aucun joueur trouvé</Text>
+                <Text style={styles.emptyText}>
+                  {searchQuery ? 'Essayez une autre recherche' : 'Soyez le premier de votre communauté !'}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.usersList}>
+                {filteredUsers.map((userItem) => (
+                  <TouchableOpacity
+                    key={userItem.id}
+                    style={styles.userCard}
+                    onPress={() => router.push(`/profile/${userItem.username}`)}
+                  >
 
-                <View style={[styles.badge]}>
-                <Text style={styles.badgeText}>Familial</Text>
-                <Text style={styles.badgeText}>Familial</Text>
-                <Text style={styles.badgeText}>Familial</Text>
-                </View>
+                    <View style={styles.userInfo}>
+                      <Text style={styles.userName}>
+                        @{userItem.username || 'Utilisateur'}
+                      </Text>
+                      {userItem.city && (
+                        <Text style={styles.userCity}>📍 {userItem.city} - 2km</Text>
+                      )}
 
-                </View>
+                    <View style={[styles.badge]}>
+                    <Text style={styles.badgeText}>Familial</Text>
+                    <Text style={styles.badgeText}>Familial</Text>
+                    <Text style={styles.badgeText}>Familial</Text>
+                    </View>
 
-                <View style={styles.userAvatar}>
-                {userItem.avatar_url ? (
-                  <Image
-                  source={{ uri: userItem.avatar_url }}
-                  style={styles.userAvatarImage}
-                  resizeMode="cover"
-                  />
-                  ) : (
-                    <Text style={styles.userAvatarText}>
-                      {userItem.full_name?.charAt(0) || '👤'}
-                    </Text>
-                  )}
-                </View>
+                    </View>
 
-              </TouchableOpacity>
-            ))}
+                    <View style={styles.userAvatar}>
+                    {userItem.avatar_url ? (
+                      <Image
+                      source={{ uri: userItem.avatar_url }}
+                      style={styles.userAvatarImage}
+                      resizeMode="cover"
+                      />
+                      ) : (
+                        <Text style={styles.userAvatarText}>
+                          {userItem.full_name?.charAt(0) || '👤'}
+                        </Text>
+                      )}
+                    </View>
+
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
-        )}
-      </View>
+        </>
+      ) : (
+        <ConversationsList />
+      )}
     </PageLayout>
   )
 }
@@ -157,6 +187,30 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: '#6b7280',
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  activeTab: {
+    borderBottomColor: '#3b82f6',
+  },
+  tabText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+  activeTabText: {
+    color: '#3b82f6',
   },
   header: {
     backgroundColor: 'white',

@@ -22,6 +22,7 @@ interface Game {
   min_players: number | null;
   max_players: number | null;
   duration_min: number | null;
+  duration_max: number | null;
   photo_url: string | null;
   data: any;
 }
@@ -83,7 +84,7 @@ export default function GameDetailsPage() {
 
   const getDuration = () => {
     if (!game || !game.duration_min) return 'Non spécifiée';
-    return `${game.duration_min} minutes`;
+    return `${game.duration_min} - ${game.duration_max} minutes`;
   };
 
   const openBGG = () => {

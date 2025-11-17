@@ -21,7 +21,7 @@ export default function EventTags({ tags, style }: EventTagsProps) {
 
   return (
     <View style={[styles.descriptionContainer, style]}>
-      <Text style={styles.descriptionTitle}>🏷️ Tags</Text>
+      <Text style={styles.descriptionTitle}>Tag.s événement et jeu</Text>
       <View style={styles.badgesContainer}>
         {tags.map((tag) => (
           <View key={tag.id} style={styles.badge}>
@@ -35,13 +35,17 @@ export default function EventTags({ tags, style }: EventTagsProps) {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16
+    marginBottom: 16,
+  },
+  descriptionContainer: {
+    padding: 16,
   },
   descriptionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 12
+    marginBottom: 12,
+    
   },
   badgesContainer: {
     flexDirection: 'row',

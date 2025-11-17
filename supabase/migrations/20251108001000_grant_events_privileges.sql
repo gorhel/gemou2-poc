@@ -9,3 +9,5 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.events TO authenticated;
 
 COMMIT;
 
+
+

@@ -465,16 +465,66 @@ export interface Database {
       };
       event_games: {
         Row: {
+          id: string;
           event_id: string;
-          game_id: string;
+          game_id: string | null;
+          game_name: string;
+          game_thumbnail: string | null;
+          game_image: string | null;
+          year_published: number | null;
+          min_players: number | null;
+          max_players: number | null;
+          playing_time: number | null;
+          complexity: number | null;
+          is_custom: boolean;
+          is_optional: boolean;
+          experience_level: string;
+          estimated_duration: number | null;
+          brought_by_user_id: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
         };
         Insert: {
+          id?: string;
           event_id: string;
-          game_id: string;
+          game_id?: string | null;
+          game_name: string;
+          game_thumbnail?: string | null;
+          game_image?: string | null;
+          year_published?: number | null;
+          min_players?: number | null;
+          max_players?: number | null;
+          playing_time?: number | null;
+          complexity?: number | null;
+          is_custom?: boolean;
+          is_optional?: boolean;
+          experience_level?: string;
+          estimated_duration?: number | null;
+          brought_by_user_id?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
         };
         Update: {
+          id?: string;
           event_id?: string;
-          game_id?: string;
+          game_id?: string | null;
+          game_name?: string;
+          game_thumbnail?: string | null;
+          game_image?: string | null;
+          year_published?: number | null;
+          min_players?: number | null;
+          max_players?: number | null;
+          playing_time?: number | null;
+          complexity?: number | null;
+          is_custom?: boolean;
+          is_optional?: boolean;
+          experience_level?: string;
+          estimated_duration?: number | null;
+          brought_by_user_id?: string | null;
+          notes?: string | null;
+          updated_at?: string;
         };
       };
     };
@@ -486,6 +536,7 @@ export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type Event = Database['public']['Tables']['events']['Row'];
 export type EventParticipant = Database['public']['Tables']['event_participants']['Row'];
 export type EventApplication = Database['public']['Tables']['event_applications']['Row'];
+export type EventGame = Database['public']['Tables']['event_games']['Row'];
 export type Conversation = Database['public']['Tables']['conversations']['Row'];
 export type ConversationMember = Database['public']['Tables']['conversation_members']['Row'];
 export type Message = Database['public']['Tables']['messages']['Row'];
@@ -498,7 +549,6 @@ export type MarketplaceItem = Database['public']['Tables']['marketplace_items'][
 export type Tag = Database['public']['Tables']['tags']['Row'];
 export type UserTag = Database['public']['Tables']['user_tags']['Row'];
 export type EventTag = Database['public']['Tables']['event_tags']['Row'];
-export type EventGame = Database['public']['Tables']['event_games']['Row'];
 
 // Types pour les insertions
 export type NewProfile = Database['public']['Tables']['profiles']['Insert'];

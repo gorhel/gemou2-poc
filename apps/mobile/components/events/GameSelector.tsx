@@ -91,25 +91,125 @@ export default function GameSelector({ eventId, onGamesChange, initialGames = []
 
     try {
       setLoading(true)
-      // Utiliser l'API web pour rechercher des jeux
-      // En production, utiliser l'URL de l'API web, sinon localhost pour le développement
-      const baseUrl = process.env.EXPO_PUBLIC_WEB_URL || 
-                      (__DEV__ ? 'http://localhost:3000' : 'https://gemou2.com')
-      const response = await fetch(`${baseUrl}/api/games/search?q=${encodeURIComponent(query)}&limit=10`)
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+      // Rechercher d'abord dans la base de données locale
+      const { data: dbGames, error: dbError } = await supabase
+        .from('games')
+        .select('id, bgg_id, name, description, min_players, max_players, duration_min, photo_url, data')
+        .ilike('name', `%${query}%`)
+        .limit(5)
+
+      const results: BoardGame[] = []
+
+      // Convertir les jeux de la DB au format BoardGame
+      if (!dbError && dbGames) {
+        dbGames.forEach(game => {
+          results.push({
+            id: game.bgg_id || game.id,
+            name: game.name,
+            yearPublished: game.data?.yearPublished?.toString() || '',
+            minPlayers: game.min_players || 0,
+            maxPlayers: game.max_players || 0,
+            playingTime: game.duration_min || 0,
+            complexity: game.data?.complexity || 0,
+            image: game.photo_url || '',
+            thumbnail: game.photo_url || '',
+            categories: game.data?.categories || [],
+            mechanics: game.data?.mechanics || [],
+            designers: game.data?.designers || [],
+            artists: game.data?.artists || [],
+            publishers: game.data?.publishers || [],
+            averageRating: game.data?.averageRating || 0,
+            usersRated: game.data?.usersRated || 0,
+            rank: game.data?.rank || 0
+          })
+        })
       }
-      
-      const data = await response.json()
-      setSearchResults(data.games || [])
+
+      // Essayer d'appeler l'API web pour les jeux BGG si disponible
+      try {
+        // Détecter l'URL de base pour l'API web
+        let baseUrl = process.env.EXPO_PUBLIC_WEB_URL
+        
+        if (!baseUrl) {
+          // En développement, essayer différentes URLs possibles
+          if (__DEV__) {
+            // Sur web, utiliser window.location
+            if (typeof window !== 'undefined' && window.location) {
+              baseUrl = `${window.location.protocol}//${window.location.host}`
+            } else {
+              // Sur mobile, essayer l'IP locale ou laisser vide pour ne pas utiliser l'API BGG
+              baseUrl = null
+            }
+          } else {
+            baseUrl = 'https://gemou2.com'
+          }
+        }
+
+        if (baseUrl) {
+          try {
+            // Créer un AbortController pour le timeout
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 3000)
+            
+            const response = await fetch(`${baseUrl}/api/games/search?q=${encodeURIComponent(query)}&limit=5`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              signal: controller.signal
+            })
+            
+            clearTimeout(timeoutId)
+            
+            if (response.ok) {
+              const data = await response.json()
+              if (data.games && Array.isArray(data.games)) {
+                // Ajouter les jeux BGG en évitant les doublons
+                const existingNames = new Set(results.map(g => g.name.toLowerCase()))
+                data.games.forEach((game: any) => {
+                  if (!existingNames.has(game.name?.toLowerCase())) {
+                    results.push({
+                      id: game.id,
+                      name: game.name,
+                      yearPublished: game.yearPublished || '',
+                      minPlayers: game.minPlayers || 0,
+                      maxPlayers: game.maxPlayers || 0,
+                      playingTime: game.playingTime || 0,
+                      complexity: game.complexity || 0,
+                      image: game.image || '',
+                      thumbnail: game.thumbnail || '',
+                      categories: game.categories || [],
+                      mechanics: game.mechanics || [],
+                      designers: game.designers || [],
+                      artists: game.artists || [],
+                      publishers: game.publishers || [],
+                      averageRating: game.averageRating || 0,
+                      usersRated: game.usersRated || 0,
+                      rank: game.rank || 0
+                    })
+                  }
+                })
+              }
+            }
+          } catch (fetchError: any) {
+            // Ignorer les erreurs de timeout ou de connexion
+            if (fetchError.name !== 'AbortError' && !fetchError.message?.includes('Failed to fetch')) {
+              console.warn('Erreur lors de l\'appel à l\'API BGG:', fetchError)
+            }
+          }
+        }
+      } catch (apiError) {
+        // Ignorer silencieusement l'erreur de l'API BGG si la DB a des résultats
+        if (results.length === 0) {
+          console.warn('Impossible de se connecter à l\'API de recherche de jeux. Utilisation de la base de données locale uniquement.')
+        }
+      }
+
+      setSearchResults(results.slice(0, 10)) // Limiter à 10 résultats
     } catch (error) {
       console.error('Error searching games:', error)
       setSearchResults([])
-      // Afficher une alerte silencieuse en cas d'erreur
-      if (error instanceof Error && error.message.includes('Failed to fetch')) {
-        console.warn('Impossible de se connecter à l\'API de recherche de jeux. Vérifiez votre connexion.')
-      }
     } finally {
       setLoading(false)
     }

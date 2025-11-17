@@ -12,6 +12,7 @@ import {
 } from 'react-native'
 import { useLocalSearchParams, router } from 'expo-router'
 import { supabase } from '../../../lib'
+import { createEventConversation, notifyConversationCreated } from '@gemou2/database'
 import { PageLayout } from '../../../components/layout'
 import { ConfirmationModal, ModalVariant, ConfirmModal, SuccessModal } from '../../../components/ui'
 import EventTags from '../../../components/events/EventTags'
@@ -29,8 +30,23 @@ interface Event {
   image_url: string;
 }
 
+interface GameDataTag {
+  id: string;
+  name: string;
+  source: 'type' | 'mechanism';
+  gameId: string;
+}
+
+interface GameWithData {
+  id: string;
+  bgg_id: string | null;
+  name: string;
+  data: any;
+}
+
 export default function EventDetailsPage() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id: string }>();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const [event, setEvent] = useState<Event | null>(null);
   const [creator, setCreator] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -41,6 +57,8 @@ export default function EventDetailsPage() {
   const [participants, setParticipants] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false)
   const [eventTags, setEventTags] = useState<any[]>([])
+  const [eventGames, setEventGames] = useState<any[]>([])
+  const [gameTags, setGameTags] = useState<any[]>([])
   const [modalConfig, setModalConfig] = useState<{
     variant: ModalVariant
     title: string
@@ -53,6 +71,7 @@ export default function EventDetailsPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [showConfirmDelete, setShowConfirmDelete] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [isCreatingConversation, setIsCreatingConversation] = useState(false)
 
   const navigateToProfile = useCallback((username?: string) => {
     if (!username) {
@@ -64,6 +83,12 @@ export default function EventDetailsPage() {
 
   const loadEvent = async () => {
     try {
+      if (!id) {
+        console.error('❌ ID d\'événement manquant')
+        router.back()
+        return
+      }
+
       // Charger l'utilisateur
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -118,7 +143,9 @@ export default function EventDetailsPage() {
         .neq('status', 'cancelled');
 
       setParticipants(participantsData || []);
+
       // Charger les tags de l'événement
+      console.log('🔍 Chargement des tags de l\'événement:', id);
       const { data: tagsData, error: tagsError } = await supabase
         .from('event_tags')
         .select(`
@@ -128,18 +155,119 @@ export default function EventDetailsPage() {
             name
           )
         `)
-        .eq('event_id', id)
+        .eq('event_id', id);
 
-      if (!tagsError && tagsData) {
+      console.log('🏷️ Tags de l\'événement récupérés:', { tagsData, tagsError, count: tagsData?.length || 0 });
+      console.log('🏷️ Détails des tags bruts:', JSON.stringify(tagsData, null, 2));
+
+      if (tagsError) {
+        console.error('❌ Erreur lors du chargement des tags:', tagsError);
+        setEventTags([]);
+      } else if (tagsData && tagsData.length > 0) {
         const tagsList = tagsData
-          .filter((et: any) => et.tags)
+          .filter((et: any) => et.tags && et.tags.name)
           .map((et: any) => ({
             id: et.tag_id,
-            name: et.tags.name
-          }))
-        setEventTags(tagsList)
-      } else if (tagsError) {
-        console.error('Erreur lors du chargement des tags:', tagsError)
+            tag_id: et.tag_id,
+            name: et.tags.name,
+            tags: et.tags
+          }));
+        console.log('✅ Tags de l\'événement formatés:', tagsList.length, tagsList);
+        setEventTags(tagsList);
+        
+        // Si des tags ont été filtrés, les logger
+        const filteredOut = tagsData.filter((et: any) => !et.tags || !et.tags.name);
+        if (filteredOut.length > 0) {
+          console.warn('⚠️ Tags filtrés (sans relation tags):', filteredOut);
+        }
+      } else {
+        console.warn('⚠️ Aucun tag trouvé pour cet événement (tagsData est vide ou null)');
+        setEventTags([]);
+      }
+
+      // Charger les jeux de l'événement
+      console.log('🔍 Chargement des jeux pour l\'événement:', id)
+      const { data: gamesData, error: gamesError } = await supabase
+        .from('event_games')
+        .select('*')
+        .eq('event_id', id)
+        .order('created_at', { ascending: true });
+
+      console.log('📦 Résultat chargement jeux:', { gamesData, gamesError, count: gamesData?.length || 0 })
+
+      if (gamesError) {
+        console.error('❌ Erreur lors du chargement des jeux:', gamesError)
+        setEventGames([])
+      } else {
+        setEventGames(gamesData || [])
+        console.log('✅ Jeux chargés avec succès:', gamesData?.length || 0, 'jeu(x)')
+        
+                // Récupérer les tags des jeux
+        if (gamesData && gamesData.length > 0) {
+          console.log('🔍 Récupération des tags pour', gamesData.length, 'jeu(x)');
+          const gameBggIds = gamesData
+            .map(g => g.game_id)
+            .filter((id): id is string => !!id);
+          
+          console.log('🎮 BGG IDs des jeux:', gameBggIds);
+          
+          if (gameBggIds.length > 0) {
+            const { data: gamesInDb, error: gamesInDbError } = await supabase
+              .from('games')
+              .select('id, bgg_id, name, data')
+              .in('bgg_id', gameBggIds);
+            
+            console.log('🎯 Jeux trouvés dans la table games:', { gamesInDb, gamesInDbError, count: gamesInDb?.length || 0 });
+            
+            if (!gamesInDbError && gamesInDb && gamesInDb.length > 0) {
+              const missingGames = gamesData.filter(eg => 
+                !gamesInDb.some(g => g.bgg_id === eg.game_id)
+              );
+              
+              console.log('🔍 Jeux non trouvés par bgg_id:', missingGames.length);
+              
+              if (missingGames.length > 0) {
+                const missingGameNames = missingGames.map(eg => eg.game_name);
+                const { data: gamesByName, error: gamesByNameError } = await supabase
+                  .from('games')
+                  .select('id, bgg_id, name, data')
+                  .in('name', missingGameNames);
+                
+                console.log('📝 Jeux trouvés par nom:', { gamesByName, gamesByNameError, count: gamesByName?.length || 0 });
+                
+                if (!gamesByNameError && gamesByName) {
+                  gamesInDb.push(...gamesByName);
+                }
+              }
+              
+                            // Extraire les tags depuis la colonne data JSONB
+              console.log('🆔 Extraction des tags depuis data JSONB pour', gamesInDb.length, 'jeu(x)');
+              
+              const extractedTags = extractGameTagsFromData(gamesInDb as GameWithData[]);
+              console.log('✅ Tags extraits depuis data:', extractedTags.length, extractedTags);
+              
+              // Transformer en format compatible avec l'affichage existant
+              const formattedTags = extractedTags.map(tag => ({
+                id: tag.id,
+                tag_id: tag.id,
+                name: tag.name,
+                source: tag.source,
+                gameId: tag.gameId
+              }));
+              
+              setGameTags(formattedTags);
+            } else {
+              console.warn('⚠️ Aucun jeu trouvé dans la table games pour cet événement:', gamesInDbError);
+              setGameTags([]);
+            }
+          } else {
+            console.warn('⚠️ Aucun game_id (bgg_id) trouvé dans les jeux de l\'événement');
+            setGameTags([]);
+          }
+        } else {
+          console.warn('⚠️ Aucun jeu trouvé pour cet événement');
+          setGameTags([]);
+        }
       }
     } catch (error) {
       console.error('Error loading event:', error);
@@ -222,6 +350,50 @@ export default function EventDetailsPage() {
       setIsLoadingAction(false);
     }
   };
+
+  const handleContactParticipants = async () => {
+    if (!event || !user || isCreatingConversation) return
+
+    setIsCreatingConversation(true)
+    try {
+      // Créer ou récupérer la conversation
+      const { conversationId, error: convError } = await createEventConversation(supabase, event.id, user.id)
+      
+      if (convError) {
+        console.error('Error creating conversation:', convError)
+        setModalConfig({
+          variant: 'error',
+          title: 'Erreur',
+          message: 'Impossible de créer la conversation'
+        })
+        setModalVisible(true)
+        return
+      }
+
+      // Récupérer les participants pour les notifier (exclure le créateur)
+      const participantIds = participants
+        .filter(p => p.user_id !== user.id)
+        .map(p => p.user_id)
+
+      // Envoyer les notifications
+      if (participantIds.length > 0) {
+        await notifyConversationCreated(supabase, participantIds, event.id, event.title)
+      }
+
+      // Rediriger vers la conversation
+      router.push(`/conversations/${conversationId}`)
+    } catch (error) {
+      console.error('Error:', error)
+      setModalConfig({
+        variant: 'error',
+        title: 'Erreur',
+        message: 'Une erreur est survenue'
+      })
+      setModalVisible(true)
+    } finally {
+      setIsCreatingConversation(false)
+    }
+  }
 
   const handleDeleteEvent = async () => {
     if (!event || !user) return;
@@ -321,12 +493,83 @@ export default function EventDetailsPage() {
     );
   }
 
+  function extractGameTagsFromData(games: GameWithData[]): GameDataTag[] {
+  const tags: GameDataTag[] = []
+  const seenTags = new Set<string>()
+
+  for (const game of games) {
+    if (!game.data || typeof game.data !== 'object') {
+      continue
+    }
+
+    // Extraire le type (string)
+    if (game.data.type && typeof game.data.type === 'string') {
+      const typeKey = `type-${game.data.type.toLowerCase()}`
+      if (!seenTags.has(typeKey)) {
+        tags.push({
+          id: `type-${game.id}-${game.data.type}`,
+          name: game.data.type,
+          source: 'type',
+          gameId: game.id
+        })
+        seenTags.add(typeKey)
+      }
+    }
+
+    // Extraire les mécaniques (array)
+    if (Array.isArray(game.data.mechanisms)) {
+      for (const mechanism of game.data.mechanisms) {
+        if (typeof mechanism === 'string') {
+          const mechanismKey = `mechanism-${mechanism.toLowerCase()}`
+          if (!seenTags.has(mechanismKey)) {
+            tags.push({
+              id: `mechanism-${game.id}-${mechanism}`,
+              name: mechanism,
+              source: 'mechanism',
+              gameId: game.id
+            })
+            seenTags.add(mechanismKey)
+          }
+        }
+      }
+    }
+  }
+
+  return tags
+}
+  
+
   const isCreator = user?.id === event.creator_id;
   const isFull = (event.current_participants || 0) >= event.max_participants;
   
+  // Debug: vérifier les tags
+  console.log('🔍 Debug tags - eventTags:', eventTags.length, eventTags);
+  console.log('🔍 Debug tags - gameTags:', gameTags.length, gameTags);
+
+  // Actions du header pour le créateur
+  const headerActions = isCreator ? [
+    {
+      icon: '✏️',
+      onPress: () => {
+        router.push({
+          pathname: '/(tabs)/create-event',
+          params: { eventId: event.id }
+        });
+      }
+    },
+    {
+      icon: '🗑️',
+      onPress: () => setShowConfirmDelete(true)
+    }
+  ] : undefined;
 
   return (
-    <PageLayout showHeader={true} refreshing={refreshing} onRefresh={onRefresh}>
+    <PageLayout 
+      showHeader={true} 
+      refreshing={refreshing} 
+      onRefresh={onRefresh}
+      overrideRightActions={headerActions}
+    >
       {/* Header avec bouton retour */}
 
       {/* Event Details */}
@@ -372,21 +615,10 @@ export default function EventDetailsPage() {
                   )}
                 </View>
                 <Text style={styles.metaText}>
-                <span style={{ fontWeight:700 }}>Hôte</span> 
-                <br /> 
-                Organisé par {isCreator ? 'vous' : creator.full_name || creator.username}
+                  <Text style={{ fontWeight: '700' }}>Hôte</Text>
+                  {'\n'}
+                  Organisé par {isCreator ? 'vous' : creator.full_name || creator.username}
                 </Text>
-                          {isCreator && (
-
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => setShowConfirmDelete(true)}
-              >
-                <Text style={styles.deleteButtonText}>
-                  🗑️ 
-                </Text>
-              </TouchableOpacity>
-          )}
               </View>
             </View>
           )}
@@ -395,17 +627,17 @@ export default function EventDetailsPage() {
           <View style={styles.metaItem}>
             <Text style={styles.metaEmoji}>📍</Text>
             <Text style={styles.metaText}>
-            <span style={{ fontWeight:700 }}>Lieu de l'événement</span> 
-            <br />
+              <Text style={{ fontWeight: '700' }}>Lieu de l'événement</Text>
+              {'\n'}
               {event.location}
-              </Text>
+            </Text>
           </View>
 
           <View style={styles.metaItem}>
             <Text style={styles.metaEmoji}>📅</Text>
             <Text style={styles.metaText}>
-            <span style={{ fontWeight:700 }}>Horaire</span> 
-            <br />
+              <Text style={{ fontWeight: '700' }}>Horaire</Text>
+              {'\n'}
               {formatDate(event.date_time)}
             </Text>
           </View>
@@ -413,10 +645,9 @@ export default function EventDetailsPage() {
 
           <View style={styles.metaItem}>
             <Text style={styles.metaEmoji}>👥</Text>
-            
             <Text style={styles.metaText}>
-            <span style={{ fontWeight:700 }}>Capacité</span> 
-            <br />
+              <Text style={{ fontWeight: '700' }}>Capacité</Text>
+              {'\n'}
               {event.current_participants || 0}/{event.max_participants} participants
             </Text>
           </View>
@@ -424,94 +655,106 @@ export default function EventDetailsPage() {
           <View style={styles.metaItem}>
             <Text style={styles.metaEmoji}>💰​​</Text>
             <Text style={styles.metaText}>
-            <span style={{ fontWeight:700 }}>Coût</span> 
-            <br />
-              Gratuit</Text>
+              <Text style={{ fontWeight: '700' }}>Coût</Text>
+              {'\n'}
+              Gratuit
+            </Text>
           </View>
         </View>
 
         <View style={styles.separator} />
 
-
-
+        {/* Description */}
         <View style={styles.descriptionContainer}>
-          <Text style={styles.descriptionTitle}>Description de l'événement</Text>
-          <Text style={styles.description}>{event.description}</Text>
+          <Text style={styles.descriptionTitle}>Description</Text>
+          {event.description ? (
+            <Text style={styles.description}>{event.description}</Text>
+          ) : (
+            <Text style={styles.emptyStateText}>Aucune description n'a été ajoutée pour cet événement.</Text>
+          )}
         </View>
 
-        <View style={styles.separator} />
-
+        {/* Liste des jeux */}
         <View style={styles.descriptionContainer}>
-            <Text style={styles.descriptionTitle}>Jeux</Text>
-            <TouchableOpacity 
-              style={styles.gameCard}
-              // onPress={() => router.push(`/games/${gameId}`)} // TODO: Implémenter la navigation vers le jeu
-            >
-              <View style={styles.gameInfo}>
-                <Text style={styles.gameTitle}>7 Wonders</Text>
-                <Text style={styles.gameCategory}>Jeu de stratégie</Text>
-              </View>
-              
-              <View style={styles.gameImageContainer}>
-                <Image
-                  source={{ uri: event.image_url }}
-                  style={styles.gameImage}
-                  resizeMode="cover"
-                />
-                
-              </View>
-              <View style={styles.arrowContainer}>
+          <Text style={styles.descriptionTitle}>Jeux ({eventGames.length})</Text>
+          {eventGames.length > 0 ? (
+            eventGames.map((game, index) => (
+              <View key={game.id || `game-${index}`} style={styles.gameCard}>
+                {game.image_url && (
+                  <View style={styles.gameImageContainer}>
+                    <Image
+                      source={{ uri: game.image_url }}
+                      style={styles.gameImage}
+                      resizeMode="cover"
+                    />
+                  </View>
+                )}
+                <View style={styles.gameInfo}>
+                  <Text style={styles.gameTitle}>{game.game_name}</Text>
+                  {game.category && (
+                    <Text style={styles.gameCategory}>{game.category}</Text>
+                  )}
+                  <View style={styles.gameDetailsRow}>
+                    {game.min_players && game.max_players && (
+                      <Text style={styles.gameComplexity}>
+                        👥 {game.min_players}-{game.max_players} joueurs
+                      </Text>
+                    )}
+                    {game.min_playtime && game.max_playtime && (
+                      <Text style={styles.gameComplexity}>
+                        {' • ⏱️ '}{game.min_playtime}-{game.max_playtime} min
+                      </Text>
+                    )}
+                  </View>
+                </View>
+                <View style={styles.arrowContainer}>
                   <Text style={styles.arrow}>›</Text>
                 </View>
-            </TouchableOpacity>
-          </View>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.emptyStateText}>Aucun jeu n'a été ajouté à cet événement.</Text>
+          )}
+        </View>
 
-          <View style={styles.separator} />
-          
-
-        {eventTags.length > 0 && (
-          <>
-            <View style={styles.separator} />
-            <EventTags tags={eventTags} />
-          </>
-        )}
-          <View style={styles.descriptionContainer}>
-            <Text style={styles.descriptionTitle}>Tag.s événement et jeu</Text>
+        {/* Tags */}
+        <View style={styles.descriptionContainer}>
+          <Text style={styles.descriptionTitle}>Tags événement et jeu</Text>
+          {(eventTags.length > 0 || gameTags.length > 0) ? (
             <View style={styles.badgesContainer}>
-              <View style={[styles.badge]}>
-                <Text style={styles.badgeText}>Familial</Text>
-              </View>
-              <View style={[styles.badge]}>
-                <Text style={styles.badgeText}>Narratif</Text>
-              </View>
-              <View style={[styles.badge]}>
-                <Text style={styles.badgeText}>Pas de nourriture</Text>
-              </View>
-              <View style={[styles.badge]}>
-                <Text style={styles.badgeText}>Strategie</Text>
-              </View>
-              <View style={[styles.badge]}>
-                <Text style={[styles.badgeText]}>Yellow</Text>
-              </View>
-              <View style={[styles.badge]}>
-                <Text style={styles.badgeText}>Indigo</Text>
-              </View>
-              <View style={[styles.badge]}>
-                <Text style={styles.badgeText}>Purple</Text>
-              </View>
-              <View style={[styles.badge]}>
-                <Text style={styles.badgeText}>Pink</Text>
-              </View>
+              {eventTags.map((eventTag, index) => {
+                const tagName = eventTag.tags?.name || eventTag.name || 'Tag inconnu';
+                const tagKey = eventTag.tag_id || eventTag.id || eventTag.tags?.id || `event-tag-${index}`;
+                return (
+                  <View key={tagKey} style={[styles.badge, styles.eventTagBadge]}>
+                    <Text style={styles.badgeText}>{tagName}</Text>
+                  </View>
+                );
+              })}
+              {gameTags.map((gameTag, index) => {
+                const tagName = gameTag.tags?.name || gameTag.name || 'Tag inconnu';
+                const tagKey = gameTag.tag_id || gameTag.id || gameTag.tags?.id || `game-tag-${index}`;
+                return (
+                  <View key={tagKey} style={[styles.badge, styles.gameTagBadge]}>
+                    <Text style={styles.badgeText}>
+                    {tagName.charAt(0).toUpperCase() + tagName.slice(1)}
+                    </Text>
+                  </View>
+                );
+              })}
             </View>
-          </View>
+          ) : (
+            <Text style={styles.emptyStateText}>Aucun tag n'a été associé à cet événement.</Text>
+          )}
+        </View>
 
         {/* Participants */}
-        {participants.length > 0 && (
-          <View style={styles.participantsContainer}>
-            <Text style={styles.participantsTitle}>
-              Participants ({participants.length})
-            </Text>
-            {participants.map((participant) => {
+        <View style={styles.participantsContainer}>
+          <Text style={styles.participantsTitle}>
+            Participants ({participants.length})
+          </Text>
+          {participants.length > 0 ? (
+            participants.map((participant) => {
               const profileUsername = participant.profiles?.username
 
               return (
@@ -559,9 +802,11 @@ export default function EventDetailsPage() {
                   </View>
                 </TouchableOpacity>
               )
-            })}
-          </View>
-        )}
+            })
+          ) : (
+            <Text style={styles.emptyStateText}>Aucun participant pour le moment. Soyez le premier à vous inscrire !</Text>
+          )}
+        </View>
 
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
@@ -570,10 +815,15 @@ export default function EventDetailsPage() {
           <View style={styles.creatorBadge}>
             <TouchableOpacity
             style={styles.GroupContactButton}
-            onPress={() => router.push('/')}> {/* // déclencher la conversation avec les participants TODO: implémenter la conversation avec les participants */}
-              <Text style={styles.creatorBadgeText}>
-                Contacter l'hôte
-              </Text>
+            onPress={handleContactParticipants}
+            disabled={isCreatingConversation}>
+              {isCreatingConversation ? (
+                <ActivityIndicator size="small" color="#121417" />
+              ) : (
+                <Text style={styles.creatorBadgeText}>
+                  Contacter l'hôte
+                </Text>
+              )}
             </TouchableOpacity> 
             
             <TouchableOpacity
@@ -603,10 +853,15 @@ export default function EventDetailsPage() {
             <View style={styles.creatorBadge}>
               <TouchableOpacity
               style={styles.GroupContactButton}
-              onPress={() => router.push('/')}> {/* // déclencher la conversation avec les participants TODO: implémenter la conversation avec les participants */}
-                <Text style={styles.creatorBadgeText}>
-                  Contacter les participants
-                </Text>
+              onPress={handleContactParticipants}
+              disabled={isCreatingConversation}>
+                {isCreatingConversation ? (
+                  <ActivityIndicator size="small" color="#121417" />
+                ) : (
+                  <Text style={styles.creatorBadgeText}>
+                    Contacter les participants
+                  </Text>
+                )}
               </TouchableOpacity> 
 
               <TouchableOpacity
@@ -626,15 +881,6 @@ export default function EventDetailsPage() {
                 </Text>
               )}
                 
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => setShowConfirmDelete(true)}
-              >
-                <Text style={styles.deleteButtonText}>
-                  🗑️ Supprimer le Gémou
-                </Text>
               </TouchableOpacity>
             </View>
             
@@ -874,6 +1120,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   participateButton: {
+    flex: 1,
     backgroundColor: '#3b82f6',
     borderRadius: 8,
     padding: 16,
@@ -893,8 +1140,10 @@ const styles = StyleSheet.create({
   creatorBadge: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     width: '100%',
+    gap: 12,
   },
   creatorBadgeText: {
     fontSize: 16,
@@ -941,6 +1190,34 @@ const styles = StyleSheet.create({
   },
   
   gameCategory: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  gameDetailsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 4,
+  },
+  gameComplexity: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    marginTop: 4,
+  },
+  noGamesText: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingVertical: 20,
+  },
+  loadingGamesContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+    gap: 8,
+  },
+  loadingGamesText: {
     fontSize: 14,
     color: '#6B7280',
   },
@@ -992,16 +1269,37 @@ const styles = StyleSheet.create({
   },
   
   badgeText: {
-    color: '#121417',
     fontSize: 14,
-    fontWeight: '600',
+    color: '#1f2937',
+    fontWeight: '500',
   },
+  eventTagBadge: {
+    backgroundColor: '#fce7f3',
+    borderColor: '#f9a8d4',
+    borderWidth: 1,
+  },
+  gameTagBadge: {
+    backgroundColor: '#fef3c7',
+    borderColor: '#fbbf24',
+    borderWidth: 1,
+  },
+    gameTypeBadge: {
+      backgroundColor: '#dbeafe',
+      borderColor: '#93c5fd',
+      borderWidth: 1
+    },
+    gameMechanismBadge: {
+      backgroundColor: '#e9d5ff',
+      borderColor: '#c084fc',
+      borderWidth: 1
+    },
   separator: {
     height: 1,
     backgroundColor: '#E0E0E0',
     marginVertical: 5,
   },
   GroupContactButton: {
+    flex: 1,
     backgroundColor: '#F0F2F5',
     borderRadius: 8,
     padding: 16,
@@ -1024,4 +1322,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#9ca3af',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingVertical: 16,
+  },
 });
+

@@ -11,15 +11,16 @@ import {
 import { supabase } from '../../lib'
 
 interface Tag {
-  id: number
+  id: number | string
   name: string
+  type: 'event' | 'game' // Type de tag pour la couleur
 }
 
 interface TypeFilterModalProps {
   visible: boolean
   onClose: () => void
-  selectedTags: number[]
-  onApply: (tags: number[]) => void
+  selectedTags: (number | string)[]
+  onApply: (tags: (number | string)[]) => void
 }
 
 export default function TypeFilterModal({
@@ -30,7 +31,7 @@ export default function TypeFilterModal({
 }: TypeFilterModalProps) {
   const [tags, setTags] = useState<Tag[]>([])
   const [loading, setLoading] = useState(true)
-  const [tempSelected, setTempSelected] = useState<number[]>(selectedTags)
+  const [tempSelected, setTempSelected] = useState<(number | string)[]>(selectedTags)
 
   useEffect(() => {
     if (visible) {
@@ -43,15 +44,146 @@ export default function TypeFilterModal({
     try {
       setLoading(true)
       
-      // Récupérer tous les tags disponibles
-      const { data, error } = await supabase
-        .from('tags')
-        .select('id, name')
-        .order('name', { ascending: true })
+      // 1. Récupérer les tags des événements
+      const { data: eventTagsData, error: eventTagsError } = await supabase
+        .from('event_tags')
+        .select(`
+          tag_id,
+          tags (
+            id,
+            name
+          )
+        `)
 
-      if (error) throw error
+      if (eventTagsError) {
+        console.error('Erreur lors du chargement des tags d\'événements:', eventTagsError)
+      }
 
-      setTags(data || [])
+      // 2. Récupérer les jeux associés aux événements
+      const { data: eventGamesData, error: eventGamesError } = await supabase
+        .from('event_games')
+        .select('game_id, game_name')
+
+      if (eventGamesError) {
+        console.error('Erreur lors du chargement des jeux d\'événements:', eventGamesError)
+      }
+
+      // 3. Récupérer les tags des jeux depuis la colonne JSONB data
+      const gameTagsFromData: Array<{ id: string; name: string }> = []
+      
+      if (eventGamesData && eventGamesData.length > 0) {
+        // Extraire les BGG IDs
+        const gameBggIds = eventGamesData
+          .map(eg => eg.game_id)
+          .filter(Boolean)
+
+        if (gameBggIds.length > 0) {
+          // Trouver les jeux dans la base de données par BGG ID avec la colonne data
+          const { data: gamesInDb } = await supabase
+            .from('games')
+            .select('id, bgg_id, name, data')
+            .in('bgg_id', gameBggIds)
+
+          // Fallback: chercher par nom pour les jeux non trouvés par BGG ID
+          const foundBggIds = gamesInDb?.map(g => g.bgg_id).filter(Boolean) || []
+          const missingGames = eventGamesData.filter(eg => 
+            eg.game_id && !foundBggIds.includes(eg.game_id)
+          )
+
+          if (missingGames.length > 0) {
+            const gameNames = missingGames.map(eg => eg.game_name).filter(Boolean)
+            if (gameNames.length > 0) {
+              const { data: gamesByName } = await supabase
+                .from('games')
+                .select('id, bgg_id, name, data')
+                .in('name', gameNames)
+              
+              if (gamesByName) {
+                gamesInDb?.push(...gamesByName)
+              }
+            }
+          }
+
+          // Extraire les tags depuis la colonne data JSONB
+          if (gamesInDb && gamesInDb.length > 0) {
+            console.log(`🔍 Extraction des tags depuis data JSONB pour ${gamesInDb.length} jeu(x)`)
+            
+            const seenTags = new Set<string>()
+            
+            for (const game of gamesInDb) {
+              if (!game.data || typeof game.data !== 'object') {
+                continue
+              }
+
+              // Extraire le type (string)
+              if (game.data.type && typeof game.data.type === 'string') {
+                const typeKey = game.data.type.toLowerCase()
+                if (!seenTags.has(typeKey)) {
+                  gameTagsFromData.push({
+                    id: `type-${game.data.type}`,
+                    name: game.data.type
+                  })
+                  seenTags.add(typeKey)
+                }
+              }
+
+              // Extraire les mécaniques (array)
+              if (Array.isArray(game.data.mechanisms)) {
+                for (const mechanism of game.data.mechanisms) {
+                  if (typeof mechanism === 'string') {
+                    const mechanismKey = mechanism.toLowerCase()
+                    if (!seenTags.has(mechanismKey)) {
+                      gameTagsFromData.push({
+                        id: `mechanism-${mechanism}`,
+                        name: mechanism
+                      })
+                      seenTags.add(mechanismKey)
+                    }
+                  }
+                }
+              }
+            }
+            
+            console.log(`✅ ${gameTagsFromData.length} tags extraits depuis data JSONB`)
+          }
+        }
+      }
+
+      // 4. Combiner et dédupliquer les tags
+      const allTags = new Map<string, Tag>()
+
+      // Ajouter les tags d'événements (ROUGE)
+      if (eventTagsData) {
+        eventTagsData.forEach((et: any) => {
+          if (et.tags && et.tags.id && et.tags.name) {
+            allTags.set(`event-${et.tags.id}`, {
+              id: et.tags.id,
+              name: et.tags.name,
+              type: 'event'
+            })
+          }
+        })
+      }
+
+      // Ajouter les tags extraits des jeux (BLEU)
+      gameTagsFromData.forEach((tag) => {
+        const key = tag.name.toLowerCase()
+        if (!allTags.has(key)) {
+          allTags.set(key, {
+            id: tag.id,
+            name: tag.name,
+            type: 'game'
+          })
+        }
+      })
+
+      // Convertir en tableau et trier par nom
+      const tagsArray = Array.from(allTags.values()).sort((a, b) => 
+        a.name.localeCompare(b.name)
+      )
+
+      setTags(tagsArray)
+      console.log(`✅ ${tagsArray.length} tags disponibles chargés pour les filtres (${eventTagsData?.length || 0} tags d'événements + ${gameTagsFromData.length} tags de jeux)`)
     } catch (error) {
       console.error('Error loading tags:', error)
     } finally {
@@ -59,7 +191,7 @@ export default function TypeFilterModal({
     }
   }
 
-  const toggleTag = (tagId: number) => {
+  const toggleTag = (tagId: number | string) => {
     setTempSelected(prev => {
       if (prev.includes(tagId)) {
         return prev.filter(id => id !== tagId)
@@ -81,22 +213,22 @@ export default function TypeFilterModal({
     const lowerName = tagName.toLowerCase()
     
     // Emojis par catégorie de jeu
-    if (lowerName.includes('stratégie') || lowerName.includes('strategy')) return '🎯'
-    if (lowerName.includes('aventure') || lowerName.includes('adventure')) return '🗺️'
-    if (lowerName.includes('famille') || lowerName.includes('family')) return '👨‍👩‍👧‍👦'
-    if (lowerName.includes('party')) return '🎉'
-    if (lowerName.includes('coopératif') || lowerName.includes('cooperative')) return '🤝'
-    if (lowerName.includes('abstract')) return '🔷'
-    if (lowerName.includes('deck') || lowerName.includes('cartes')) return '🃏'
-    if (lowerName.includes('dés') || lowerName.includes('dice')) return '🎲'
-    if (lowerName.includes('plateau') || lowerName.includes('board')) return '🎮'
-    if (lowerName.includes('ambiance')) return '😄'
-    if (lowerName.includes('expert')) return '🧠'
-    if (lowerName.includes('enfant') || lowerName.includes('kids')) return '🧒'
-    if (lowerName.includes('rapide') || lowerName.includes('quick')) return '⚡'
-    if (lowerName.includes('rôle') || lowerName.includes('role')) return '🎭'
+    if (lowerName.includes('stratégie') || lowerName.includes('strategy')) return '' //'🎯'
+    if (lowerName.includes('aventure') || lowerName.includes('adventure')) return '' //'🗺️'
+    if (lowerName.includes('famille') || lowerName.includes('family')) return '' //'👨‍👩‍👧‍👦'
+    if (lowerName.includes('party')) return '' //'🎉'
+    if (lowerName.includes('coopératif') || lowerName.includes('cooperative')) return '' //'🤝'
+    if (lowerName.includes('abstract')) return '' //'🔷'
+    if (lowerName.includes('deck') || lowerName.includes('cartes')) return '' //'🃏'
+    if (lowerName.includes('dés') || lowerName.includes('dice')) return '' //'🎲'
+    if (lowerName.includes('plateau') || lowerName.includes('board')) return '' //'🎮'
+    if (lowerName.includes('ambiance')) return '' //'😄'
+    if (lowerName.includes('expert')) return '' //'🧠'
+    if (lowerName.includes('enfant') || lowerName.includes('kids')) return '' //'🧒'
+    if (lowerName.includes('rapide') || lowerName.includes('quick')) return '' //'⚡'
+    if (lowerName.includes('rôle') || lowerName.includes('role')) return '' //'🎭'
     
-    return '🏷️'
+    return '' // 🏷️ 
   }
 
   return (
@@ -134,27 +266,43 @@ export default function TypeFilterModal({
                 </Text>
                 <ScrollView style={styles.tagsList} showsVerticalScrollIndicator={false}>
                   <View style={styles.tagsGrid}>
-                    {tags.map((tag) => (
-                      <TouchableOpacity
-                        key={tag.id}
-                        style={[
-                          styles.tagChip,
-                          tempSelected.includes(tag.id) && styles.tagChipSelected
-                        ]}
-                        onPress={() => toggleTag(tag.id)}
-                      >
-                        <Text style={styles.tagEmoji}>{getTagEmoji(tag.name)}</Text>
-                        <Text style={[
-                          styles.tagText,
-                          tempSelected.includes(tag.id) && styles.tagTextSelected
-                        ]}>
-                          {tag.name}
-                        </Text>
-                        {tempSelected.includes(tag.id) && (
-                          <Text style={styles.tagCheckmark}>✓</Text>
-                        )}
-                      </TouchableOpacity>
-                    ))}
+                    {tags.map((tag) => {
+                      const isSelected = tempSelected.includes(tag.id)
+                      const isEventTag = tag.type === 'event'
+                      const isGameTag = tag.type === 'game'
+                      
+                      return (
+                        <TouchableOpacity
+                          key={tag.id}
+                          style={[
+                            styles.tagChip,
+                            isEventTag && styles.tagChipEvent,
+                            isGameTag && styles.tagChipGame,
+                            isSelected && isEventTag && styles.tagChipEventSelected,
+                            isSelected && isGameTag && styles.tagChipGameSelected
+                          ]}
+                          onPress={() => toggleTag(tag.id)}
+                        >
+                          <Text style={styles.tagEmoji}>{getTagEmoji(tag.name)}</Text>
+                          <Text style={[
+                            styles.tagText,
+                            isEventTag && styles.tagTextEvent,
+                            isGameTag && styles.tagTextGame,
+                            isSelected && isEventTag && styles.tagTextEventSelected,
+                            isSelected && isGameTag && styles.tagTextGameSelected
+                          ]}>
+                            {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
+                          </Text>
+                          {isSelected && (
+                            <Text style={[
+                              styles.tagCheckmark,
+                              isEventTag && styles.tagCheckmarkEvent,
+                              isGameTag && styles.tagCheckmarkGame
+                            ]}>✓</Text>
+                          )}
+                        </TouchableOpacity>
+                      )
+                    })}
                   </View>
                 </ScrollView>
               </>
@@ -268,12 +416,51 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 20,
+    borderRadius: 6,
     backgroundColor: '#f9fafb',
     borderWidth: 1,
     borderColor: '#e5e7eb',
     gap: 6
   },
+  // Tags d'événement (ROUGE)
+  tagChipEvent: {
+    backgroundColor: '#fce7f3',
+    borderColor: '#f9a8d4'
+  },
+  tagChipEventSelected: {
+    backgroundColor: '#fee2e2',
+    borderColor: '#f9a8d4'
+  },
+  tagTextEvent: {
+    color: '#1f2937'
+  },
+  tagTextEventSelected: {
+    color: '#dc2626',
+    fontWeight: '600'
+  },
+  tagCheckmarkEvent: {
+    color: '#dc2626'
+  },
+  // Tags de jeu (BLEU)
+  tagChipGame: {
+    backgroundColor: '#fef3c7',
+    borderColor: '#fbbf24'
+  },
+  tagChipGameSelected: {
+    backgroundColor: '#fef9c3',
+    borderColor: '#fbbf24'
+  },
+  tagTextGame: {
+    color: '#1f2937'
+  },
+  tagTextGameSelected: {
+    color: '#e3a400',
+    fontWeight: '600'
+  },
+  tagCheckmarkGame: {
+    color: '#e3a400'
+  },
+  // Styles génériques (obsolètes mais gardés pour rétrocompatibilité)
   tagChipSelected: {
     backgroundColor: '#dbeafe',
     borderColor: '#3b82f6'
@@ -329,6 +516,7 @@ const styles = StyleSheet.create({
     color: 'white'
   }
 })
+
 
 
 

@@ -11,6 +11,18 @@ interface PageLayoutProps {
   onRefresh?: () => void
   scrollEnabled?: boolean
   contentContainerStyle?: any
+  // Props pour le TopHeader
+  overrideTitle?: string
+  overrideSubtitle?: string
+  overrideShowBackButton?: boolean
+  overrideRightActions?: Array<{
+    label?: string
+    icon?: string
+    onPress: () => void
+  }>
+  dynamicTitle?: string
+  dynamicSubtitle?: string
+  actionHandlers?: Record<string, () => void>
 }
 
 /**
@@ -47,11 +59,28 @@ export function PageLayout({
   refreshing = false,
   onRefresh,
   scrollEnabled = true,
-  contentContainerStyle
+  contentContainerStyle,
+  overrideTitle,
+  overrideSubtitle,
+  overrideShowBackButton,
+  overrideRightActions,
+  dynamicTitle,
+  dynamicSubtitle,
+  actionHandlers
 }: PageLayoutProps) {
   return (
     <View style={styles.container}>
-      {showHeader && <TopHeader />}
+      {showHeader && (
+        <TopHeader
+          overrideTitle={overrideTitle}
+          overrideSubtitle={overrideSubtitle}
+          overrideShowBackButton={overrideShowBackButton}
+          overrideRightActions={overrideRightActions}
+          dynamicTitle={dynamicTitle}
+          dynamicSubtitle={dynamicSubtitle}
+          actionHandlers={actionHandlers}
+        />
+      )}
       
       <ScrollView
         style={styles.scrollView}

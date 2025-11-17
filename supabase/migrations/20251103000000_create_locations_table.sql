@@ -202,3 +202,5 @@ COMMENT ON COLUMN public.locations.longitude IS 'Longitude (optionnel pour géol
 
 
 
+
+

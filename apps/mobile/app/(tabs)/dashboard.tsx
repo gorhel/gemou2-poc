@@ -49,7 +49,9 @@ interface MarketplaceItem {
   game_name?: string;
   wanted_game?: string;
   images?: string[];
-  seller_city?: string;
+  location_city?: string;
+  location_quarter?: string;
+  created_at?: string;
 }
 
 interface BoardGame {
@@ -308,17 +310,26 @@ export default function DashboardPage() {
                   />
 
                   ) : (
-                    <Text style={styles.eventImagePlaceholder}>📅</Text>
+                    <Image source={require('../../assets/img/eventImagePlaceholder.png')} style={styles.eventImagePlaceholder} />
                     )}
+                  <View style={styles.eventOverlay} />
+                  <Text style={styles.eventTitleOverlay} numberOfLines={2}>{event.title}</Text>
                 </View>
-                <Text style={styles.eventTitle} numberOfLines={2}>{event.title}</Text>
-                <Text style={styles.eventLocation} numberOfLines={1}>📍 {event.location}</Text>
-                <Text style={styles.eventDate}>
-                  {new Date(event.date_time).toLocaleDateString('fr-FR', { 
-                    day: 'numeric', 
-                    month: 'short' 
-                  })} - 👤 {event.current_participants}/{event.max_participants} participants
-                </Text>
+                <View style={styles.eventInfoBlock}>
+                  <Text style={styles.eventInfoText} numberOfLines={1}>
+                    📍 {event.location}
+                  </Text>
+                  <Text style={styles.eventInfoText}>
+                    📅 {new Date(event.date_time).toLocaleDateString('fr-FR', { 
+                      day: 'numeric', 
+                      month: 'short', 
+                      year: 'numeric'
+                    })}
+                  </Text>
+                  <Text style={styles.eventInfoText}>
+                    👤 {event.current_participants}/{event.max_participants} participants
+                  </Text>
+                </View>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -328,7 +339,7 @@ export default function DashboardPage() {
       {/* Marketplace Section */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Annonces de vente et d'échange</Text>
+          <Text style={styles.sectionTitle}>Annonces de vente / échange</Text>
           <TouchableOpacity onPress={() => router.push('/(tabs)/marketplace')}>
             <Text style={styles.seeAllText}>Voir tout</Text>
           </TouchableOpacity>
@@ -360,18 +371,28 @@ export default function DashboardPage() {
                       <Text style={styles.priceText}>{item.price.toFixed(2)} €</Text>
                     </View>
                   )}
-                </View>
-                <Text style={styles.marketplaceTitle} numberOfLines={2}>
-                {item.type === 'sale' && (
-                  'Vente : ' + item.title
-                )}
-                {item.type === 'exchange' && (
-                  'Échange : ' + item.title
-                )}
-                  
+                  <View style={styles.marketplaceOverlay} />
+                  <Text style={styles.marketplaceTitleOverlay} numberOfLines={2}>
+                  {item.type === 'sale' && (
+                    '💰  ' + item.title
+                  )}
+                  {item.type === 'exchange' && (
+                    '🔄  ' + item.title
+                  )}
                   </Text>
-                
-                  <Text style={styles.marketplaceGame} numberOfLines={1}>🎮 {item.game_name}</Text>
+                </View>
+                <View style={styles.marketplaceInfoBlock}>
+                  <Text style={styles.marketplaceInfoText} numberOfLines={1}>
+                    📍 {item.location_quarter} {item.location_city}
+                  </Text>
+                  <Text style={styles.marketplaceInfoText}>
+                    📅 {new Date(item.created_at).toLocaleDateString('fr-FR', { 
+                      day: 'numeric', 
+                      month: 'short', 
+                      year: 'numeric'
+                    })}
+                  </Text>
+                </View>
 
               </TouchableOpacity>
             ))}
@@ -428,7 +449,7 @@ export default function DashboardPage() {
       {/* Games Recommendations */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>🎮 Recommandations de jeux</Text>
+          <Text style={styles.sectionTitle}>Recommandations de jeux</Text>
           <TouchableOpacity onPress={() => loadGames()}>
             <Text style={styles.seeAllText}>Actualiser</Text>
           </TouchableOpacity>
@@ -577,26 +598,56 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
+    position: 'relative',
   },
   eventImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 8, // optionnel, pour arrondir les coins
+    borderRadius: 8,
   },
   eventImagePlaceholder: {
-    fontSize: 32,
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  eventOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 8,
+  },
+  eventTitleOverlay: {
+    position: 'absolute',
+    top: '50%',
+    left: 0,
+    right: 0,
+    transform: [{ translateY: -12 }],
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    paddingHorizontal: 12,
+    zIndex: 2,
   },
   eventTitle: {
     fontSize: 14,
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 4,
-    position: 'absolute',
-    backgroundColor: 'white',
     opacity: 0.7,
-    top:'37%'
+  },
+  eventInfoBlock: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  eventInfoText: {
+    fontSize: 12,
+    color: '#4b5563',
+    marginBottom: 4,
+    lineHeight: 18,
   },
   eventLocation: {
     fontSize: 12,
@@ -670,14 +721,34 @@ const styles = StyleSheet.create({
     position: 'relative',
     backgroundColor:'#112211',
     borderRadius: 8,
+    marginBottom: 8,
   },
   marketplaceImageFill: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+    borderRadius: 8,
   },
   marketplaceImagePlaceholder: {
     fontSize: 48,
+  },
+  marketplaceOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 8,
+  },
+  marketplaceTitleOverlay: {
+    position: 'absolute',
+    top: '50%',
+    left: 0,
+    right: 0,
+    transform: [{ translateY: -12 }],
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    paddingHorizontal: 12,
+    zIndex: 2,
   },
   priceTag: {
     position: 'absolute',
@@ -687,6 +758,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
+    zIndex: 3,
   },
   priceText: {
     color: 'white',
@@ -699,6 +771,19 @@ const styles = StyleSheet.create({
     color: '#1f2937',
     padding: 8,
     paddingBottom: 4,
+  },
+  marketplaceInfoBlock: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  marketplaceInfoText: {
+    fontSize: 12,
+    color: '#4b5563',
+    marginBottom: 4,
+    lineHeight: 18,
   },
   marketplaceGame: {
     fontSize: 11,

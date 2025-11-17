@@ -1,4 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@gemou2/database';
+
+// Service pour rechercher des jeux dans BoardGameGeek ET la base de données
+class GameSearchService {
+  private supabase;
+
+  constructor() {
+    this.supabase = createClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+  }
+
+  // Rechercher des jeux dans la base de données
+  async searchDatabaseGames(query: string, limit: number = 5): Promise<any[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('games')
+        .select('id, bgg_id, name, description, min_players, max_players, duration_min, photo_url, data')
+        .ilike('name', `%${query}%`)
+        .limit(limit);
+
+      if (error) {
+        console.error('Error searching database games:', error);
+        return [];
+      }
+
+      return (data || []).map(game => ({
+        id: game.bgg_id || game.id,
+        dbId: game.id,
+        name: game.name,
+        yearPublished: game.data?.yearPublished || '',
+        minPlayers: game.min_players || 0,
+        maxPlayers: game.max_players || 0,
+        playingTime: game.duration_min || 0,
+        image: game.photo_url || '',
+        thumbnail: game.photo_url || '',
+        description: game.description || '',
+        complexity: game.data?.complexity || 0,
+        source: 'database'
+      }));
+    } catch (error) {
+      console.error('Error searching database games:', error);
+      return [];
+    }
+  }
+}
 
 // Service pour rechercher des jeux dans BoardGameGeek
 class BoardGameGeekSearchService {
@@ -171,6 +219,7 @@ class BoardGameGeekSearchService {
 }
 
 const boardGameGeekSearchService = new BoardGameGeekSearchService();
+const gameSearchService = new GameSearchService();
 
 export async function GET(request: NextRequest) {
   try {
@@ -182,7 +231,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Query parameter is required' }, { status: 400 });
     }
 
-    const games = await boardGameGeekSearchService.searchGames(query, limit);
+    // Rechercher dans la base de données ET dans BoardGameGeek en parallèle
+    const [dbGames, bggGames] = await Promise.all([
+      gameSearchService.searchDatabaseGames(query, Math.ceil(limit / 2)),
+      boardGameGeekSearchService.searchGames(query, Math.ceil(limit / 2))
+    ]);
+
+    // Combiner les résultats, en priorisant ceux de la DB
+    // Éviter les doublons en utilisant le bgg_id ou le nom
+    const allGames = [...dbGames];
+    const dbGameIds = new Set(dbGames.map(g => g.id?.toString().toLowerCase()));
+    const dbGameNames = new Set(dbGames.map(g => g.name?.toLowerCase()));
+
+    for (const bggGame of bggGames) {
+      const bggId = bggGame.id?.toString().toLowerCase();
+      const bggName = bggGame.name?.toLowerCase();
+      
+      // Ajouter seulement si ce n'est pas déjà dans la DB
+      if (!dbGameIds.has(bggId) && !dbGameNames.has(bggName)) {
+        allGames.push({ ...bggGame, source: 'bgg' });
+      }
+    }
+
+    // Limiter le nombre total de résultats
+    const games = allGames.slice(0, limit);
     
     return NextResponse.json({ games });
   } catch (error) {
