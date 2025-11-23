@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Card, CardContent } from '../ui/Card';
+import MachiColors from '../../theme/colors';
 
 interface User {
   id: string;
@@ -75,10 +76,9 @@ export default function UserCard({ user, onViewProfile }: UserCardProps) {
     return 'Joueur polyvalent';
   };
 
-  // Générer une couleur de fond basée sur l'ID
+  // Utiliser la couleur primaire Machi pour les avatars (dégradé simulé)
   const getAvatarColor = () => {
-    const hue = (user.id.charCodeAt(0) * 137.5) % 360;
-    return `hsl(${hue}, 70%, 50%)`;
+    return MachiColors.primary;
   };
 
   return (
@@ -108,7 +108,10 @@ export default function UserCard({ user, onViewProfile }: UserCardProps) {
             
             {/* Badge business */}
             {isBusiness && (
-              <View className="absolute -bottom-1 -right-1 w-5 h-5 bg-orange-500 rounded-full items-center justify-center">
+              <View 
+                className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full items-center justify-center"
+                style={{ backgroundColor: MachiColors.accent }}
+              >
                 <Text className="text-white text-xs">🏢</Text>
               </View>
             )}

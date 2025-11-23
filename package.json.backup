@@ -1,0 +1,45 @@
+{
+  "name": "gemou2-poc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Application mobile & web pour les passionnés de jeux de société",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter=web",
+    "dev:mobile": "turbo run dev --filter=mobile",
+    "build:web": "turbo run build --filter=web",
+    "build:mobile": "turbo run build --filter=mobile",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "setup": "npm install && echo '✅ Installation terminée !'"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "babel-preset-expo": "^54.0.1",
+    "prettier": "^3.1.0",
+    "turbo": "^1.11.0",
+    "typescript": "^5.3.0"
+  },
+  "packageManager": "npm@10.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "tools/*"
+  ],
+  "resolutions": {
+    "expo-constants": "18.0.8"
+  },
+  "overrides": {
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.75.0"
+  }
+}

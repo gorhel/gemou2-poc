@@ -32,8 +32,8 @@ export function ButtonNative({
   
   // Variants
   const variantClasses = {
-    primary: 'bg-blue-600 active:bg-blue-700',
-    secondary: 'bg-gray-100 border border-gray-300 active:bg-gray-200',
+    primary: 'bg-[#6366F1] active:bg-[#4F46E5]',
+    secondary: 'bg-[#F0F2F5] border border-[#E5E7EB] active:bg-[#E5E7EB]',
     danger: 'bg-red-600 active:bg-red-700',
     ghost: 'bg-transparent active:bg-gray-100'
   };
@@ -49,9 +49,9 @@ export function ButtonNative({
   const textBaseClasses = 'font-semibold text-center';
   const textVariantClasses = {
     primary: 'text-white',
-    secondary: 'text-gray-700',
+    secondary: 'text-[#1F2937]',
     danger: 'text-white',
-    ghost: 'text-blue-600'
+    ghost: 'text-[#6366F1]'
   };
   
   const textSizeClasses = {
@@ -84,7 +84,7 @@ export function ButtonNative({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' || variant === 'danger' ? 'white' : '#3b82f6'}
+          color={variant === 'primary' || variant === 'danger' ? 'white' : '#6366F1'}
         />
       ) : (
         <Text className={textClasses}>{children}</Text>

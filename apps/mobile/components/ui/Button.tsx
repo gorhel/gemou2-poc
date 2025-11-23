@@ -8,6 +8,7 @@ import {
   TextStyle,
   Platform
 } from 'react-native';
+import MachiColors from '../../theme/colors';
 
 interface ButtonProps {
   children: React.ReactNode;
@@ -57,7 +58,7 @@ export function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' || variant === 'danger' ? 'white' : '#3b82f6'}
+          color={variant === 'primary' || variant === 'danger' ? 'white' : MachiColors.primary}
         />
       ) : (
         <Text style={textStyles}>{children}</Text>
@@ -80,15 +81,15 @@ const styles = StyleSheet.create({
   
   // Variants
   button_primary: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: MachiColors.primary,
   },
   button_secondary: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: MachiColors.neutral,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: MachiColors.border,
   },
   button_danger: {
-    backgroundColor: '#ef4444',
+    backgroundColor: MachiColors.error,
   },
   button_ghost: {
     backgroundColor: 'transparent',
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
   },
   
   buttonDisabled: {
-    backgroundColor: '#9ca3af',
+    backgroundColor: MachiColors.textSecondary,
     opacity: 0.6,
   },
   
@@ -126,13 +127,13 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   text_secondary: {
-    color: '#374151',
+    color: MachiColors.text,
   },
   text_danger: {
     color: 'white',
   },
   text_ghost: {
-    color: '#3b82f6',
+    color: MachiColors.primary,
   },
   
   // Text sizes

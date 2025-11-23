@@ -6,8 +6,12 @@ import { AuthProvider } from '../components/auth/AuthProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Gémou2 - Jeux de Société',
-  description: 'L\'application qui connecte les passionnés de jeux de société',
+  title: 'Machi - Trouve ton game',
+  description: 'Trouve ton game - Découvre des joueurs, organise des événements et partage ta passion pour les jeux de société',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/icon.png',
+  },
 };
 
 export default function RootLayout({

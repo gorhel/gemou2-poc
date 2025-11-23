@@ -1,16 +1,17 @@
 import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
+import MachiColors from '../../theme/colors';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: 'red',
-        tabBarInactiveTintColor: '#61758A',
+        tabBarActiveTintColor: MachiColors.primary,
+        tabBarInactiveTintColor: MachiColors.textSecondary,
         tabBarStyle: {
           backgroundColor: 'white',
           borderTopWidth: 2,
-          borderTopColor: '#e5e7eb',
+          borderTopColor: MachiColors.border,
           height: Platform.select({ ios: 85, android: 85, web: 85 }),
           paddingBottom: Platform.select({ ios: 25, default: 10 }),
           paddingTop: 10,

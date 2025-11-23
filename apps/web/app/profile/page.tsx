@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientSupabaseClient } from '../../lib/supabase-client';
-import { Button, Card, CardHeader, CardTitle, CardContent, LoadingSpinner } from '../../components/ui';
+import { Button, Card, CardHeader, CardTitle, CardContent, LoadingSpinner, Modal, useModal } from '../../components/ui';
 import { FriendsSlider, UserPreferences } from '../../components/users';
 import ResponsiveLayout from '../../components/layout/ResponsiveLayout';
 
@@ -28,6 +28,23 @@ interface UserGame {
   max_players?: number;
 }
 
+type ProfileSection = 'informations' | 'jeux' | 'preferences' | 'evenements' | 'amis' | 'actions';
+
+interface SectionItem {
+  key: ProfileSection;
+  label: string;
+  icon: string;
+}
+
+const sections: SectionItem[] = [
+  { key: 'informations', label: 'Mes informations', icon: '👤' },
+  { key: 'jeux', label: 'Mes jeux', icon: '🎮' },
+  { key: 'preferences', label: 'Mes préférences', icon: '⭐' },
+  { key: 'evenements', label: 'Mes événements', icon: '📅' },
+  { key: 'amis', label: 'Mes amis', icon: '👥' },
+  { key: 'actions', label: 'Actions', icon: '⚙️' }
+];
+
 export default function ProfilePage() {
   const router = useRouter();
   const supabase = createClientSupabaseClient();
@@ -35,6 +52,8 @@ export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [userEvents, setUserEvents] = useState<UserEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState<ProfileSection | null>(null);
+  const modal = useModal();
 
   useEffect(() => {
     const getUser = async () => {
@@ -142,6 +161,22 @@ export default function ProfilePage() {
     }
   };
 
+  const handleSectionClick = (section: ProfileSection) => {
+    setActiveSection(section);
+    modal.open();
+  };
+
+  const handleModalClose = () => {
+    modal.close();
+    setActiveSection(null);
+  };
+
+  const handleValidate = () => {
+    // Action de validation - peut être personnalisée selon la section
+    modal.close();
+    setActiveSection(null);
+  };
+
   if (loading) {
     return (
       <ResponsiveLayout>
@@ -179,198 +214,225 @@ export default function ProfilePage() {
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="px-4 py-6 sm:px-0 space-y-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Profil principal */}
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>👤 Informations du profil</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                        <span className="text-2xl">👤</span>
-                      </div>
-                      <div className="flex-1 text-center md:text-left">
-                        <h3 className="text-3xl font-bold text-gray-900 mb-2">{user.email}</h3>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <div>
-                        <span className="font-medium text-gray-700">Email :</span>
-                        <span className="ml-2 text-gray-600">{user.email}</span>
-                      </div>
-                      <div>
-                        <span className="font-medium text-gray-700">ID utilisateur :</span>
-                        <span className="ml-2 text-gray-600 text-xs font-mono">{user.id}</span>
-                      </div>
-                      <div>
-                        <span className="font-medium text-gray-700">Membre depuis :</span>
-                        <span className="ml-2 text-gray-600">
-                          {new Date(user.created_at).toLocaleDateString('fr-FR')}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="font-medium text-gray-700">Dernière connexion :</span>
-                        <span className="ml-2 text-gray-600">
-                          {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('fr-FR') : 'Maintenant'}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="font-medium text-gray-700">Bio :</span>
-                        <span className="ml-2 text-gray-600">
-                          {user.bio}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          <div className="px-4 py-6 sm:px-0">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Liste des sections */}
+              <div className="lg:col-span-1">
+                <Card className="sticky top-6">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Sections</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <nav className="space-y-1">
+                      {sections.map((section) => (
+                        <button
+                          key={section.key}
+                          onClick={() => handleSectionClick(section.key)}
+                          className={`w-full text-left px-4 py-3 flex items-center space-x-3 transition-colors ${
+                            activeSection === section.key
+                              ? 'bg-blue-50 border-l-4 border-blue-600 text-blue-700 font-medium'
+                              : 'hover:bg-gray-50 text-gray-700'
+                          }`}
+                        >
+                          <span className="text-xl">{section.icon}</span>
+                          <span className="text-sm">{section.label}</span>
+                        </button>
+                      ))}
+                    </nav>
+                  </CardContent>
+                </Card>
+              </div>
 
-              {/* Actions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>⚙️ Actions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <Button className="w-full" variant="outline">
-                      Modifier le profil
-                    </Button>
-                    <Button className="w-full" variant="outline">
-                      Changer le mot de passe
-                    </Button>
-                    <Button className="w-full" variant="outline">
-                      Préférences
-                    </Button>
-                    <Button className="w-full" variant="outline">
-                      Notifications
-                    </Button>
-                  </div>
-                  
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
-                      <div className="flex">
-                        <div className="flex-shrink-0">
-                          <span className="text-gray-400">ℹ️</span>
-                        </div>
-                        <div className="ml-3">
-                          <h3 className="text-sm font-medium text-gray-800">
-                            Fonctionnalités à venir
-                          </h3>
-                          <p className="text-sm text-gray-700 mt-1">
-                            La gestion complète du profil sera disponible prochainement.
-                          </p>
-                        </div>
-                      </div>
+              {/* Message d'information */}
+              <div className="lg:col-span-3">
+                <Card>
+                  <CardContent className="py-12">
+                    <div className="text-center">
+                      <div className="text-6xl mb-4">👆</div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                        Sélectionnez une section
+                      </h3>
+                      <p className="text-gray-600">
+                        Cliquez sur une section dans le menu de gauche pour voir son contenu
+                      </p>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-            {/* Section Mes jeux */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="text-xl font-bold">🎮 Mes jeux</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {userGames.length === 0 ? (
-                  <div className="text-center py-8">
-                    <div className="text-gray-400 mb-4">
-                      <span className="text-4xl">🎲</span>
-                    </div>
-                    <p className="text-gray-600">Aucun jeu dans la collection</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    {userGames.map((game) => (
-                      <div key={game.id} className="text-center">
-                        <div className="aspect-square w-full rounded-lg overflow-hidden bg-gray-200 mb-2">
-                          <img
-                            src={game.thumbnail || game.image || '/placeholder-game.svg'}
-                            alt={game.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = '/placeholder-game.svg';
-                            }}
-                          />
-                        </div>
-                        <p className="text-sm text-gray-600 line-clamp-2">
-                          {game.name}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          </div>
+        </div>
 
-            {/* Section Mes préférences */}
-            <div className="mb-8">
-              <UserPreferences userId={user.id} isOwnProfile={true} />
+        {/* Modale pour le contenu des sections */}
+        <Modal
+          isOpen={modal.isOpen}
+          onClose={handleModalClose}
+          title={activeSection ? sections.find(s => s.key === activeSection)?.label : ''}
+          size="lg"
+          footer={
+            <div className="flex justify-end space-x-3">
+              <Button variant="outline" onClick={handleModalClose}>
+                Annuler
+              </Button>
+              <Button onClick={handleValidate}>
+                Valider
+              </Button>
             </div>
-
-            {/* Section Mes événements */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="text-xl font-bold">📅 Mes événements</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {userEvents.length === 0 ? (
-                  <div className="text-center py-8">
-                    <div className="text-gray-400 mb-4">
-                      <span className="text-4xl">📅</span>
-                    </div>
-                    <p className="text-gray-600">Aucun événement participé</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {userEvents.map((event, index) => (
-                      <div key={event.id} className="flex items-start space-x-4">
-                        {/* Timeline indicator */}
-                        <div className="flex flex-col items-center">
-                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                            <span className="text-blue-600 text-sm">📅</span>
+          }
+        >
+          {activeSection === 'informations' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>👤 Informations du profil</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                            <span className="text-2xl">👤</span>
                           </div>
-                          {index < userEvents.length - 1 && (
-                            <div className="w-0.5 h-8 bg-gray-200 mt-2"></div>
-                          )}
+                          <div className="flex-1 text-center md:text-left">
+                            <h3 className="text-3xl font-bold text-gray-900 mb-2">{user.email}</h3>
+                          </div>
                         </div>
                         
-                        {/* Event content */}
-                        <div className="flex-1 pb-4">
-                          <div className="flex items-center justify-between">
-                            <a href='/events/'>
-                              <h3 className="font-semibold text-gray-900">{event.title}</h3>
-                            </a>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              event.role === 'organizer' 
-                                ? 'bg-purple-100 text-purple-800' 
-                                : 'bg-green-100 text-green-800'
-                            }`}>
-                              {event.role === 'organizer' ? 'Organisateur' : 'Participant'}
+                        <div className="space-y-3">
+                          <div>
+                            <span className="font-medium text-gray-700">Email :</span>
+                            <span className="ml-2 text-gray-600">{user.email}</span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-700">ID utilisateur :</span>
+                            <span className="ml-2 text-gray-600 text-xs font-mono">{user.id}</span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-700">Membre depuis :</span>
+                            <span className="ml-2 text-gray-600">
+                              {new Date(user.created_at).toLocaleDateString('fr-FR')}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {formatDate(event.date_time)} • {event.location}
-                          </p>
-                          {event.description && (
-                            <p className="text-sm text-gray-500 mt-2 line-clamp-2">
-                              {event.description}
-                            </p>
-                          )}
+                          <div>
+                            <span className="font-medium text-gray-700">Dernière connexion :</span>
+                            <span className="ml-2 text-gray-600">
+                              {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('fr-FR') : 'Maintenant'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-700">Bio :</span>
+                            <span className="ml-2 text-gray-600">
+                              {user.bio || 'Aucune bio'}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    </CardContent>
+                  </Card>
+          )}
 
-            {/* Section Mes amis */}
+          {activeSection === 'jeux' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-xl font-bold">🎮 Mes jeux</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {userGames.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="text-gray-400 mb-4">
+                            <span className="text-4xl">🎲</span>
+                          </div>
+                          <p className="text-gray-600">Aucun jeu dans la collection</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                          {userGames.map((game) => (
+                            <div key={game.id} className="text-center">
+                              <div className="aspect-square w-full rounded-lg overflow-hidden bg-gray-200 mb-2">
+                                <img
+                                  src={game.thumbnail || game.image || '/placeholder-game.svg'}
+                                  alt={game.name}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = '/placeholder-game.svg';
+                                  }}
+                                />
+                              </div>
+                              <p className="text-sm text-gray-600 line-clamp-2">
+                                {game.name}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+          )}
+
+          {activeSection === 'preferences' && (
+            <div>
+              <UserPreferences userId={user.id} isOwnProfile={true} />
+            </div>
+          )}
+
+          {activeSection === 'evenements' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-xl font-bold">📅 Mes événements</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {userEvents.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="text-gray-400 mb-4">
+                            <span className="text-4xl">📅</span>
+                          </div>
+                          <p className="text-gray-600">Aucun événement participé</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {userEvents.map((event, index) => (
+                            <div key={event.id} className="flex items-start space-x-4">
+                              {/* Timeline indicator */}
+                              <div className="flex flex-col items-center">
+                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                  <span className="text-blue-600 text-sm">📅</span>
+                                </div>
+                                {index < userEvents.length - 1 && (
+                                  <div className="w-0.5 h-8 bg-gray-200 mt-2"></div>
+                                )}
+                              </div>
+                              
+                              {/* Event content */}
+                              <div className="flex-1 pb-4">
+                                <div className="flex items-center justify-between">
+                                  <a href='/events/'>
+                                    <h3 className="font-semibold text-gray-900">{event.title}</h3>
+                                  </a>
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    event.role === 'organizer' 
+                                      ? 'bg-purple-100 text-purple-800' 
+                                      : 'bg-green-100 text-green-800'
+                                  }`}>
+                                    {event.role === 'organizer' ? 'Organisateur' : 'Participant'}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  {formatDate(event.date_time)} • {event.location}
+                                </p>
+                                {event.description && (
+                                  <p className="text-sm text-gray-500 mt-2 line-clamp-2">
+                                    {event.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+          )}
+
+          {activeSection === 'amis' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">👥 Mes amis</h2>
@@ -384,8 +446,50 @@ export default function ProfilePage() {
               </div>
               <FriendsSlider userId={user?.id} />
             </div>
-          </div>
-        </div>
+          )}
+
+          {activeSection === 'actions' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>⚙️ Actions</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <Button className="w-full" variant="outline">
+                          Modifier le profil
+                        </Button>
+                        <Button className="w-full" variant="outline">
+                          Changer le mot de passe
+                        </Button>
+                        <Button className="w-full" variant="outline">
+                          Préférences
+                        </Button>
+                        <Button className="w-full" variant="outline">
+                          Notifications
+                        </Button>
+                      </div>
+                      
+                      <div className="mt-6 pt-6 border-t border-gray-200">
+                        <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+                          <div className="flex">
+                            <div className="flex-shrink-0">
+                              <span className="text-gray-400">ℹ️</span>
+                            </div>
+                            <div className="ml-3">
+                              <h3 className="text-sm font-medium text-gray-800">
+                                Fonctionnalités à venir
+                              </h3>
+                              <p className="text-sm text-gray-700 mt-1">
+                                La gestion complète du profil sera disponible prochainement.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+          )}
+        </Modal>
       </div>
     </ResponsiveLayout>
   );

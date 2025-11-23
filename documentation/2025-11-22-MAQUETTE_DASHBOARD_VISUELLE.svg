@@ -1,0 +1,103 @@
+<svg width="375" height="812" viewBox="0 0 375 812" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="avatarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366F1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fond principal -->
+  <rect width="375" height="812" fill="#FFFFFF"/>
+  
+  <!-- Header (simplifié) -->
+  <rect x="0" y="0" width="375" height="60" fill="#FFFFFF"/>
+  <text x="20" y="40" font-family="Plus Jakarta Sans, sans-serif" font-size="20" font-weight="700" fill="#1F2937">Machi</text>
+  
+  <!-- Barre de recherche -->
+  <rect x="16" y="80" width="343" height="56" rx="12" fill="#F0F2F5" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="50" y="110" font-family="Plus Jakarta Sans, sans-serif" font-size="15" fill="#6B7280">🔍</text>
+  <text x="70" y="112" font-family="Plus Jakarta Sans, sans-serif" font-size="15" fill="#6B7280">Recherche un événement, un joueur...</text>
+  
+  <!-- Section Événements -->
+  <text x="20" y="170" font-family="Plus Jakarta Sans, sans-serif" font-size="18" font-weight="700" fill="#1F2937">📅 Événements à venir</text>
+  <text x="280" y="170" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="500" fill="#6366F1">Voir tout</text>
+  
+  <!-- Carte événement 1 -->
+  <g transform="translate(20, 190)">
+    <rect width="200" height="180" rx="12" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <!-- Image avec overlay -->
+    <rect x="12" y="12" width="176" height="100" rx="8" fill="#6366F1" opacity="0.7"/>
+    <rect x="12" y="12" width="176" height="100" rx="8" fill="#000000" opacity="0.3"/>
+    <text x="100" y="70" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">Soirée Jeux</text>
+    <!-- Bloc info -->
+    <rect x="12" y="120" width="176" height="48" rx="8" fill="#F0F2F5" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="20" y="138" font-family="Plus Jakarta Sans, sans-serif" font-size="12" fill="#4B5563">📍 Paris 15e</text>
+    <text x="20" y="154" font-family="Plus Jakarta Sans, sans-serif" font-size="12" fill="#4B5563">📅 25 nov 2024</text>
+    <text x="20" y="170" font-family="Plus Jakarta Sans, sans-serif" font-size="12" fill="#4B5563">👤 5/8 participants</text>
+  </g>
+  
+  <!-- Carte événement 2 -->
+  <g transform="translate(232, 190)">
+    <rect width="200" height="180" rx="12" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <rect x="12" y="12" width="176" height="100" rx="8" fill="#8B5CF6" opacity="0.7"/>
+    <rect x="12" y="12" width="176" height="100" rx="8" fill="#000000" opacity="0.3"/>
+    <text x="100" y="70" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">Tournoi Catan</text>
+    <rect x="12" y="120" width="176" height="48" rx="8" fill="#F0F2F5" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="20" y="138" font-family="Plus Jakarta Sans, sans-serif" font-size="12" fill="#4B5563">📍 Lyon</text>
+    <text x="20" y="154" font-family="Plus Jakarta Sans, sans-serif" font-size="12" fill="#4B5563">📅 28 nov 2024</text>
+    <text x="20" y="170" font-family="Plus Jakarta Sans, sans-serif" font-size="12" fill="#4B5563">👤 12/16 participants</text>
+  </g>
+  
+  <!-- Section Marketplace -->
+  <text x="20" y="400" font-family="Plus Jakarta Sans, sans-serif" font-size="18" font-weight="700" fill="#1F2937">🛒 Annonces</text>
+  <text x="280" y="400" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="500" fill="#6366F1">Voir tout</text>
+  
+  <!-- Carte annonce 1 -->
+  <g transform="translate(20, 420)">
+    <rect width="200" height="180" rx="12" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <rect x="12" y="12" width="176" height="100" rx="8" fill="#8B5CF6" opacity="0.7"/>
+    <rect x="12" y="12" width="176" height="100" rx="8" fill="#000000" opacity="0.3"/>
+    <!-- Badge prix -->
+    <rect x="20" y="88" width="50" height="20" rx="6" fill="#F59E0B"/>
+    <text x="45" y="101" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">25€</text>
+    <text x="100" y="70" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">💰 Catan</text>
+    <rect x="12" y="120" width="176" height="48" rx="8" fill="#F0F2F5" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="20" y="138" font-family="Plus Jakarta Sans, sans-serif" font-size="12" fill="#4B5563">📍 Paris 15e</text>
+    <text x="20" y="154" font-family="Plus Jakarta Sans, sans-serif" font-size="12" fill="#4B5563">📅 20 nov 2024</text>
+  </g>
+  
+  <!-- Section Suggestions joueurs -->
+  <text x="20" y="630" font-family="Plus Jakarta Sans, sans-serif" font-size="18" font-weight="700" fill="#1F2937">👥 Suggestions</text>
+  <text x="280" y="630" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="500" fill="#6366F1">Voir tout</text>
+  
+  <!-- Avatar 1 -->
+  <g transform="translate(20, 650)">
+    <rect width="150" height="120" rx="12" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <circle cx="75" cy="40" r="30" fill="url(#avatarGradient)"/>
+    <text x="75" y="48" font-family="Plus Jakarta Sans, sans-serif" font-size="24" font-weight="700" fill="#FFFFFF" text-anchor="middle">J</text>
+    <text x="75" y="95" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#1F2937" text-anchor="middle">Jean</text>
+    <text x="75" y="110" font-family="Plus Jakarta Sans, sans-serif" font-size="11" fill="#6B7280" text-anchor="middle">@jean123</text>
+  </g>
+  
+  <!-- Avatar 2 -->
+  <g transform="translate(182, 650)">
+    <rect width="150" height="120" rx="12" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <circle cx="75" cy="40" r="30" fill="url(#avatarGradient)"/>
+    <text x="75" y="48" font-family="Plus Jakarta Sans, sans-serif" font-size="24" font-weight="700" fill="#FFFFFF" text-anchor="middle">M</text>
+    <text x="75" y="95" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600" fill="#1F2937" text-anchor="middle">Marie</text>
+    <text x="75" y="110" font-family="Plus Jakarta Sans, sans-serif" font-size="11" fill="#6B7280" text-anchor="middle">@marie456</text>
+  </g>
+  
+  <!-- Section Jeux -->
+  <text x="20" y="790" font-family="Plus Jakarta Sans, sans-serif" font-size="18" font-weight="700" fill="#1F2937">🎲 Recommandations</text>
+  <text x="250" y="790" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="500" fill="#6366F1">Actualiser</text>
+  
+  <!-- Tab Bar -->
+  <rect x="0" y="750" width="375" height="62" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2"/>
+  <text x="37" y="785" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="500" fill="#6366F1" text-anchor="middle">🏠</text>
+  <text x="112" y="785" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="500" fill="#6B7280" text-anchor="middle">📅</text>
+  <text x="187" y="785" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="500" fill="#6B7280" text-anchor="middle">🛒</text>
+  <text x="262" y="785" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="500" fill="#6B7280" text-anchor="middle">💬</text>
+  <text x="337" y="785" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="500" fill="#6B7280" text-anchor="middle">👤</text>
+</svg>
+

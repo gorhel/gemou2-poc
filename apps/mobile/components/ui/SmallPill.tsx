@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ViewStyle } from 'react-native';
+import MachiColors from '../../theme/colors';
 
 interface SmallPillProps {
   children: React.ReactNode;
@@ -13,15 +14,15 @@ export default function SmallPill({ children, className = '', style }: SmallPill
       className={`inline-flex items-center px-3 py-1 rounded-full border ${className}`}
       style={[
         {
-          backgroundColor: '#332940',
-          borderColor: '#5B4B70',
+          backgroundColor: MachiColors.secondary + '20', // 20% opacity
+          borderColor: MachiColors.secondary,
         },
         style,
       ]}
     >
       <Text 
         className="text-sm font-medium"
-        style={{ color: '#A78BFA' }}
+        style={{ color: MachiColors.secondary }}
       >
         {children}
       </Text>

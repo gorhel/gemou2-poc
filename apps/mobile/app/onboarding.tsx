@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native
 import { router } from 'expo-router'
 import * as SecureStore from 'expo-secure-store'
 import { PageLayout } from '../components/layout'
+import MachiColors from '../theme/colors'
 
 // Fonction helper pour gérer le storage cross-platform
 const setStorageItem = async (key: string, value: string) => {

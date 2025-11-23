@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, Text, TouchableOpacity, ImageBackground, StyleSheet } from 'react-native';
+import MachiColors from '../../theme/colors';
 
 interface BoardGame {
   id: string;
@@ -88,7 +89,10 @@ export default function GameCard({ game, onViewDetails }: GameCardProps) {
 
         {/* Indicateur de complexité */}
         {game.complexity && game.complexity !== 'N/A' && (
-          <View className="absolute top-2 right-2 bg-black/50 px-2 py-1 rounded">
+          <View 
+            className="absolute top-2 right-2 px-2 py-1 rounded"
+            style={styles.complexityBadge}
+          >
             <Text className="text-white text-xs">{game.complexity}/5</Text>
           </View>
         )}
@@ -97,9 +101,11 @@ export default function GameCard({ game, onViewDetails }: GameCardProps) {
   );
 }
 
-
-
-
+const styles = StyleSheet.create({
+  complexityBadge: {
+    backgroundColor: MachiColors.primary,
+  },
+});
 
 
 

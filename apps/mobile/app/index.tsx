@@ -5,6 +5,7 @@ import * as SecureStore from 'expo-secure-store'
 import { useAuth } from '../components/auth/AuthProvider'
 import AuthForm from '../components/auth/AuthForm'
 import { PageLayout } from '../components/layout'
+import MachiColors from '../theme/colors'
 
 // Fonction helper pour gérer le storage cross-platform
 const getStorageItem = async (key: string): Promise<string | null> => {
@@ -64,7 +65,7 @@ function Dashboard() {
 
   return (
     <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color="#3b82f6" />
+      <ActivityIndicator size="large" color={MachiColors.primary} />
       <Text style={styles.loadingText}>Redirection...</Text>
     </View>
   );
@@ -84,12 +85,16 @@ export default function Home() {
         
         // Si l'onboarding n'a pas été vu, rediriger
         if (!onboardingCompleted) {
-          router.replace('/onboarding');
+          setTimeout(() => {
+            router.replace('/onboarding');
+          }, 0);
         }
       } catch (error) {
         console.error('Erreur lors de la vérification de l\'onboarding:', error);
         // En cas d'erreur, considérer que l'onboarding n'a pas été vu
-        router.replace('/onboarding');
+        setTimeout(() => {
+          router.replace('/onboarding');
+        }, 0);
       } finally {
         setCheckingOnboarding(false);
       }
@@ -101,7 +106,7 @@ export default function Home() {
   if (loading || checkingOnboarding) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3b82f6" />
+        <ActivityIndicator size="large" color={MachiColors.primary} />
         <Text style={styles.loadingText}>
           {checkingOnboarding ? 'Vérification...' : 'Chargement...'}
         </Text>
@@ -113,7 +118,7 @@ export default function Home() {
   if (!hasSeenOnboarding) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3b82f6" />
+        <ActivityIndicator size="large" color={MachiColors.primary} />
         <Text style={styles.loadingText}>Redirection vers l'onboarding...</Text>
       </View>
     );
@@ -138,23 +143,23 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: MachiColors.background,
   },
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: '#666',
+    color: MachiColors.textSecondary,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
-    color: '#1f2937',
+    color: MachiColors.text,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6b7280',
+    color: MachiColors.textSecondary,
     textAlign: 'center',
     marginBottom: 30,
     lineHeight: 24,
@@ -185,11 +190,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
-    color: '#1f2937',
+    color: MachiColors.text,
   },
   featureText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: MachiColors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -211,11 +216,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 8,
-    color: '#1f2937',
+    color: MachiColors.text,
   },
   welcomeSubtitle: {
     fontSize: 16,
-    color: '#6b7280',
+    color: MachiColors.textSecondary,
     marginBottom: 15,
   },
   signOutButton: {
@@ -255,11 +260,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
-    color: '#1f2937',
+    color: MachiColors.text,
   },
   cardText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: MachiColors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },

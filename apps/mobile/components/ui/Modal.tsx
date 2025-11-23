@@ -10,6 +10,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Button } from './Button';
+import MachiColors from '../../theme/colors';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export interface ModalProps {
   showCloseButton?: boolean;
   closeOnOverlayClick?: boolean;
   footer?: React.ReactNode;
+  contentPadding?: number;
 }
 
 const getModalSizeStyle = (size: ModalProps['size'] = 'md') => {
@@ -47,6 +49,7 @@ export const Modal: React.FC<ModalProps> = ({
   showCloseButton = true,
   closeOnOverlayClick = true,
   footer,
+  contentPadding = 24,
 }) => {
   const modalSizeStyle = getModalSizeStyle(size);
 
@@ -96,7 +99,7 @@ export const Modal: React.FC<ModalProps> = ({
           )}
 
           {/* Content */}
-          <ScrollView style={styles.modalScrollView} showsVerticalScrollIndicator={false}>
+          <ScrollView style={[styles.modalScrollView, { padding: contentPadding }]} showsVerticalScrollIndicator={false}>
             {children}
           </ScrollView>
 
@@ -237,7 +240,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 24,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: MachiColors.border,
   },
   modalHeaderContent: {
     flex: 1,
@@ -245,25 +248,25 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111827',
+    color: MachiColors.text,
   },
   modalDescription: {
     marginTop: 4,
     fontSize: 14,
-    color: '#6b7280',
+    color: MachiColors.textSecondary,
   },
   closeButton: {
     padding: 8,
     borderRadius: 6,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: MachiColors.neutral,
   },
   closeButtonText: {
-    color: '#6b7280',
+    color: MachiColors.textSecondary,
     fontSize: 20,
     fontWeight: '600',
   },
   modalScrollView: {
-    padding: 24,
+    // padding est maintenant contrôlé par la prop contentPadding
   },
   modalFooter: {
     flexDirection: 'row',
@@ -271,8 +274,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     padding: 24,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-    backgroundColor: '#f9fafb',
+    borderTopColor: MachiColors.border,
+    backgroundColor: MachiColors.background,
   },
   confirmModalContent: {
     alignItems: 'center',
@@ -284,16 +287,16 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: MachiColors.neutral,
     marginBottom: 16,
   },
   confirmModalIcon: {
     fontSize: 24,
-    color: '#6b7280',
+    color: MachiColors.textSecondary,
   },
   confirmModalMessage: {
     fontSize: 14,
-    color: '#6b7280',
+    color: MachiColors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },

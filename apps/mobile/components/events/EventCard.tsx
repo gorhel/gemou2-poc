@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image, ImageBackground } from 'react-native';
 import { Button } from '../ui/Button';
+import MachiColors from '../../theme/colors';
 
 interface Event {
   id: string;
@@ -50,13 +51,13 @@ export default function EventCard({ event, onViewDetails, onJoinEvent, onPartici
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return '#10b981'; // green-500
+        return MachiColors.success;
       case 'cancelled':
-        return '#ef4444'; // red-500
+        return MachiColors.error;
       case 'completed':
-        return '#6b7280'; // gray-500
+        return MachiColors.textSecondary;
       default:
-        return '#6b7280';
+        return MachiColors.textSecondary;
     }
   };
 
@@ -72,8 +73,11 @@ export default function EventCard({ event, onViewDetails, onJoinEvent, onPartici
         className="absolute inset-0"
         resizeMode="cover"
       >
-        {/* Overlay sombre */}
-        <View className="absolute inset-0 bg-black/40" />
+        {/* Overlay avec couleur primaire Machi */}
+        <View 
+          className="absolute inset-0" 
+          style={{ backgroundColor: MachiColors.overlayPrimary }}
+        />
         
         {/* Contenu en bas */}
         <View className="absolute bottom-0 left-0 right-0 p-4">

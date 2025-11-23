@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ActivityIndicator, ViewStyle } from 'react-native';
+import MachiColors from '../../theme/colors';
 
 export interface LoadingProps {
   size?: 'small' | 'large';
@@ -9,9 +10,9 @@ export interface LoadingProps {
 }
 
 const colorMap = {
-  primary: '#3b82f6',
-  secondary: '#8b5cf6',
-  gray: '#6b7280',
+  primary: MachiColors.primary,
+  secondary: MachiColors.secondary,
+  gray: MachiColors.textSecondary,
   white: '#ffffff',
 };
 

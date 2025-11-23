@@ -2,6 +2,7 @@ import React from 'react'
 import { View, ScrollView, StyleSheet, RefreshControl } from 'react-native'
 import PageFooter from './PageFooter'
 import { TopHeader } from '../TopHeader'
+import MachiColors from '../../theme/colors'
 
 interface PageLayoutProps {
   children: React.ReactNode
@@ -103,7 +104,7 @@ export function PageLayout({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc'
+    backgroundColor: MachiColors.background
   },
   scrollView: {
     flex: 1

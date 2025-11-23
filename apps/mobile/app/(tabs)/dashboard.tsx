@@ -17,6 +17,7 @@ import {
 import { router } from 'expo-router'
 import { supabase } from '../../lib'
 import { PageLayout } from '../../components/layout'
+import MachiColors from '../../theme/colors'
 
 const { width } = Dimensions.get('window');
 
@@ -247,7 +248,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3b82f6" />
+        <ActivityIndicator size="large" color={MachiColors.primary} />
         <Text style={styles.loadingText}>Chargement du tableau de bord...</Text>
       </View>
     );
@@ -286,7 +287,7 @@ export default function DashboardPage() {
         </View>
 
         {eventsLoading ? (
-          <ActivityIndicator color="#3b82f6" style={{ marginVertical: 20 }} />
+          <ActivityIndicator color={MachiColors.primary} style={{ marginVertical: 20 }} />
         ) : events.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>🎲</Text>
@@ -346,7 +347,7 @@ export default function DashboardPage() {
         </View>
 
         {marketplaceLoading ? (
-          <ActivityIndicator color="#3b82f6" style={{ marginVertical: 20 }} />
+          <ActivityIndicator color={MachiColors.primary} style={{ marginVertical: 20 }} />
         ) : marketplaceItems.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>📦</Text>
@@ -410,7 +411,7 @@ export default function DashboardPage() {
         </View>
 
         {usersLoading ? (
-          <ActivityIndicator color="#3b82f6" style={{ marginVertical: 20 }} />
+          <ActivityIndicator color={MachiColors.primary} style={{ marginVertical: 20 }} />
         ) : users.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>👥</Text>
@@ -456,7 +457,7 @@ export default function DashboardPage() {
         </View>
 
         {gamesLoading ? (
-          <ActivityIndicator color="#3b82f6" style={{ marginVertical: 20 }} />
+          <ActivityIndicator color={MachiColors.primary} style={{ marginVertical: 20 }} />
         ) : games.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>🎲</Text>
@@ -528,22 +529,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f0f4f8',
+    backgroundColor: MachiColors.background,
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#6b7280',
+    color: MachiColors.textSecondary,
   },
   searchBar: {
     margin: 16,
     marginTop: 12,
     marginBottom: 12,
     padding: 16,
-    backgroundColor: 'white',
+    backgroundColor: MachiColors.neutral,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: MachiColors.border,
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#000',
@@ -559,7 +560,7 @@ const styles = StyleSheet.create({
   searchPlaceholder: {
     flex: 1,
     fontSize: 15,
-    color: '#9ca3af',
+    color: MachiColors.textSecondary,
   },
   section: {
     marginTop: 8,
@@ -574,11 +575,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: MachiColors.text,
   },
   seeAllText: {
     fontSize: 14,
-    color: '#3b82f6',
+    color: MachiColors.primary,
     fontWeight: '500',
   },
   horizontalScroll: {
@@ -613,7 +614,7 @@ const styles = StyleSheet.create({
   },
   eventOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: MachiColors.overlayPrimary,
     borderRadius: 8,
   },
   eventTitleOverlay: {
@@ -637,15 +638,15 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   eventInfoBlock: {
-    backgroundColor: '#f9fafb',
+    backgroundColor: MachiColors.neutral,
     borderRadius: 8,
     padding: 10,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: MachiColors.border,
   },
   eventInfoText: {
     fontSize: 12,
-    color: '#4b5563',
+    color: MachiColors.text,
     marginBottom: 4,
     lineHeight: 18,
   },
@@ -671,7 +672,7 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: '50%',
-    backgroundColor: '#3b82f6',
+    backgroundColor: MachiColors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
@@ -689,13 +690,13 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#1f2937',
+    color: MachiColors.text,
     textAlign: 'center',
     marginBottom: 2,
   },
   userUsername: {
     fontSize: 11,
-    color: '#6b7280',
+    color: MachiColors.textSecondary,
     textAlign: 'center',
   },
   marketplaceGrid: {
@@ -734,7 +735,7 @@ const styles = StyleSheet.create({
   },
   marketplaceOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: MachiColors.overlaySecondary,
     borderRadius: 8,
   },
   marketplaceTitleOverlay: {
@@ -754,7 +755,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 8,
     left: 8,
-    backgroundColor: '#3b82f6',
+    backgroundColor: MachiColors.accent,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -773,15 +774,15 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   marketplaceInfoBlock: {
-    backgroundColor: '#f9fafb',
+    backgroundColor: MachiColors.neutral,
     borderRadius: 8,
     padding: 10,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: MachiColors.border,
   },
   marketplaceInfoText: {
     fontSize: 12,
-    color: '#4b5563',
+    color: MachiColors.text,
     marginBottom: 4,
     lineHeight: 18,
   },
@@ -801,7 +802,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: MachiColors.textSecondary,
   },
   horizontalScrollGames: {
     marginBottom: 16,
@@ -857,7 +858,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: MachiColors.primary,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,

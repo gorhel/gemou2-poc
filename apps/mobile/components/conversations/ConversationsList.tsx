@@ -23,6 +23,14 @@ interface ConversationItemProps {
     image_url: string | null
     date_time: string
   } | null
+  marketplace_item: {
+    id: string
+    title: string
+    images: string[] | null
+    price: number | null
+    type: string
+    seller_id: string
+  } | null
   created_at: string
 }
 
@@ -41,17 +49,21 @@ export function ConversationsList() {
       }
 
       setUser(user)
+      console.log('[ConversationsList] Loading conversations for user:', user.id)
 
       const { conversations: data, error } = await getUserConversations(supabase, user.id)
       
       if (error) {
-        console.error('Error loading conversations:', error)
+        console.error('[ConversationsList] Error loading conversations:', error)
+        console.error('[ConversationsList] Error details:', JSON.stringify(error, null, 2))
         return
       }
 
+      console.log('[ConversationsList] Conversations loaded:', data?.length || 0)
+      console.log('[ConversationsList] Conversations data:', JSON.stringify(data, null, 2))
       setConversations(data || [])
     } catch (error) {
-      console.error('Error loading conversations:', error)
+      console.error('[ConversationsList] Exception loading conversations:', error)
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -84,57 +96,95 @@ export function ConversationsList() {
     }
   }
 
-  const renderConversation = ({ item }: { item: ConversationItemProps }) => (
-    <TouchableOpacity
-      style={styles.conversationCard}
-      onPress={() => router.push(`/conversations/${item.id}`)}
-    >
-      <View style={styles.conversationImageContainer}>
-        {item.event?.image_url ? (
-          <Image
-            source={{ uri: item.event.image_url }}
-            style={styles.conversationImage}
-            resizeMode="cover"
-          />
-        ) : (
-          <View style={styles.conversationImagePlaceholder}>
-            <Text style={styles.conversationImageEmoji}>💬</Text>
-          </View>
-        )}
-      </View>
+  const renderConversation = ({ item }: { item: ConversationItemProps }) => {
+    const isMarketplace = item.type === 'marketplace'
+    const isEvent = item.type === 'event'
+    
+    // Image pour marketplace ou event
+    const imageUrl = isMarketplace 
+      ? (item.marketplace_item?.images?.[0] || null)
+      : (item.event?.image_url || null)
+    
+    // Titre pour marketplace ou event
+    const title = isMarketplace
+      ? item.marketplace_item?.title || 'Annonce'
+      : item.event?.title || 'Conversation'
+    
+    // Prix pour marketplace
+    const price = isMarketplace && item.marketplace_item?.price
+      ? `${item.marketplace_item.price}€`
+      : null
 
-      <View style={styles.conversationInfo}>
-        <Text style={styles.conversationTitle} numberOfLines={1}>
-          {item.event?.title || 'Conversation'}
-        </Text>
-        <Text style={styles.conversationSubtitle} numberOfLines={1}>
-          {formatDate(item.created_at)}
-        </Text>
-        {item.event?.date_time && (
-          <Text style={styles.conversationDate}>
-            📅 {new Date(item.event.date_time).toLocaleDateString('fr-FR', {
-              day: 'numeric',
-              month: 'short',
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
-          </Text>
-        )}
-      </View>
-
+    return (
       <TouchableOpacity
-        style={styles.viewEventButton}
-        onPress={(e) => {
-          e.stopPropagation()
-          if (item.event?.id) {
-            router.push(`/events/${item.event.id}`)
-          }
-        }}
+        style={styles.conversationCard}
+        onPress={() => router.push(`/conversations/${item.id}`)}
       >
-        <Text style={styles.viewEventButtonText}>Voir l'événement</Text>
+        <View style={styles.conversationImageContainer}>
+          {imageUrl ? (
+            <Image
+              source={{ uri: imageUrl }}
+              style={styles.conversationImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.conversationImagePlaceholder}>
+              <Text style={styles.conversationImageEmoji}>
+                {isMarketplace ? '🛒' : '💬'}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.conversationInfo}>
+          <Text style={styles.conversationTitle} numberOfLines={1}>
+            {title}
+          </Text>
+          <Text style={styles.conversationSubtitle} numberOfLines={1}>
+            {formatDate(item.created_at)}
+          </Text>
+          {isEvent && item.event?.date_time && (
+            <Text style={styles.conversationDate}>
+              📅 {new Date(item.event.date_time).toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </Text>
+          )}
+          {isMarketplace && price && (
+            <Text style={styles.conversationDate}>
+              💰 {price}
+            </Text>
+          )}
+        </View>
+
+        {isEvent && item.event?.id && (
+          <TouchableOpacity
+            style={styles.viewEventButton}
+            onPress={(e) => {
+              e.stopPropagation()
+              router.push(`/events/${item.event.id}`)
+            }}
+          >
+            <Text style={styles.viewEventButtonText}>Voir l'événement</Text>
+          </TouchableOpacity>
+        )}
+        {isMarketplace && item.marketplace_item?.id && (
+          <TouchableOpacity
+            style={styles.viewEventButton}
+            onPress={(e) => {
+              e.stopPropagation()
+              router.push(`/trade/${item.marketplace_item.id}`)
+            }}
+          >
+            <Text style={styles.viewEventButtonText}>Voir l'annonce</Text>
+          </TouchableOpacity>
+        )}
       </TouchableOpacity>
-    </TouchableOpacity>
-  )
+    )
+  }
 
   if (loading) {
     return (
@@ -151,7 +201,7 @@ export function ConversationsList() {
         <Text style={styles.emptyEmoji}>💬</Text>
         <Text style={styles.emptyTitle}>Aucune conversation</Text>
         <Text style={styles.emptyText}>
-          Les conversations de groupe apparaîtront ici lorsque vous participerez à des événements.
+          Les conversations de groupe et marketplace apparaîtront ici lorsque vous participerez à des événements ou contacterez un vendeur.
         </Text>
       </View>
     )

@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ActivityInd
 import { router } from 'expo-router'
 import { supabase } from '../lib'
 import { PageLayout } from '../components/layout'
+import MachiColors from '../theme/colors'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MachiColors.background,
   },
   header: {
     alignItems: 'center',
@@ -221,11 +222,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
-    color: '#1f2937',
+    color: MachiColors.text,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6b7280',
+    color: MachiColors.textSecondary,
     textAlign: 'center',
   },
   form: {
@@ -257,7 +258,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   loginButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: MachiColors.primary,
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
@@ -265,7 +266,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonDisabled: {
-    backgroundColor: '#9ca3af',
+    backgroundColor: MachiColors.textSecondary,
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   linkButtonText: {
-    color: '#3b82f6',
+    color: MachiColors.primary,
     fontSize: 15,
     textAlign: 'center',
   },

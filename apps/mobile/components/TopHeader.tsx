@@ -10,6 +10,7 @@ import {
 import { router, usePathname } from 'expo-router'
 import { getHeaderConfig, HeaderConfig } from '../config/headers.config'
 import { useDefaultActionHandlers } from '../hooks/useDefaultActionHandlers'
+import MachiColors from '../theme/colors'
 
 interface TopHeaderProps {
   // Props optionnelles pour override la config
@@ -156,7 +157,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: MachiColors.border,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -181,18 +182,18 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 16,
-    color: '#3b82f6',
+    color: MachiColors.primary,
     fontWeight: '500',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: MachiColors.text,
     textAlign: 'center',
   },
   headerSubtitle: {
     fontSize: 12,
-    color: '#6b7280',
+    color: MachiColors.textSecondary,
     marginTop: 2,
     textAlign: 'center',
   },
@@ -213,7 +214,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   actionText: {
-    color: '#6b7280',
+    color: MachiColors.textSecondary,
     fontSize: 14,
     fontWeight: '500',
   },

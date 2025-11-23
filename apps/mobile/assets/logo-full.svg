@@ -1,0 +1,38 @@
+<svg width="400" height="200" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="diceGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366F1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Dé stylisé avec M intégré -->
+  <g transform="translate(50, 50)">
+    <!-- Face principale du dé (isométrique) -->
+    <path d="M 40 0 L 100 20 L 100 80 L 40 100 L 0 80 L 0 20 Z" fill="url(#diceGradient)" stroke="#1F2937" stroke-width="2"/>
+    
+    <!-- Face supérieure (perspective) -->
+    <path d="M 40 0 L 100 20 L 80 0 L 20 0 Z" fill="#8B5CF6" opacity="0.7"/>
+    
+    <!-- Face latérale (perspective) -->
+    <path d="M 100 20 L 100 80 L 80 100 L 80 0 Z" fill="#6366F1" opacity="0.5"/>
+    
+    <!-- Lettre M intégrée dans le dé (version simplifiée et plus lisible) -->
+    <path d="M 25 35 L 25 65 L 35 50 L 50 65 L 50 35 L 40 35 L 40 50 L 35 45 L 25 50 Z" fill="#F0F2F5" stroke="#1F2937" stroke-width="1"/>
+    <path d="M 50 35 L 50 65 L 60 50 L 75 65 L 75 35 L 65 35 L 65 50 L 60 45 L 50 50 Z" fill="#F0F2F5" stroke="#1F2937" stroke-width="1"/>
+    
+    <!-- Points de dé stylisés -->
+    <circle cx="30" cy="25" r="4" fill="#F59E0B"/>
+    <circle cx="70" cy="25" r="4" fill="#F59E0B"/>
+    <circle cx="50" cy="45" r="4" fill="#F59E0B"/>
+    <circle cx="30" cy="65" r="4" fill="#F59E0B"/>
+    <circle cx="70" cy="65" r="4" fill="#F59E0B"/>
+  </g>
+  
+  <!-- Texte "Machi" -->
+  <text x="200" y="80" font-family="Plus Jakarta Sans, sans-serif" font-size="48" font-weight="700" fill="#1F2937">Machi</text>
+  
+  <!-- Slogan "Trouve ton game" -->
+  <text x="200" y="120" font-family="Plus Jakarta Sans, sans-serif" font-size="20" font-weight="400" fill="#6366F1">Trouve ton game</text>
+</svg>
+

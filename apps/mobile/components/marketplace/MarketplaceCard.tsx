@@ -1,6 +1,7 @@
 import { router } from 'expo-router'
 import React from 'react'
 import { View, Text, TouchableOpacity, ImageBackground, StyleSheet, Image } from 'react-native'
+import MachiColors from '../../theme/colors'
 
 interface MarketplaceItem {
   id: string
@@ -222,19 +223,19 @@ const styles = StyleSheet.create({
   },
   eventTimeSection: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: MachiColors.textSecondary,
     fontWeight: '500',
     marginBottom: 4,
   },
   eventTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: MachiColors.text,
     marginBottom: 8,
   },
   eventTime: {
     fontSize: 14,
-    color: '#6b7280',
+    color: MachiColors.textSecondary,
   },
   eventImageContainer: {
     width: 80,
@@ -249,7 +250,7 @@ const styles = StyleSheet.create({
   eventImagePlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#e5e7eb',
+    backgroundColor: MachiColors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },

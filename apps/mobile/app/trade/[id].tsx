@@ -29,6 +29,7 @@ export default function TradeDetailsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isCreatingConversation, setIsCreatingConversation] = useState(false);
 
   const loadTrade = async () => {
     try {
@@ -91,18 +92,51 @@ export default function TradeDetailsPage() {
     }
   }, [id]);
 
-  const handleContact = () => {
-    if (Platform.OS === 'web') {
-      alert(`Contacter ${seller?.username || 'le vendeur'}`);
-    } else {
-      Alert.alert(
-        'Contacter le vendeur',
-        `Souhaitez-vous contacter ${seller?.username || 'ce vendeur'} ?`,
-        [
-          { text: 'Annuler', style: 'cancel' },
-          { text: 'Contacter', onPress: () => {} }
-        ]
+  const handleContact = async () => {
+    if (!user || !item || isCreatingConversation) return;
+
+    // Vérifier que l'utilisateur n'est pas le vendeur
+    const sellerId = item.seller_id || item.user_id;
+    if (user.id === sellerId) {
+      Alert.alert('Erreur', 'Vous ne pouvez pas vous contacter vous-même');
+      return;
+    }
+
+    setIsCreatingConversation(true);
+
+    try {
+      // Appeler la fonction RPC pour créer la conversation
+      const { data: conversationId, error } = await supabase.rpc(
+        'create_marketplace_conversation',
+        {
+          p_marketplace_item_id: item.id,
+          p_buyer_id: user.id,
+        }
       );
+
+      if (error) {
+        console.error('Error creating conversation:', error);
+        // Afficher un message d'erreur plus détaillé pour le débogage
+        const errorMessage = error.message || 'Impossible de créer la conversation. Veuillez réessayer.';
+        Alert.alert(
+          'Erreur',
+          errorMessage
+        );
+        return;
+      }
+
+      if (!conversationId) {
+        Alert.alert('Erreur', 'Aucune conversation n\'a été créée');
+        return;
+      }
+
+      // Rediriger vers la conversation
+      router.push(`/conversations/${conversationId}`);
+    } catch (err) {
+      console.error('Error:', err);
+      Alert.alert('Erreur', 'Une erreur est survenue lors de la création de la conversation');
+    } finally {
+      setIsCreatingConversation(false);
     }
   };
 
@@ -317,8 +351,13 @@ export default function TradeDetailsPage() {
           <TouchableOpacity
             style={styles.contactButton}
             onPress={handleContact}
+            disabled={isCreatingConversation}
           >
-            <Text style={styles.contactButtonText}>💬 Contacter le vendeur</Text>
+            {isCreatingConversation ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.contactButtonText}>💬 Contacter le vendeur</Text>
+            )}
           </TouchableOpacity>
         )}
 

@@ -2,25 +2,32 @@ import 'dotenv/config';
 
 export default {
   expo: {
-    name: "Gémou2",
-    slug: "gemou2-poc",
+    name: "Machi",
+    slug: "machi",
     version: "1.0.0",
     orientation: "portrait",
     platforms: ["ios", "android", "web"],
     userInterfaceStyle: "light",
     assetBundlePatterns: ["**/*"],
+    icon: "./assets/icon.png",
+    splash: {
+      image: "./assets/splash.png",
+      backgroundColor: "#6366F1",
+      resizeMode: "contain"
+    },
     
     // iOS Configuration
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.gemou2.poc"
+      bundleIdentifier: "com.machi.app"
     },
     
     // Android Configuration
     android: {
-      package: "com.gemou2.poc",
+      package: "com.machi.app",
       adaptiveIcon: {
-        backgroundColor: "#ffffff"
+        foregroundImage: "./assets/adaptive-icon.png",
+        backgroundColor: "#6366F1"
       }
     },
     
@@ -31,9 +38,9 @@ export default {
       favicon: "./assets/favicon.png",
       // Configuration SEO
       meta: {
-        title: "Gémou2 - Communauté de passionnés de jeux de société",
-        description: "Trouvez des joueurs, organisez des événements et partagez votre passion pour les jeux de société",
-        keywords: "jeux de société, board games, communauté, événements, marketplace"
+        title: "Machi - Trouve ton game",
+        description: "Trouve ton game - Découvre des joueurs, organise des événements et partage ta passion pour les jeux de société",
+        keywords: "jeux de société, board games, communauté, événements, marketplace, machi, trouve ton game"
       }
     },
     
@@ -48,7 +55,7 @@ export default {
         }
       ]
     ],
-    scheme: "gemou2",
+    scheme: "machi",
     experiments: {
       typedRoutes: true
     },

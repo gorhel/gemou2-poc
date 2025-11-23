@@ -33,7 +33,7 @@ export const Input = React.forwardRef<TextInput, InputProps>(
     const inputClasses = `
       border rounded-lg
       ${error ? 'border-red-300' : 'border-gray-300'}
-      ${!editable ? 'bg-gray-50 text-gray-400' : 'bg-white'}
+      ${!editable ? 'bg-gray-50 text-gray-400' : 'bg-[#F0F2F5]'}
       ${sizeClasses[size]}
       ${fullWidth ? 'w-full' : ''}
       ${leftIcon ? 'pl-10' : ''}
@@ -59,6 +59,7 @@ export const Input = React.forwardRef<TextInput, InputProps>(
           <TextInput
             ref={ref}
             className={inputClasses}
+            style={{ fontFamily: 'Plus Jakarta Sans' }}
             editable={editable}
             placeholderTextColor="#9ca3af"
             {...props}
@@ -120,7 +121,7 @@ export const Textarea = React.forwardRef<TextInput, TextareaProps>(
     const textareaClasses = `
       border rounded-lg
       ${error ? 'border-red-300' : 'border-gray-300'}
-      ${!editable ? 'bg-gray-50 text-gray-400' : 'bg-white'}
+      ${!editable ? 'bg-gray-50 text-gray-400' : 'bg-[#F0F2F5]'}
       ${sizeClasses[size]}
       ${fullWidth ? 'w-full' : ''}
       ${className}
@@ -140,6 +141,7 @@ export const Textarea = React.forwardRef<TextInput, TextareaProps>(
           numberOfLines={rows}
           textAlignVertical="top"
           className={textareaClasses}
+          style={{ fontFamily: 'Plus Jakarta Sans' }}
           editable={editable}
           placeholderTextColor="#9ca3af"
           {...props}

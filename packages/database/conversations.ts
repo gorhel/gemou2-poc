@@ -79,6 +79,8 @@ export async function getUserConversations(
   userId: string
 ): Promise<{ conversations: any[] | null; error: any }> {
   try {
+    console.log('[getUserConversations] Fetching conversations for user:', userId)
+    
     const { data, error } = await supabase
       .from('conversation_members')
       .select(`
@@ -87,6 +89,7 @@ export async function getUserConversations(
           id,
           type,
           event_id,
+          marketplace_item_id,
           created_by,
           created_at,
           events (
@@ -94,13 +97,26 @@ export async function getUserConversations(
             title,
             image_url,
             date_time
+          ),
+          marketplace_items (
+            id,
+            title,
+            images,
+            price,
+            type,
+            seller_id
           )
         )
       `)
       .eq('user_id', userId)
       .order('joined_at', { ascending: false })
 
-    if (error) throw error
+    if (error) {
+      console.error('[getUserConversations] Supabase error:', error)
+      throw error
+    }
+
+    console.log('[getUserConversations] Raw data received:', JSON.stringify(data, null, 2))
 
     // Transformer les données pour avoir un format plus simple
     const conversations = data
@@ -109,14 +125,20 @@ export async function getUserConversations(
         id: item.conversations.id,
         type: item.conversations.type,
         event_id: item.conversations.event_id,
+        marketplace_item_id: item.conversations.marketplace_item_id,
         created_by: item.conversations.created_by,
         created_at: item.conversations.created_at,
-        event: item.conversations.events
+        event: item.conversations.events,
+        marketplace_item: item.conversations.marketplace_items
       }))
+
+    console.log('[getUserConversations] Transformed conversations:', JSON.stringify(conversations, null, 2))
+    console.log('[getUserConversations] Total conversations:', conversations.length)
+    console.log('[getUserConversations] Marketplace conversations:', conversations.filter(c => c.type === 'marketplace').length)
 
     return { conversations, error: null }
   } catch (error) {
-    console.error('Error fetching user conversations:', error)
+    console.error('[getUserConversations] Error fetching user conversations:', error)
     return { conversations: null, error }
   }
 }
@@ -222,12 +244,39 @@ export async function getConversationDetails(
   conversationId: string
 ): Promise<{ conversation: any | null; error: any }> {
   try {
+    console.log('[getConversationDetails] Fetching conversation:', conversationId)
+    
+    // D'abord vérifier si l'utilisateur est membre de la conversation
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      console.error('[getConversationDetails] No authenticated user')
+      return { conversation: null, error: { message: 'Not authenticated' } }
+    }
+
+    console.log('[getConversationDetails] User ID:', user.id)
+
+    // Vérifier si l'utilisateur est membre
+    const { data: memberCheck, error: memberError } = await supabase
+      .from('conversation_members')
+      .select('conversation_id')
+      .eq('conversation_id', conversationId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (memberError || !memberCheck) {
+      console.error('[getConversationDetails] User is not a member of this conversation:', memberError)
+      return { conversation: null, error: { message: 'Not a member of this conversation', code: 'NOT_MEMBER' } }
+    }
+
+    console.log('[getConversationDetails] User is a member, fetching conversation details')
+
     const { data, error } = await supabase
       .from('conversations')
       .select(`
         id,
         type,
         event_id,
+        marketplace_item_id,
         created_by,
         created_at,
         events (
@@ -236,17 +285,75 @@ export async function getConversationDetails(
           image_url,
           date_time,
           location
+        ),
+        marketplace_items (
+          id,
+          title,
+          images,
+          price,
+          type,
+          seller_id
         )
       `)
       .eq('id', conversationId)
-      .single()
+      .maybeSingle()
 
-    if (error) throw error
+    if (error) {
+      console.error('[getConversationDetails] Supabase error:', error)
+      throw error
+    }
+
+    if (!data) {
+      console.error('[getConversationDetails] Conversation not found')
+      return { conversation: null, error: { message: 'Conversation not found', code: 'NOT_FOUND' } }
+    }
+
+    console.log('[getConversationDetails] Conversation found:', {
+      id: data.id,
+      type: data.type,
+      hasEvent: !!data.events,
+      hasMarketplaceItem: !!data.marketplace_items
+    })
 
     return { conversation: data, error: null }
   } catch (error) {
-    console.error('Error fetching conversation details:', error)
+    console.error('[getConversationDetails] Exception:', error)
     return { conversation: null, error }
+  }
+}
+
+/**
+ * Crée une conversation marketplace entre un acheteur et un vendeur
+ * Utilise la fonction RPC create_marketplace_conversation qui gère la logique
+ * de vérification et de création de manière sécurisée
+ * @param supabase - Client Supabase
+ * @param marketplaceItemId - ID de l'annonce marketplace
+ * @param buyerId - ID de l'acheteur
+ * @returns L'ID de la conversation créée ou récupérée
+ */
+export async function createMarketplaceConversation(
+  supabase: SupabaseClient<Database>,
+  marketplaceItemId: string,
+  buyerId: string
+): Promise<{ conversationId: string | null; error: any }> {
+  try {
+    const { data: conversationId, error } = await supabase.rpc(
+      'create_marketplace_conversation',
+      {
+        p_marketplace_item_id: marketplaceItemId,
+        p_buyer_id: buyerId
+      }
+    )
+
+    if (error) {
+      console.error('Error creating marketplace conversation:', error)
+      return { conversationId: null, error }
+    }
+
+    return { conversationId, error: null }
+  } catch (error) {
+    console.error('Error creating marketplace conversation:', error)
+    return { conversationId: null, error }
   }
 }
 

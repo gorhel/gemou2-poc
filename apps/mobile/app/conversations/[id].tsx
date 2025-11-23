@@ -11,7 +11,8 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  Image
+  Image,
+  Alert
 } from 'react-native'
 import { useLocalSearchParams, router } from 'expo-router'
 import { getConversationDetails, getConversationMessages, sendMessage } from '@gemou2/database'
@@ -35,7 +36,8 @@ interface Message {
 interface ConversationDetails {
   id: string
   type: string
-  event_id: string
+  event_id: string | null
+  marketplace_item_id: string | null
   created_by: string
   created_at: string
   events: {
@@ -44,7 +46,15 @@ interface ConversationDetails {
     image_url: string | null
     date_time: string
     location: string
-  }
+  } | null
+  marketplace_items: {
+    id: string
+    title: string
+    images: string[] | null
+    price: number | null
+    type: string
+    seller_id: string
+  } | null
 }
 
 export default function ConversationPage() {
@@ -86,25 +96,58 @@ export default function ConversationPage() {
 
   const loadConversation = async () => {
     try {
+      console.log('[ConversationPage] Loading conversation:', id)
+      
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
+        console.error('[ConversationPage] No user, redirecting to login')
         router.replace('/login')
         return
       }
       setUser(user)
+      console.log('[ConversationPage] User authenticated:', user.id)
 
       // Charger les détails de la conversation
       const { conversation: convData, error: convError } = await getConversationDetails(supabase, id)
       if (convError) {
-        console.error('Error loading conversation:', convError)
+        console.error('[ConversationPage] Error loading conversation:', convError)
+        console.error('[ConversationPage] Error details:', JSON.stringify(convError, null, 2))
+        
+        // Si l'utilisateur n'est pas membre, rediriger
+        if (convError.code === 'NOT_MEMBER' || convError.message?.includes('Not a member')) {
+          Alert.alert('Accès refusé', 'Vous n\'êtes pas membre de cette conversation')
+          router.back()
+          return
+        }
+        
+        // Si la conversation n'existe pas
+        if (convError.code === 'NOT_FOUND' || convError.code === 'PGRST116') {
+          Alert.alert('Conversation introuvable', 'Cette conversation n\'existe pas ou a été supprimée')
+          router.back()
+          return
+        }
+        
         return
       }
+      
+      if (!convData) {
+        console.error('[ConversationPage] No conversation data returned')
+        return
+      }
+      
+      console.log('[ConversationPage] Conversation loaded:', {
+        id: convData.id,
+        type: convData.type,
+        hasEvent: !!convData.events,
+        hasMarketplaceItem: !!convData.marketplace_items
+      })
+      
       setConversation(convData)
 
       // Charger les messages
       await loadMessages()
     } catch (error) {
-      console.error('Error:', error)
+      console.error('[ConversationPage] Exception:', error)
     } finally {
       setLoading(false)
     }
@@ -238,11 +281,20 @@ export default function ConversationPage() {
         </TouchableOpacity>
         <View style={styles.headerInfo}>
           <Text style={styles.headerTitle} numberOfLines={1}>
-            {conversation.events?.title || 'Conversation'}
+            {conversation.type === 'marketplace' 
+              ? (conversation.marketplace_items?.title || 'Annonce')
+              : (conversation.events?.title || 'Conversation')}
           </Text>
-          <TouchableOpacity onPress={() => router.push(`/events/${conversation.event_id}`)}>
-            <Text style={styles.headerSubtitle}>Voir l'événement →</Text>
-          </TouchableOpacity>
+          {conversation.type === 'event' && conversation.event_id && (
+            <TouchableOpacity onPress={() => router.push(`/events/${conversation.event_id}`)}>
+              <Text style={styles.headerSubtitle}>Voir l'événement →</Text>
+            </TouchableOpacity>
+          )}
+          {conversation.type === 'marketplace' && conversation.marketplace_item_id && (
+            <TouchableOpacity onPress={() => router.push(`/trade/${conversation.marketplace_item_id}`)}>
+              <Text style={styles.headerSubtitle}>Voir l'annonce →</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 

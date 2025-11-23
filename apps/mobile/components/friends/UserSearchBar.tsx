@@ -186,11 +186,11 @@ export function UserSearchBar({
 const styles = StyleSheet.create({
   container: {
     marginBottom: 20,
+    padding: 42,
   },
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 12,
     shadowColor: '#000',
@@ -198,6 +198,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    backgroundColor: '#f9fafb',
   },
   searchIcon: {
     fontSize: 20,
@@ -207,6 +208,8 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#1f2937',
+    height: 56,
+    backgroundColor: '#f9fafb',
   },
   resultsContainer: {
     backgroundColor: 'white',
