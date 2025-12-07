@@ -57,3 +57,4 @@ COMMENT ON POLICY "events_hide_deleted" ON public.events IS
 
 
 
+

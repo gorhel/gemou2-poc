@@ -235,3 +235,4 @@ ProfilePage
 - [ ] Ajouter la possibilité de modifier l'avatar
 - [ ] Ajouter des validations supplémentaires (longueur max, caractères spéciaux, etc.)
 
+

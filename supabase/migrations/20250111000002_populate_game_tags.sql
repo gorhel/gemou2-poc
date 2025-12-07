@@ -80,3 +80,4 @@ COMMENT ON TABLE public.game_tags IS 'Liaison entre jeux et tags. Peuplée avec 
 
 
 
+

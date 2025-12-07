@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { Button } from './Button';
+import { MODAL_SPACING_CLASSES } from './modal-spacing';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -90,7 +91,7 @@ export const Modal: React.FC<ModalProps> = ({
       >
         {/* Header */}
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className={`flex items-center justify-between ${MODAL_SPACING_CLASSES.header} border-b border-gray-200`}>
             <div>
               {title && (
                 <h3
@@ -125,13 +126,13 @@ export const Modal: React.FC<ModalProps> = ({
         )}
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-8rem)]">
+        <div className={`${MODAL_SPACING_CLASSES.content} overflow-y-auto max-h-[calc(90vh-8rem)]`}>
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
+          <div className={`flex items-center justify-end ${MODAL_SPACING_CLASSES.buttonSpacing} ${MODAL_SPACING_CLASSES.footer} border-t border-gray-200 bg-gray-50`}>
             {footer}
           </div>
         )}

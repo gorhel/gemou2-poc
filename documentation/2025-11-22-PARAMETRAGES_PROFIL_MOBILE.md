@@ -268,3 +268,4 @@ Tous les composants acceptent un callback `onUpdate` qui est appelé après une 
 **Date :** 2025-11-22  
 **Version :** 1.0.0
 
+

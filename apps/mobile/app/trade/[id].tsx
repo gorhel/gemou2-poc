@@ -33,12 +33,17 @@ export default function TradeDetailsPage() {
 
   const loadTrade = async () => {
     try {
+      // DEBUG: Log l'ID reçu
+      console.log('🔍 Trade page mobile - ID reçu:', id);
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
+        console.log('❌ Utilisateur non connecté - redirection');
         router.replace('/login');
         return;
       }
       setUser(user);
+      console.log('👤 Utilisateur:', user.email);
 
       const { data: itemData, error: itemError } = await supabase
         .from('marketplace_items')
@@ -46,7 +51,13 @@ export default function TradeDetailsPage() {
         .eq('id', id)
         .single();
 
-      if (itemError) throw itemError;
+      // DEBUG: Log le résultat
+      console.log('📦 Résultat requête mobile:', { itemData, error: itemError });
+
+      if (itemError) {
+        console.error('❌ Error fetching trade:', itemError);
+        throw itemError;
+      }
       setItem(itemData);
 
       // Support pour les deux noms de colonnes (migration en cours)
@@ -252,38 +263,42 @@ export default function TradeDetailsPage() {
         </View>
 
         <View style={styles.metaContainer}>
-          {isOwner &&(
-            <View style={styles.metaItem}>
-            <View style={styles.organizerContainer}>
-              <View style={styles.organizerAvatar}>
-                {seller.avatar_url ? (
-                  <Image
-                    source={{ uri: seller.avatar_url }}
-                    style={styles.avatarImage}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View 
-                    style={[
-                      styles.avatarFallback,
-                      { backgroundColor: `hsl(${seller.id.charCodeAt(0) * 137.5 % 360}, 70%, 50%)` }
-                    ]}
-                  >
-                    <Text style={styles.avatarInitials}>
-                      {getInitials(seller.full_name || seller.username)}
-                    </Text>
-                  </View>
-                )}
+          {/* Vendeur */}
+          {seller && (
+            <TouchableOpacity 
+              style={styles.metaItem}
+              onPress={() => router.push(`/profile/${seller.username || seller.id}`)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.organizerContainer}>
+                <View style={styles.organizerAvatar}>
+                  {seller.avatar_url ? (
+                    <Image
+                      source={{ uri: seller.avatar_url }}
+                      style={styles.avatarImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View 
+                      style={[
+                        styles.avatarFallback,
+                        { backgroundColor: `hsl(${(seller.id?.charCodeAt(0) || 0) * 137.5 % 360}, 70%, 50%)` }
+                      ]}
+                    >
+                      <Text style={styles.avatarInitials}>
+                        {getInitials(seller.full_name || seller.username)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <View style={styles.sellerInfoContainer}>
+                  <Text style={styles.metaLabel}>Vendeur</Text>
+                  <Text style={styles.sellerName}>
+                    {isOwner ? 'Vous' : (seller.full_name || seller.username || 'Utilisateur')}
+                  </Text>
+                </View>
               </View>
-              <Text style={styles.metaText}>
-              <span style={{ fontWeight:700 }}>Vendeur</span> 
-              <br /> 
-              Organisé par {isOwner ? 'vous' : user.full_name || user.username}
-              </Text>
-            </View>
-          </View>
-          
-
+            </TouchableOpacity>
           )}
 
            <View style={styles.metaItem}>
@@ -671,6 +686,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#4b5563',
     flex: 1,
+  },
+  sellerInfoContainer: {
+    flex: 1,
+  },
+  sellerName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2937',
   },
   separator: {
     height: 1,

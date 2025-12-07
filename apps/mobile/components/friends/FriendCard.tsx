@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, Pressable } from 'react-native'
+import { router } from 'expo-router'
 import { Profile } from './types'
 import { ConfirmationModal, ModalVariant } from '../ui'
 
@@ -7,9 +8,10 @@ interface FriendCardProps {
   friend: Profile
   onRemove: (friendId: string, onSuccess?: () => void, onError?: (error: string) => void) => void
   onMessage?: (friendId: string) => void
+  onCloseModal?: () => void
 }
 
-export function FriendCard({ friend, onRemove, onMessage }: FriendCardProps) {
+export function FriendCard({ friend, onRemove, onMessage, onCloseModal }: FriendCardProps) {
   const displayName = friend.full_name || friend.username || 'Utilisateur'
   const username = friend.username ? `@${friend.username}` : ''
 
@@ -46,8 +48,23 @@ export function FriendCard({ friend, onRemove, onMessage }: FriendCardProps) {
     )
   }
 
+  const handleViewProfile = () => {
+    if (friend.username) {
+      // Fermer la modale parente si disponible
+      onCloseModal?.()
+      // Naviguer vers le profil
+      router.push(`/profile/${friend.username}`)
+    }
+  }
+
   return (
-    <View style={styles.card}>
+    <Pressable
+      style={({ pressed }) => [
+        styles.card,
+        pressed && styles.cardPressed
+      ]}
+      onPress={handleViewProfile}
+    >
       <View style={styles.leftSection}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
@@ -57,6 +74,7 @@ export function FriendCard({ friend, onRemove, onMessage }: FriendCardProps) {
         <View style={styles.info}>
           <Text style={styles.name}>{displayName}</Text>
           {username && <Text style={styles.username}>{username}</Text>}
+          <Text style={styles.viewProfileHint}>Voir le profil →</Text>
         </View>
       </View>
 
@@ -64,14 +82,20 @@ export function FriendCard({ friend, onRemove, onMessage }: FriendCardProps) {
         {onMessage && (
           <TouchableOpacity
             style={[styles.button, styles.messageButton]}
-            onPress={() => onMessage(friend.id)}
+            onPress={(e) => {
+              e.stopPropagation()
+              onMessage(friend.id)
+            }}
           >
             <Text style={styles.buttonIcon}>💬</Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity
           style={[styles.button, styles.removeButton]}
-          onPress={handleRemove}
+          onPress={(e) => {
+            e.stopPropagation()
+            handleRemove()
+          }}
         >
           <Text style={styles.buttonIcon}>🗑️</Text>
         </TouchableOpacity>
@@ -84,7 +108,7 @@ export function FriendCard({ friend, onRemove, onMessage }: FriendCardProps) {
         message={modalConfig.message}
         onClose={() => setModalVisible(false)}
       />
-    </View>
+    </Pressable>
   )
 }
 
@@ -102,6 +126,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  cardPressed: {
+    backgroundColor: '#f8fafc',
+    borderColor: '#3b82f6',
+    transform: [{ scale: 0.98 }],
   },
   leftSection: {
     flexDirection: 'row',
@@ -134,6 +165,12 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 14,
     color: '#6b7280',
+  },
+  viewProfileHint: {
+    fontSize: 12,
+    color: '#3b82f6',
+    marginTop: 4,
+    fontWeight: '500',
   },
   actions: {
     flexDirection: 'row',

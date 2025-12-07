@@ -189,3 +189,4 @@ La fonctionnalité mobile est alignée avec l'implémentation web :
 4. Ajout d'un pull-to-refresh pour recharger les événements
 5. Mise en cache des événements pour améliorer les performances
 
+

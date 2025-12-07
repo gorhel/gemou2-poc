@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Button } from './Button';
 import MachiColors from '../../theme/colors';
+import { MODAL_SPACING_VALUES } from './modal-spacing';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -49,7 +50,7 @@ export const Modal: React.FC<ModalProps> = ({
   showCloseButton = true,
   closeOnOverlayClick = true,
   footer,
-  contentPadding = 24,
+  contentPadding = MODAL_SPACING_VALUES.content,
 }) => {
   const modalSizeStyle = getModalSizeStyle(size);
 
@@ -72,7 +73,7 @@ export const Modal: React.FC<ModalProps> = ({
         <View style={[styles.modalContent, modalSizeStyle, { maxHeight: '90%' }]}>
           {/* Header */}
           {(title || showCloseButton) && (
-            <View style={styles.modalHeader}>
+            <View style={[styles.modalHeader, { padding: MODAL_SPACING_VALUES.header }]}>
               <View style={styles.modalHeaderContent}>
                 {title && (
                   <Text style={styles.modalTitle}>
@@ -105,12 +106,12 @@ export const Modal: React.FC<ModalProps> = ({
 
           {/* Footer */}
           {footer && (
-            <View style={styles.modalFooter}>
+            <View style={[styles.modalFooter, { padding: MODAL_SPACING_VALUES.footer }]}>
               {React.Children.map(React.Children.toArray(footer), (child, index) => {
                 if (index > 0) {
                   return (
                     <React.Fragment key={index}>
-                      <View style={{ width: 12 }} />
+                      <View style={{ width: MODAL_SPACING_VALUES.buttonSpacing }} />
                       {child}
                     </React.Fragment>
                   )
@@ -238,7 +239,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 24,
     borderBottomWidth: 1,
     borderBottomColor: MachiColors.border,
   },
@@ -272,7 +272,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    padding: 24,
     borderTopWidth: 1,
     borderTopColor: MachiColors.border,
     backgroundColor: MachiColors.background,
@@ -305,7 +304,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   confirmModalFooterSpacer: {
-    width: 12,
+    width: MODAL_SPACING_VALUES.buttonSpacing,
   },
 });
 

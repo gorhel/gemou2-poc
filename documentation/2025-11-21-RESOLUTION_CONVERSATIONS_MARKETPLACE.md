@@ -201,3 +201,4 @@ La politique RLS pour `conversation_members` utilise une fenêtre de 5 secondes 
 
 Le problème de création de conversations marketplace est maintenant résolu de manière définitive. La migration consolidée garantit que tous les aspects du problème sont corrigés en une seule opération, facilitant la maintenance et l'application future.
 
+

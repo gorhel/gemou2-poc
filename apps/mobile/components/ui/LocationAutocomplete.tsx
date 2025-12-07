@@ -35,41 +35,92 @@ export function LocationAutocomplete({
 }: LocationAutocompleteProps) {
   const [search, setSearch] = useState(value)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [isSelectionMade, setIsSelectionMade] = useState(false)
+  const [lastSelectedLabel, setLastSelectedLabel] = useState<string | null>(null)
   const { locations, loading, searchLocations } = useLocations()
   const inputRef = useRef<TextInput>(null)
 
   useEffect(() => {
-    setSearch(value)
-  }, [value])
+    // Si value change depuis l'extérieur (par exemple lors du chargement initial)
+    // et qu'on n'a pas fait de sélection récente, mettre à jour search
+    // Si on vient de faire une sélection, garder l'affichage du format complet
+    if (!isSelectionMade) {
+      // Si on avait un label sélectionné et que value correspond à une partie de ce label, garder le label
+      if (lastSelectedLabel && value && lastSelectedLabel.includes(value)) {
+        // Garder le label complet si value fait partie du dernier label sélectionné
+        return
+      }
+      setSearch(value)
+      setLastSelectedLabel(null)
+    }
+  }, [value, isSelectionMade, lastSelectedLabel])
 
   // Rechercher avec debounce
   useEffect(() => {
+    // Ne pas rechercher si une sélection vient d'être faite
+    if (isSelectionMade) {
+      return
+    }
+
+    // Ne pas rechercher si le dropdown est fermé
+    if (!showDropdown) {
+      return
+    }
+
     const delayDebounceFn = setTimeout(() => {
-      if (search && search.length >= 2) {
+      if (search && search.length >= 2 && showDropdown && !isSelectionMade) {
         searchLocations(search)
-        setShowDropdown(true)
-      } else {
+      } else if (!search || search.length < 2) {
         setShowDropdown(false)
       }
     }, 300)
 
     return () => clearTimeout(delayDebounceFn)
-  }, [search, searchLocations])
+  }, [search, searchLocations, showDropdown, isSelectionMade])
 
   const handleSelect = (option: LocationOption) => {
-    setSearch(option.label)
-    onChange(option.label, option.district, option.city)
+    // Marquer qu'une sélection a été faite pour éviter les recherches automatiques
+    setIsSelectionMade(true)
+    
+    // Stocker le label complet pour l'affichage
+    const selectedValue = option.label
+    setSearch(selectedValue)
+    setLastSelectedLabel(selectedValue)
+    onChange(selectedValue, option.district, option.city)
+    
+    // Fermer le dropdown immédiatement
     setShowDropdown(false)
     inputRef.current?.blur() // Fermer le clavier
+    
+    // Réinitialiser le flag après un court délai pour permettre les futures recherches
+    setTimeout(() => {
+      setIsSelectionMade(false)
+    }, 1000)
   }
 
   const handleInputChange = (text: string) => {
+    // Réinitialiser le flag de sélection si l'utilisateur modifie manuellement
+    if (isSelectionMade) {
+      setIsSelectionMade(false)
+    }
+    
     setSearch(text)
     onChange(text)
+    // Ouvrir le dropdown si l'utilisateur tape (plus de 2 caractères)
+    if (text && text.length >= 2) {
+      setShowDropdown(true)
+    } else {
+      setShowDropdown(false)
+    }
   }
 
   const handleFocus = () => {
-    if (search.length >= 2 && locations.length > 0) {
+    // Réinitialiser le flag de sélection au focus
+    setIsSelectionMade(false)
+    
+    if (search.length >= 2) {
+      // Rechercher si on a déjà du texte
+      searchLocations(search)
       setShowDropdown(true)
     }
   }

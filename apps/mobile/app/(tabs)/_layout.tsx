@@ -1,8 +1,38 @@
 import { Tabs } from 'expo-router';
-import { Platform } from 'react-native';
+import { Platform, View, Text, StyleSheet } from 'react-native';
 import MachiColors from '../../theme/colors';
+import { useTotalUnreadCount } from '../../lib';
+
+/**
+ * Composant Badge pour afficher le nombre de messages non lus
+ */
+function UnreadBadge({ count }: { count: number }) {
+  if (count === 0) return null
+
+  return (
+    <View style={styles.badgeContainer}>
+      <Text style={styles.badgeText}>
+        {count > 99 ? '99+' : count}
+      </Text>
+    </View>
+  )
+}
+
+/**
+ * Icône avec badge pour l'onglet Communauté
+ */
+function CommunityTabIcon({ color, size, unreadCount }: { color: string; size: number; unreadCount: number }) {
+  return (
+    <View style={styles.iconContainer}>
+      <Text style={{ fontSize: size }}>💬</Text>
+      <UnreadBadge count={unreadCount} />
+    </View>
+  )
+}
 
 export default function TabLayout() {
+  const unreadCount = useTotalUnreadCount()
+
   return (
     <Tabs
       screenOptions={{
@@ -26,9 +56,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: 'Accueilz',
+          title: 'Accueil',
           tabBarIcon: ({ color, size }) => (
-            <span style={{ fontSize: size }}>🏠</span>
+            <Text style={{ fontSize: size }}>🏠</Text>
           ),
         }}
       />
@@ -37,7 +67,7 @@ export default function TabLayout() {
         options={{
           title: 'Events',
           tabBarIcon: ({ color, size }) => (
-            <span style={{ fontSize: size }}>📅</span>
+            <Text style={{ fontSize: size }}>📅</Text>
           ),
         }}
       />
@@ -46,7 +76,7 @@ export default function TabLayout() {
         options={{
           title: 'Market',
           tabBarIcon: ({ color, size }) => (
-            <span style={{ fontSize: size }}>🛒</span>
+            <Text style={{ fontSize: size }}>🛒</Text>
           ),
         }}
       />
@@ -55,7 +85,7 @@ export default function TabLayout() {
         options={{
           title: 'Comm.',
           tabBarIcon: ({ color, size }) => (
-            <span style={{ fontSize: size }}>💬</span>
+            <CommunityTabIcon color={color} size={size} unreadCount={unreadCount} />
           ),
         }}
       />
@@ -64,7 +94,7 @@ export default function TabLayout() {
         options={{
           title: 'Profil',
           tabBarIcon: ({ color, size }) => (
-            <span style={{ fontSize: size }}>👤</span>
+            <Text style={{ fontSize: size }}>👤</Text>
           ),
         }}
       />
@@ -100,8 +130,32 @@ export default function TabLayout() {
       />
 
     </Tabs>
-
-    
   );
 }
 
+const styles = StyleSheet.create({
+  iconContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeContainer: {
+    position: 'absolute',
+    top: -6,
+    right: -12,
+    backgroundColor: '#ef4444',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  badgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+})

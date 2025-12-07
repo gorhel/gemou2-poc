@@ -188,3 +188,4 @@ COMMENT ON COLUMN public.user_settings.theme IS 'Thème d''affichage : light, da
 COMMENT ON COLUMN public.user_settings.display_density IS 'Densité d''affichage : compact, normal, spacious';
 COMMENT ON COLUMN public.user_settings.font_size IS 'Taille de la police : small, normal, large, extra-large';
 
+

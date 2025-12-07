@@ -126,3 +126,4 @@ borderColor: MachiColors.border
 - Le code est optimisé avec réutilisation maximale des composants
 - Aucune fonctionnalité n'a été modifiée, uniquement le design
 
+

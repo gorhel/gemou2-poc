@@ -277,3 +277,4 @@
 
 Cette maquette respecte la palette Machi tout en conservant une lisibilité optimale et une expérience utilisateur moderne et conviviale.
 
+

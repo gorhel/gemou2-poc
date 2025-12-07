@@ -222,3 +222,4 @@ Testez la fonction RPC directement dans l'éditeur SQL avec des UUIDs réels de 
 
 **Prochaine étape** : Consulter les logs d'erreur de l'application et tester manuellement la fonction RPC avec des données réelles.
 
+

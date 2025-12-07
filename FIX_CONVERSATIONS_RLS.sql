@@ -79,3 +79,4 @@ ON public.conversations(created_by);
 SELECT 'Migration terminée avec succès !' AS status;
 
 
+

@@ -37,3 +37,4 @@ COMMENT ON POLICY "Conversation members can view marketplace items" ON public.ma
 -- FIN DE LA MIGRATION
 -- =====================================================
 
+

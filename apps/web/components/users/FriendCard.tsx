@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card } from '../ui/Card';
 
 interface Friend {
@@ -20,10 +21,13 @@ interface FriendCardProps {
 }
 
 export default function FriendCard({ friend, onViewProfile }: FriendCardProps) {
-  const handleViewProfile = () => {
+  const router = useRouter();
+
+  const handleCardClick = () => {
     if (onViewProfile) {
       onViewProfile(friend);
     }
+    router.push(`/profile/${friend.username}`);
   };
 
   const formatDate = (dateString: string) => {
@@ -34,7 +38,10 @@ export default function FriendCard({ friend, onViewProfile }: FriendCardProps) {
   };
 
   return (
-    <Card className="h-full hover:shadow-lg transition-shadow duration-200">
+    <Card 
+      className="h-full hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-[1.02] hover:border-blue-300"
+      onClick={handleCardClick}
+    >
       <div className="p-4 h-full flex flex-col">
         {/* Avatar et informations principales */}
         <div className="flex items-center space-x-3 mb-3">
@@ -95,19 +102,11 @@ export default function FriendCard({ friend, onViewProfile }: FriendCardProps) {
           </div>
         </div>
 
-        {/* Actions */}
+        {/* Indicateur visuel de clic */}
         <div className="mt-3 pt-3 border-t border-gray-100">
-          <Link 
-            href={`/profile/${friend.username}`}
-            className="block w-full"
-          >
-            <button
-              onClick={handleViewProfile}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors duration-200"
-            >
-              Voir le profil
-            </button>
-          </Link>
+          <div className="w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors duration-200 text-center">
+            Voir le profil →
+          </div>
         </div>
       </div>
     </Card>

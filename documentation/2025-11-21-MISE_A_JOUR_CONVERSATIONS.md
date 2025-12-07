@@ -284,3 +284,4 @@ Le code est maintenant prêt à être utilisé avec la base de données correcte
 - **Migration RLS** : `supabase/migrations/20251121000000_fix_conversations_marketplace_complete.sql`
 - **Fonction RPC** : `supabase/migrations/20251009120000_add_marketplace_trade_features.sql`
 
+

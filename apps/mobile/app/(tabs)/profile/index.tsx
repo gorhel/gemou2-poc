@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   View,
   Text,
@@ -9,10 +9,12 @@ import {
   ActivityIndicator,
   Platform,
   ScrollView,
-  Alert
+  Alert,
+  Image
 } from 'react-native'
 import { router } from 'expo-router'
-import { supabase } from '../../../lib'
+import * as ImagePicker from 'expo-image-picker'
+import { supabase, logger } from '../../../lib'
 import { PageLayout } from '../../../components/layout'
 import {
   FriendRequestCard,
@@ -26,9 +28,13 @@ import { PrivacySettings } from '../../../components/profile/PrivacySettings'
 import { NotificationsSettings } from '../../../components/profile/NotificationsSettings'
 import { SecuritySettings } from '../../../components/profile/SecuritySettings'
 import { PreferencesSettings } from '../../../components/profile/PreferencesSettings'
-import { Modal } from '../../../components/ui/Modal'
+import { GamePreferencesEditor } from '../../../components/users/GamePreferencesEditor'
+import { Modal, useModal } from '../../../components/ui/Modal'
 import { Button } from '../../../components/ui/Button'
 import { Input, Textarea } from '../../../components/ui/Input'
+import { LocationAutocomplete } from '../../../components/ui/LocationAutocomplete'
+import { useProfileRealtime } from '../../../hooks/useRealtime'
+import { useProfileStats, invalidateProfileStatsCache } from '../../../hooks/useProfileStats'
 import MachiColors from '../../../theme/colors'
 
 interface UserEvent {
@@ -41,21 +47,24 @@ interface UserEvent {
   role: 'organizer' | 'participant'
 }
 
-type TabType = 'informations' | 'friends' | 'privacy' | 'notifications' | 'security' | 'preferences' | 'account' | 'events';
+type TabType = 'informations' | 'friends' | 'privacy' | 'notifications' | 'security' | 'preferences' | 'preferences_jeu' | 'account' | 'events';
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<TabType | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [stats, setStats] = useState({
-    eventsCreated: 0,
-    eventsParticipated: 0,
-    gamesOwned: 0,
-    friends: 0
-  });
+  const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
+  const [activeTab, setActiveTab] = useState<TabType | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  
+  // Utiliser le hook avec cache pour les statistiques
+  const { 
+    stats, 
+    loading: loadingStats, 
+    refresh: refreshStats,
+    invalidate: invalidateStats,
+    fromCache: statsFromCache 
+  } = useProfileStats(user?.id)
   
   // États pour les amis
   const [receivedRequests, setReceivedRequests] = useState<FriendRequest[]>([]);
@@ -79,54 +88,80 @@ export default function ProfilePage() {
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+  // États pour l'upload d'image de profil
+  const [pendingAvatarUri, setPendingAvatarUri] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const avatarConfirmModal = useModal();
 
   const loadProfile = async () => {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
       
-      if (userError || !user) {
-        router.replace('/login');
-        return;
+      if (userError || !currentUser) {
+        router.replace('/login')
+        return
       }
 
-      setUser(user);
+      setUser(currentUser)
 
       // Charger le profil
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
-        .single();
+        .eq('id', currentUser.id)
+        .single()
 
-      if (profileError) throw profileError;
-      setProfile(profileData);
+      if (profileError) throw profileError
+      setProfile(profileData)
 
-      // Charger les statistiques
-      const [eventsCreated, eventsParticipated, gamesOwned, friends] = await Promise.all([
-        supabase.from('events').select('id', { count: 'exact', head: true }).eq('creator_id', user.id),
-        supabase.from('event_participants').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('user_games').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('friends').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted')
-      ]);
-
-      setStats({
-        eventsCreated: eventsCreated.count || 0,
-        eventsParticipated: eventsParticipated.count || 0,
-        gamesOwned: gamesOwned.count || 0,
-        friends: friends.count || 0
-      });
+      // Les statistiques sont gérées par le hook useProfileStats avec cache
 
     } catch (error) {
-      console.error('Error loading profile:', error);
+      logger.error('ProfilePage', error as Error, { action: 'loadProfile' })
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      setLoading(false)
+      setRefreshing(false)
     }
-  };
+  }
+
+  // Ref pour éviter les logs multiples
+  const hasLoggedMount = useRef(false)
 
   useEffect(() => {
-    loadProfile();
-  }, []);
+    // Log unique au chargement de la page
+    if (!hasLoggedMount.current) {
+      logger.pageLoad('ProfilePage')
+      hasLoggedMount.current = true
+    }
+    loadProfile()
+  }, [])
+
+  // Écouter les changements en temps réel du profil
+  useProfileRealtime(
+    user?.id,
+    (payload) => {
+      // Log uniquement pour les événements importants
+      logger.realtimeEvent('profiles', payload.eventType)
+      
+      // Si c'est une mise à jour du profil actuel, recharger les données
+      if (payload.eventType === 'UPDATE' && payload.new) {
+        loadProfile()
+        
+        // Mettre à jour aussi le formulaire d'édition si ouvert
+        if (activeTab === 'informations' && payload.new) {
+          setEditFormData({
+            username: payload.new.username || '',
+            full_name: payload.new.full_name || '',
+            bio: payload.new.bio || '',
+            city: payload.new.city || ''
+          })
+        }
+      }
+    },
+    true // Activer l'abonnement Realtime
+  )
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -134,12 +169,14 @@ export default function ProfilePage() {
   };
 
   const onRefresh = () => {
-    setRefreshing(true);
-    loadProfile();
+    setRefreshing(true)
+    loadProfile()
+    // Rafraîchir les statistiques (invalide le cache et recharge)
+    refreshStats()
     if (activeTab === 'friends') {
-      loadFriendsData();
+      loadFriendsData()
     }
-  };
+  }
 
   const handleSectionClick = (section: TabType) => {
     setActiveTab(section);
@@ -160,12 +197,14 @@ export default function ProfilePage() {
       });
       setEditErrors({});
       setHasChanges(false);
+      setShowSuccessMessage(false);
     }
   };
 
   const handleModalClose = () => {
     setModalOpen(false);
     setActiveTab(null);
+    setShowSuccessMessage(false);
   };
 
   const handleValidate = async () => {
@@ -210,19 +249,26 @@ export default function ProfilePage() {
         return { available: false, error: 'Ce nom d\'utilisateur est déjà pris' };
       }
 
-      return { available: true };
+      return { available: true }
     } catch (error) {
-      console.error('Erreur lors de la vérification du username:', error);
-      return { available: false, error: 'Erreur de connexion' };
+      logger.error('ProfilePage', error as Error, { action: 'checkUsernameAvailability' })
+      return { available: false, error: 'Erreur de connexion' }
     } finally {
-      setIsCheckingUsername(false);
+      setIsCheckingUsername(false)
     }
-  };
+  }
 
   // Sauvegarder les modifications du profil
   const handleSaveProfile = async () => {
     // Réinitialiser les erreurs
     setEditErrors({});
+
+    // Vérifier que l'utilisateur est connecté
+    if (!user || !user.id) {
+      Alert.alert('Erreur', 'Vous devez être connecté pour modifier votre profil')
+      logger.error('ProfilePage', 'user ou user.id est undefined', { action: 'handleSaveProfile' })
+      return
+    }
 
     // Validation
     const errors: Record<string, string> = {};
@@ -259,45 +305,162 @@ export default function ProfilePage() {
           onPress: async () => {
             setIsSaving(true);
             try {
-              const { error: updateError } = await supabase
-                .from('profiles')
-                .update({
-                  username: editFormData.username.trim() || null,
-                  full_name: editFormData.full_name.trim() || null,
-                  bio: editFormData.bio.trim() || null,
-                  city: editFormData.city.trim() || null,
-                  updated_at: new Date().toISOString()
-                })
-                .eq('id', user?.id);
+              // Vérifier et rafraîchir la session avant la mise à jour
+              const { data: { user: currentUser }, error: sessionError } = await supabase.auth.getUser();
+              
+              if (sessionError || !currentUser || !currentUser.id) {
+                logger.error('ProfilePage', 'Erreur de session', { action: 'handleSaveProfile' })
+                Alert.alert('Erreur', 'Votre session a expiré. Veuillez vous reconnecter.')
+                router.replace('/login')
+                return
+              }
 
-              if (updateError) {
-                if (updateError.code === '23505') { // Violation de contrainte unique
-                  Alert.alert('Erreur', 'Ce nom d\'utilisateur est déjà utilisé');
-                  setEditErrors({ username: 'Ce nom d\'utilisateur est déjà pris' });
-                } else {
-                  Alert.alert('Erreur', 'Impossible de sauvegarder les modifications');
-                  console.error('Erreur lors de la mise à jour:', updateError);
-                }
+              // S'assurer que l'ID utilisateur correspond
+              if (currentUser.id !== user.id) {
+                logger.warn('ProfilePage', 'ID utilisateur différent')
+                setUser(currentUser)
+              }
+
+              // Préparer les données à mettre à jour - seulement les champs qui ont changé
+              const updateData: Record<string, any> = {};
+              
+              // Ne mettre à jour que les champs qui ont réellement changé
+              const trimmedUsername = editFormData.username.trim() || null;
+              const trimmedFullName = editFormData.full_name.trim() || null;
+              const trimmedBio = editFormData.bio.trim() || null;
+              const trimmedCity = editFormData.city.trim() || null;
+
+              if (trimmedUsername !== (profile?.username || null)) {
+                updateData.username = trimmedUsername;
+              }
+              if (trimmedFullName !== (profile?.full_name || null)) {
+                updateData.full_name = trimmedFullName;
+              }
+              if (trimmedBio !== (profile?.bio || null)) {
+                updateData.bio = trimmedBio;
+              }
+              if (trimmedCity !== (profile?.city || null)) {
+                updateData.city = trimmedCity;
+              }
+
+              // Si aucun champ n'a changé, ne rien faire
+              if (Object.keys(updateData).length === 0) {
+                Alert.alert('Information', 'Aucune modification à enregistrer');
+                setIsSaving(false);
                 return;
               }
+
+              // Effectuer la mise à jour avec .single() pour forcer une erreur si aucune ligne n'est mise à jour
+              const { data: updatedData, error: updateError } = await supabase
+                .from('profiles')
+                .update(updateData)
+                .eq('id', currentUser.id)
+                .select()
+                .single();
+
+              if (updateError) {
+                logger.error('ProfilePage', updateError as Error, { 
+                  action: 'handleSaveProfile',
+                  code: updateError.code 
+                })
+
+                // Gestion spécifique des erreurs connues
+                if (updateError.code === '23505') {
+                  // Violation de contrainte unique
+                  Alert.alert('Erreur', 'Ce nom d\'utilisateur est déjà utilisé')
+                  setEditErrors({ username: 'Ce nom d\'utilisateur est déjà pris' })
+                } else if (updateError.code === '42501') {
+                  // Permission denied (RLS)
+                  Alert.alert(
+                    'Erreur de permission',
+                    'Vous n\'avez pas la permission de modifier ce profil. Vérifiez vos politiques de sécurité RLS.'
+                  )
+                } else if (updateError.code === 'PGRST116') {
+                  // Aucune ligne trouvée
+                  Alert.alert(
+                    'Erreur',
+                    'Aucun profil trouvé avec cet ID. La mise à jour n\'a pas pu être effectuée.'
+                  )
+                } else {
+                  // Autre erreur
+                  const errorMessage = updateError.message || 'Erreur inconnue'
+                  Alert.alert(
+                    'Erreur de sauvegarde',
+                    `Impossible de sauvegarder les modifications.\n\nCode: ${updateError.code || 'N/A'}\nMessage: ${errorMessage}`
+                  )
+                }
+                setIsSaving(false)
+                return
+              }
+
+              // Vérifier que les données ont été retournées
+              if (!updatedData) {
+                logger.error('ProfilePage', 'Aucune donnée retournée après la mise à jour', { action: 'handleSaveProfile' })
+                Alert.alert(
+                  'Erreur',
+                  'La mise à jour semble avoir échoué. Aucune donnée n\'a été retournée.'
+                )
+                setIsSaving(false)
+                return
+              }
+
+              // Préparer le message de confirmation avec les détails des modifications
+              const modifications: string[] = [];
+              if (trimmedUsername !== (profile?.username || null)) {
+                modifications.push(`Nom d'utilisateur: ${trimmedUsername || 'Non renseigné'}`);
+              }
+              if (trimmedFullName !== (profile?.full_name || null)) {
+                modifications.push(`Nom complet: ${trimmedFullName || 'Non renseigné'}`);
+              }
+              if (trimmedBio !== (profile?.bio || null)) {
+                modifications.push(`Bio: ${trimmedBio ? 'Modifiée' : 'Supprimée'}`);
+              }
+              if (trimmedCity !== (profile?.city || null)) {
+                modifications.push(`Ville: ${trimmedCity || 'Non renseignée'}`);
+              }
+
+              const messageDetails = modifications.length > 0
+                ? `\n\nModifications enregistrées:\n${modifications.map(m => `• ${m}`).join('\n')}`
+                : '';
 
               // Recharger le profil pour afficher les nouvelles données
               await loadProfile();
               setHasChanges(false);
-              setModalOpen(false);
-              setActiveTab(null);
-              Alert.alert('Succès', 'Vos informations ont été mises à jour');
+              
+              // Afficher le message de succès dans l'interface
+              setShowSuccessMessage(true);
+              
+              // Fermer la modale après un court délai pour laisser voir le message
+              setTimeout(() => {
+                setModalOpen(false);
+                setActiveTab(null);
+              }, 500);
+              
+              // Masquer le message de succès après 3 secondes
+              setTimeout(() => {
+                setShowSuccessMessage(false);
+              }, 3000);
+              
+              // Afficher aussi une alerte pour confirmation
+              Alert.alert(
+                '✅ Modifications enregistrées',
+                `Vos informations ont été mises à jour avec succès.${messageDetails}`,
+                [{ text: 'Parfait', style: 'default' }]
+              );
             } catch (error) {
-              console.error('Erreur lors de la sauvegarde:', error);
-              Alert.alert('Erreur', 'Une erreur est survenue lors de la sauvegarde');
+              logger.error('ProfilePage', error as Error, { action: 'handleSaveProfile' })
+              Alert.alert(
+                'Erreur',
+                `Une erreur inattendue est survenue lors de la sauvegarde.\n\n${error instanceof Error ? error.message : 'Erreur inconnue'}`
+              )
             } finally {
-              setIsSaving(false);
+              setIsSaving(false)
             }
           }
         }
       ]
-    );
-  };
+    )
+  }
 
   // Gérer les changements dans le formulaire
   const handleFormChange = (field: string, value: string) => {
@@ -322,6 +485,125 @@ export default function ProfilePage() {
     setHasChanges(changed);
   };
 
+  // Gérer la sélection de ville depuis LocationAutocomplete
+  const handleCityChange = (value: string, district?: string, cityName?: string) => {
+    // Si une sélection a été faite depuis la liste (cityName est défini),
+    // stocker uniquement le nom de la ville pour la base de données
+    // Si c'est une saisie manuelle, stocker la valeur telle quelle
+    const cityToStore = cityName || value
+    handleFormChange('city', cityToStore)
+  }
+
+  /**
+   * Demande les permissions et ouvre le sélecteur d'images
+   */
+  const handleSelectAvatar = async () => {
+    try {
+      // Demander les permissions
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission requise',
+          'L\'accès à la galerie est nécessaire pour modifier votre photo de profil.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
+      // Ouvrir le sélecteur d'images
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        // Vérifier la taille du fichier (max 5MB)
+        const asset = result.assets[0];
+        if (asset.fileSize && asset.fileSize > 5 * 1024 * 1024) {
+          Alert.alert('Erreur', 'L\'image doit faire moins de 5MB');
+          return;
+        }
+
+        // Stocker l'URI et ouvrir la modale de confirmation
+        setPendingAvatarUri(asset.uri);
+        avatarConfirmModal.open();
+      }
+    } catch (error) {
+      logger.error('ProfilePage', error as Error, { action: 'handleSelectAvatar' });
+      Alert.alert('Erreur', 'Impossible de sélectionner l\'image');
+    }
+  };
+
+  /**
+   * Annule le changement d'avatar
+   */
+  const handleCancelAvatarChange = () => {
+    setPendingAvatarUri(null);
+    avatarConfirmModal.close();
+  };
+
+  /**
+   * Confirme et upload l'avatar vers Supabase
+   */
+  const handleConfirmAvatarUpload = async () => {
+    if (!pendingAvatarUri || !user) return;
+
+    try {
+      setIsUploadingAvatar(true);
+
+      // Créer un FormData pour l'upload
+      const fileName = `avatars/${user.id}/${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+      
+      // Fetch l'image et la convertir en blob
+      const response = await fetch(pendingAvatarUri);
+      const blob = await response.blob();
+
+      // Upload vers Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('event-images')
+        .upload(fileName, blob, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: 'image/jpeg'
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Obtenir l'URL publique
+      const { data: { publicUrl } } = supabase.storage
+        .from('event-images')
+        .getPublicUrl(fileName);
+
+      // Mettre à jour le profil
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          avatar_url: publicUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      // Recharger le profil
+      await loadProfile();
+      
+      // Fermer la modale et réinitialiser
+      setPendingAvatarUri(null);
+      avatarConfirmModal.close();
+
+      Alert.alert('Succès', 'Votre photo de profil a été mise à jour !');
+    } catch (error) {
+      logger.error('ProfilePage', error as Error, { action: 'handleConfirmAvatarUpload' });
+      Alert.alert('Erreur', 'Impossible de mettre à jour la photo de profil');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   const getSectionTitle = () => {
     const titles: Record<TabType, string> = {
       informations: '👤 Mes infos',
@@ -330,6 +612,7 @@ export default function ProfilePage() {
       notifications: '🔔 Notifications',
       security: '🛡️ Sécurité',
       preferences: '⚙️ Préférences',
+      preferences_jeu: '🎯 Préférences de jeu',
       account: '💼 Mon compte',
       events: '📅 Mes événements'
     };
@@ -350,8 +633,8 @@ export default function ProfilePage() {
         .order('date_time', { ascending: false });
 
       if (organizedError) {
-        console.error('Error fetching organized events:', organizedError);
-        return;
+        logger.error('ProfilePage', organizedError as Error, { action: 'fetchOrganizedEvents' })
+        return
       }
 
       // Récupérer les événements participés
@@ -366,8 +649,8 @@ export default function ProfilePage() {
         .order('joined_at', { ascending: false });
 
       if (participatedError) {
-        console.error('Error fetching participated events:', participatedError);
-        return;
+        logger.error('ProfilePage', participatedError as Error, { action: 'fetchParticipatedEvents' })
+        return
       }
 
       // Combiner et formater les événements
@@ -395,13 +678,13 @@ export default function ProfilePage() {
       const allEvents = [...organizedFormatted, ...participatedFormatted]
         .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime());
 
-      setUserEvents(allEvents);
+      setUserEvents(allEvents)
     } catch (error) {
-      console.error('Error fetching user events:', error);
+      logger.error('ProfilePage', error as Error, { action: 'fetchUserEvents' })
     } finally {
-      setLoadingEvents(false);
+      setLoadingEvents(false)
     }
-  };
+  }
 
   // Fonction pour formater la date
   const formatDate = (dateString: string) => {
@@ -494,14 +777,14 @@ export default function ProfilePage() {
       setFriends(formattedFriends as Friendship[]);
 
       // Mettre à jour le compteur d'amis dans les stats
-      setStats(prev => ({ ...prev, friends: formattedFriends.length }));
+      setStats(prev => ({ ...prev, friends: formattedFriends.length }))
 
     } catch (error) {
-      console.error('Erreur lors du chargement des amis:', error);
+      logger.error('ProfilePage', error as Error, { action: 'loadFriendsData' })
     } finally {
-      setLoadingFriends(false);
+      setLoadingFriends(false)
     }
-  };
+  }
 
   // Envoyer une demande d'amitié
   const handleSendRequest = async (
@@ -532,20 +815,25 @@ export default function ProfilePage() {
         return;
       }
 
-      await loadFriendsData();
+      await loadFriendsData()
+      // Invalider le cache des stats car le nombre d'amis peut avoir changé
+      if (user?.id) {
+        await invalidateProfileStatsCache(user.id)
+        refreshStats()
+      }
       
       if (result.auto_accepted) {
-        onSuccess?.();
+        onSuccess?.()
       } else {
-        onSuccess?.();
+        onSuccess?.()
       }
     } catch (error) {
-      console.error('Erreur lors de l\'envoi de la demande:', error);
-      onError?.('Impossible d\'envoyer la demande');
+      logger.error('ProfilePage', error as Error, { action: 'sendFriendRequest' })
+      onError?.('Impossible d\'envoyer la demande')
     } finally {
-      setActionLoading(null);
+      setActionLoading(null)
     }
-  };
+  }
 
   // Accepter une demande
   const handleAcceptRequest = async (
@@ -568,15 +856,20 @@ export default function ProfilePage() {
         return;
       }
 
-      await loadFriendsData();
-      onSuccess?.();
+      await loadFriendsData()
+      // Invalider le cache des stats car le nombre d'amis a changé
+      if (user?.id) {
+        await invalidateProfileStatsCache(user.id)
+        refreshStats()
+      }
+      onSuccess?.()
     } catch (error) {
-      console.error('Erreur lors de l\'acceptation:', error);
-      onError?.('Impossible d\'accepter la demande');
+      logger.error('ProfilePage', error as Error, { action: 'acceptFriendRequest' })
+      onError?.('Impossible d\'accepter la demande')
     } finally {
-      setActionLoading(null);
+      setActionLoading(null)
     }
-  };
+  }
 
   // Refuser une demande
   const handleRejectRequest = async (
@@ -599,15 +892,17 @@ export default function ProfilePage() {
         return;
       }
 
-      await loadFriendsData();
-      onSuccess?.();
+      await loadFriendsData()
+      onSuccess?.()
     } catch (error) {
-      console.error('Erreur lors du refus:', error);
-      onError?.('Impossible de refuser la demande');
+      logger.error('ProfilePage', error as Error, { action: 'rejectFriendRequest' })
+      onError?.('Impossible de refuser la demande')
     } finally {
-      setActionLoading(null);
+      setActionLoading(null)
     }
-  };
+  }
+
+  // Annuler une demande envoyée
 
   // Annuler une demande envoyée
   const handleCancelRequest = async (
@@ -630,15 +925,15 @@ export default function ProfilePage() {
         return;
       }
 
-      await loadFriendsData();
-      onSuccess?.();
+      await loadFriendsData()
+      onSuccess?.()
     } catch (error) {
-      console.error('Erreur lors de l\'annulation:', error);
-      onError?.('Impossible d\'annuler la demande');
+      logger.error('ProfilePage', error as Error, { action: 'cancelFriendRequest' })
+      onError?.('Impossible d\'annuler la demande')
     } finally {
-      setActionLoading(null);
+      setActionLoading(null)
     }
-  };
+  }
 
   // Retirer un ami
   const handleRemoveFriend = async (
@@ -661,15 +956,20 @@ export default function ProfilePage() {
         return;
       }
 
-      await loadFriendsData();
-      onSuccess?.();
+      await loadFriendsData()
+      // Invalider le cache des stats car le nombre d'amis a changé
+      if (user?.id) {
+        await invalidateProfileStatsCache(user.id)
+        refreshStats()
+      }
+      onSuccess?.()
     } catch (error) {
-      console.error('Erreur lors du retrait:', error);
-      onError?.('Impossible de retirer cet ami');
+      logger.error('ProfilePage', error as Error, { action: 'removeFriend' })
+      onError?.('Impossible de retirer cet ami')
     } finally {
-      setActionLoading(null);
+      setActionLoading(null)
     }
-  };
+  }
 
   useEffect(() => {
     if (activeTab === 'friends' && user) {
@@ -696,11 +996,29 @@ export default function ProfilePage() {
 
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {profile.full_name?.charAt(0) || profile.username?.charAt(0) || '👤'}
-            </Text>
-          </View>
+          <TouchableOpacity 
+            style={styles.avatarWrapper}
+            onPress={handleSelectAvatar}
+            activeOpacity={0.8}
+          >
+            {profile.avatar_url ? (
+              <Image
+                source={{ uri: profile.avatar_url }}
+                style={styles.avatarImage}
+              />
+            ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>
+                  {profile.full_name?.charAt(0) || profile.username?.charAt(0) || '👤'}
+                </Text>
+              </View>
+            )}
+            {/* Bouton de modification superposé */}
+            <View style={styles.avatarEditButton}>
+              <Text style={styles.avatarEditIcon}>📷</Text>
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.avatarHint}>Appuyez pour modifier</Text>
         </View>
 
         <Text style={styles.fullName}>{profile.full_name || 'Utilisateur'}</Text>
@@ -749,6 +1067,7 @@ export default function ProfilePage() {
             { key: 'informations', label: 'Mes infos', icon: '👤' },
             { key: 'friends', label: 'Mes amis', icon: '👫' },
             { key: 'events', label: 'Mes événements', icon: '📅' },
+            { key: 'preferences_jeu', label: 'Préférences de jeu', icon: '🎯' },
             { key: 'privacy', label: 'Confidentialité', icon: '🔒' },
             { key: 'notifications', label: 'Notifications', icon: '🔔' },
             { key: 'security', label: 'Sécurité', icon: '🛡️' },
@@ -829,6 +1148,7 @@ export default function ProfilePage() {
                   onAccept={handleAcceptRequest}
                   onReject={handleRejectRequest}
                   loading={actionLoading === request.id}
+                  onCloseModal={handleModalClose}
                 />
               ))}
             </View>
@@ -849,6 +1169,7 @@ export default function ProfilePage() {
                   request={request}
                   onCancel={handleCancelRequest}
                   loading={actionLoading === request.id}
+                  onCloseModal={handleModalClose}
                 />
               ))}
             </View>
@@ -879,6 +1200,7 @@ export default function ProfilePage() {
                     // TODO: Implémenter la navigation vers les messages
                     Alert.alert('Info', 'Fonctionnalité de messagerie à venir')
                   }}
+                  onCloseModal={handleModalClose}
                 />
               ))
             )}
@@ -900,6 +1222,14 @@ export default function ProfilePage() {
 
         {activeTab === 'preferences' && (
           <PreferencesSettings userId={user?.id || ''} onUpdate={loadProfile} />
+        )}
+
+        {activeTab === 'preferences_jeu' && (
+          <GamePreferencesEditor 
+            userId={user?.id || ''} 
+            onUpdate={loadProfile}
+            onClose={handleModalClose}
+          />
         )}
 
         {activeTab === 'informations' && (
@@ -944,20 +1274,26 @@ export default function ProfilePage() {
                   editable={!isSaving}
                 />
 
-                <Text style={styles.label}>Ville</Text>
-                <Input
-                  style={styles.formContainerInput}
+                <LocationAutocomplete
+                  label="Ville"
                   value={editFormData.city}
-                  onChangeText={(value) => handleFormChange('city', value)}
-                  placeholder="Entrez votre ville"
-                  autoCapitalize="words"
+                  onChange={handleCityChange}
                   error={editErrors.city}
-                  fullWidth
-                  editable={!isSaving}
+                  placeholder="Ex: Le Moufia, Saint-Denis"
                 />
               </View>
 
-              {hasChanges && (
+              {showSuccessMessage && (
+                <View style={styles.successMessageContainer}>
+                  <Text style={styles.successMessageIcon}>✅</Text>
+                  <View style={styles.successMessageContent}>
+                    <Text style={styles.successMessageTitle}>Modifications enregistrées</Text>
+                    <Text style={styles.successMessageText}>Vos informations ont été mises à jour avec succès.</Text>
+                  </View>
+                </View>
+              )}
+
+              {hasChanges && !showSuccessMessage && (
                 <Text style={styles.helperText}>
                   💡 Des modifications ont été apportées. Cliquez sur "Valider" pour les enregistrer.
                 </Text>
@@ -1044,6 +1380,86 @@ export default function ProfilePage() {
             </View>
           </View>
         )}
+      </Modal>
+
+      {/* Modale de confirmation pour le changement de photo de profil */}
+      <Modal
+        isOpen={avatarConfirmModal.isOpen}
+        onClose={handleCancelAvatarChange}
+        title="📷 Modifier la photo de profil"
+        size="md"
+        footer={
+          <View style={styles.avatarModalFooter}>
+            <Button 
+              variant="secondary" 
+              onPress={handleCancelAvatarChange}
+              disabled={isUploadingAvatar}
+              style={styles.avatarModalButton}
+            >
+              Annuler
+            </Button>
+            <Button 
+              variant="primary"
+              onPress={handleConfirmAvatarUpload}
+              loading={isUploadingAvatar}
+              disabled={isUploadingAvatar}
+              style={styles.avatarModalButton}
+            >
+              {isUploadingAvatar ? 'Enregistrement...' : 'Confirmer'}
+            </Button>
+          </View>
+        }
+      >
+        <View style={styles.avatarModalContent}>
+          <Text style={styles.avatarModalDescription}>
+            Êtes-vous sûr de vouloir remplacer votre photo de profil actuelle ?
+          </Text>
+
+          {/* Comparaison avant/après */}
+          <View style={styles.avatarComparisonContainer}>
+            {/* Image actuelle */}
+            <View style={styles.avatarComparisonItem}>
+              <Text style={styles.avatarComparisonLabel}>Photo actuelle</Text>
+              {profile?.avatar_url ? (
+                <Image
+                  source={{ uri: profile.avatar_url }}
+                  style={styles.avatarComparisonImageOld}
+                />
+              ) : (
+                <View style={styles.avatarComparisonPlaceholder}>
+                  <Text style={styles.avatarComparisonPlaceholderText}>
+                    {profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || '👤'}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Flèche */}
+            <View style={styles.avatarComparisonArrow}>
+              <Text style={styles.avatarComparisonArrowIcon}>→</Text>
+            </View>
+
+            {/* Nouvelle image */}
+            <View style={styles.avatarComparisonItem}>
+              <Text style={styles.avatarComparisonLabelNew}>Nouvelle photo</Text>
+              {pendingAvatarUri ? (
+                <View style={styles.avatarComparisonNewWrapper}>
+                  <Image
+                    source={{ uri: pendingAvatarUri }}
+                    style={styles.avatarComparisonImageNew}
+                  />
+                  <View style={styles.avatarComparisonCheckmark}>
+                    <Text style={styles.avatarComparisonCheckmarkIcon}>✓</Text>
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.avatarComparisonPlaceholder}>
+                  <ActivityIndicator size="small" color={MachiColors.primary} />
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
       </Modal>
 
       {/* Actions */}
@@ -1227,7 +1643,8 @@ const styles = StyleSheet.create({
   section: {
     backgroundColor: 'blac',
     borderRadius: 12,
-    padding: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -1245,6 +1662,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 12,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },
@@ -1266,6 +1684,34 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontStyle: 'italic',
     textAlign: 'center',
+  },
+  successMessageContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#d1fae5',
+    borderWidth: 1,
+    borderColor: '#10b981',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 16,
+    marginHorizontal: 16,
+    alignItems: 'center',
+  },
+  successMessageIcon: {
+    fontSize: 24,
+    marginRight: 12,
+  },
+  successMessageContent: {
+    flex: 1,
+  },
+  successMessageTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#065f46',
+    marginBottom: 4,
+  },
+  successMessageText: {
+    fontSize: 14,
+    color: '#047857',
   },
   section: {
     marginBottom: 24,
@@ -1436,7 +1882,150 @@ const styles = StyleSheet.create({
     fontSize: 48,
     marginBottom: 12,
   },
+  // Styles pour l'upload d'avatar
+  avatarWrapper: {
+    position: 'relative',
+  },
+  avatarImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 3,
+    borderColor: MachiColors.primary,
+  },
+  avatarEditButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: MachiColors.primary,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  avatarEditIcon: {
+    fontSize: 14,
+  },
+  avatarHint: {
+    marginTop: 8,
+    fontSize: 12,
+    color: MachiColors.textSecondary,
+    fontStyle: 'italic',
+  },
+  // Styles pour la modale de confirmation d'avatar
+  avatarModalContent: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  avatarModalDescription: {
+    fontSize: 14,
+    color: MachiColors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  avatarComparisonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+  },
+  avatarComparisonItem: {
+    alignItems: 'center',
+  },
+  avatarComparisonLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: MachiColors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  avatarComparisonLabelNew: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: MachiColors.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  avatarComparisonImageOld: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    opacity: 0.6,
+  },
+  avatarComparisonPlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#e5e7eb',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#d1d5db',
+    opacity: 0.6,
+  },
+  avatarComparisonPlaceholderText: {
+    fontSize: 28,
+    color: MachiColors.textSecondary,
+  },
+  avatarComparisonArrow: {
+    paddingHorizontal: 8,
+  },
+  avatarComparisonArrowIcon: {
+    fontSize: 24,
+    color: MachiColors.primary,
+    fontWeight: 'bold',
+  },
+  avatarComparisonNewWrapper: {
+    position: 'relative',
+  },
+  avatarComparisonImageNew: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 3,
+    borderColor: MachiColors.primary,
+  },
+  avatarComparisonCheckmark: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    backgroundColor: MachiColors.primary,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  avatarComparisonCheckmarkIcon: {
+    fontSize: 12,
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  avatarModalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  avatarModalButton: {
+    flex: 1,
+  },
 });
+
 
 
 

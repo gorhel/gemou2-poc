@@ -43,3 +43,4 @@ convert -size 1284x2778 xc:#6366F1 -gravity center logo-icon.svg -composite spla
 
 Une fois générés, placez ces fichiers dans `apps/mobile/assets/` et copiez `favicon.png` vers `apps/web/public/favicon.ico` (convertir en ICO si nécessaire).
 
+

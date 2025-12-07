@@ -219,3 +219,4 @@ La section "Mes infos" affiche maintenant :
 - Des champs de saisie avec fond gris clair et coins arrondis
 - Un design minimaliste et moderne conforme à la maquette
 
+

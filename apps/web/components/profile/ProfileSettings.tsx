@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { createClientSupabaseClient } from '../../lib/supabase-client'
+import { logger } from '../../lib/logger'
 import { Card, CardHeader, CardTitle, CardContent, Button, LoadingSpinner } from '../ui'
 import { UserSettings } from '../../../packages/database/types'
 
@@ -11,12 +12,14 @@ interface ProfileSettingsProps {
   userId: string
   activeTab?: TabType
   onTabChange?: (tab: TabType) => void
+  inModal?: boolean
 }
 
 export default function ProfileSettings({ 
   userId, 
   activeTab: externalTab, 
-  onTabChange 
+  onTabChange,
+  inModal = false
 }: ProfileSettingsProps) {
   const [internalTab, setInternalTab] = useState<TabType>('profile')
   const [settings, setSettings] = useState<UserSettings | null>(null)
@@ -59,7 +62,7 @@ export default function ProfileSettings({
         setSettings(data)
       }
     } catch (err: any) {
-      console.error('Error loading settings:', err)
+      logger.error('ProfileSettings', err, { action: 'loadSettings' })
       setError(err.message || 'Erreur lors du chargement des paramètres')
     } finally {
       setLoading(false)
@@ -83,7 +86,7 @@ export default function ProfileSettings({
 
   if (loading) {
     return (
-      <Card>
+      <Card padding={inModal ? 'none' : 'md'}>
         <CardHeader>
           <CardTitle>⚙️ Paramètres</CardTitle>
         </CardHeader>
@@ -98,7 +101,7 @@ export default function ProfileSettings({
 
   if (error) {
     return (
-      <Card>
+      <Card padding={inModal ? 'none' : 'md'}>
         <CardHeader>
           <CardTitle>⚙️ Paramètres</CardTitle>
         </CardHeader>
@@ -119,7 +122,7 @@ export default function ProfileSettings({
   }
 
   return (
-    <Card>
+    <Card padding={inModal ? 'none' : 'md'}>
       <CardHeader>
         <CardTitle>⚙️ Paramètres</CardTitle>
       </CardHeader>
@@ -184,4 +187,5 @@ export default function ProfileSettings({
     </Card>
   )
 }
+
 

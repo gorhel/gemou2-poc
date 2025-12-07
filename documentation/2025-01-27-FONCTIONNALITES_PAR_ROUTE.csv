@@ -1,0 +1,51 @@
+Plateforme;Fonctionnalité;Route;Description
+Web;Page d'accueil;/;Page de présentation de l'application avec redirection vers onboarding ou dashboard selon l'état de connexion
+Web;Onboarding;/onboarding;Processus de découverte de l'application avec 4 slides de présentation
+Web;Connexion;/login;Page de connexion utilisateur avec authentification email/mot de passe via Supabase
+Web;Inscription;/register;Page d'inscription avec validation en temps réel du nom d'utilisateur et création de compte
+Web;Mot de passe oublié;/forgot-password;Page de réinitialisation du mot de passe via email
+Web;Dashboard;/dashboard;Tableau de bord principal avec statistiques utilisateur, événements, jeux et recommandations
+Web;Liste des événements;/events;Affichage de la liste de tous les événements disponibles avec filtres et recherche
+Web;Détail événement;/events/[id];Page détaillée d'un événement avec informations complètes, participants et possibilité de rejoindre
+Web;Créer un événement;/create-event;Formulaire de création d'événement avec sélection de jeu, date, lieu et paramètres
+Web;Marketplace;/marketplace;Affichage de toutes les annonces de vente, échange et don de jeux avec filtres
+Web;Créer une annonce;/create-trade;Formulaire de création d'annonce marketplace avec upload d'images et détails du jeu
+Web;Détail annonce;/trade/[id];Page détaillée d'une annonce marketplace avec informations du vendeur et contact
+Web;Communauté;/community;Liste des membres de la communauté avec recherche et accès aux profils publics
+Web;Recherche globale;/search;Page de recherche globale pour événements, utilisateurs et jeux avec filtres par catégorie
+Web;Profil utilisateur;/profile;Page de profil personnel avec sections modales (informations, jeux, préférences, événements, amis, compte, actions)
+Web;Profil public;/profile/[username];Page de profil public d'un autre utilisateur avec statistiques et actions (message, ami)
+Web;Détail jeu;/games/[id];Page détaillée d'un jeu avec informations complètes depuis BoardGameGeek et collection
+Web;Style guide;/style-guide;Page de démonstration des composants UI et du design system de l'application
+Web;Demo composants;/components-demo;Page de démonstration de tous les composants réutilisables disponibles
+Web;Configuration Supabase;/configure-supabase;Page de configuration et test de la connexion Supabase (admin/dev)
+Web;Test inscription;/test-registration;Page de test pour l'inscription et la création de compte utilisateur
+Web;Test Supabase;/test-supabase;Page de test pour vérifier la connexion et les fonctionnalités Supabase
+Web;Admin - Créer événement;/admin/create-event;Page admin pour créer rapidement un événement de test (développement)
+Web;Admin - Ajouter tags;/admin/add-user-tags;Page admin pour ajouter des tags utilisateur (développement)
+Mobile;Page d'accueil;/(tabs)/dashboard;Tableau de bord mobile avec statistiques et accès rapide aux fonctionnalités principales
+Mobile;Liste événements;/(tabs)/events/index;Affichage mobile de la liste des événements avec pull-to-refresh et filtres
+Mobile;Détail événement;/(tabs)/events/[id];Page mobile détaillée d'un événement avec participation en temps réel
+Mobile;Marketplace;/(tabs)/marketplace;Liste mobile des annonces marketplace avec filtres et recherche
+Mobile;Communauté;/(tabs)/community;Page mobile de la communauté avec recherche de joueurs et profils publics
+Mobile;Profil;/(tabs)/profile/index;Page mobile du profil personnel avec statistiques et actions rapides
+Mobile;Créer événement;/(tabs)/create-event;Formulaire mobile de création d'événement avec sélection de jeu et date
+Mobile;Créer annonce;/(tabs)/create-trade;Formulaire mobile de création d'annonce avec upload photos depuis galerie
+Mobile;Profil public;/profile/[username];Page mobile du profil public d'un autre utilisateur
+Mobile;Détail annonce;/trade/[id];Page mobile détaillée d'une annonce avec contact vendeur
+Mobile;Détail jeu;/games/[id];Page mobile détaillée d'un jeu avec ajout à la collection
+Mobile;Conversation;/conversations/[id];Page mobile de conversation privée entre utilisateurs avec envoi de messages
+Mobile;Recherche;/(tabs)/search;Page mobile de recherche globale avec résultats filtrés par catégorie
+Mobile;Onboarding;/onboarding;Processus de découverte mobile avec 4 slides et navigation tactile
+Mobile;Connexion;/login;Page mobile de connexion avec authentification Supabase
+Mobile;Inscription;/register;Formulaire mobile d'inscription avec validation temps réel
+Mobile;Mot de passe oublié;/forgot-password;Page mobile de réinitialisation du mot de passe
+Mobile;Demo composants;/components-demo;Page mobile de démonstration des composants React Native
+Mobile;Admin événement;/admin/create-event;Page mobile admin pour créer des événements de test
+API;Créer événement;POST /api/events;Endpoint API pour créer un nouvel événement en base de données
+API;Liste événements;GET /api/events;Endpoint API pour récupérer la liste de tous les événements
+API;Recherche jeux;GET /api/games/search?q=;Endpoint API pour rechercher des jeux dans BoardGameGeek et la base de données locale
+API;Jeux populaires;GET /api/games/popular;Endpoint API pour récupérer les jeux les plus populaires
+API;Vérifier username;GET /api/username/check?username=;Endpoint API pour vérifier la disponibilité d'un nom d'utilisateur en temps réel
+API;Test tags utilisateur;GET /api/test-user-tags;Endpoint API de test pour les tags utilisateur (développement)
+API;Callback OAuth;GET /auth/callback;Endpoint de callback pour l'authentification OAuth (Google, Facebook)

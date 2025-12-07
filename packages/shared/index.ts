@@ -1,11 +1,8 @@
 // Hooks
-export * from './hooks/useOnboarding';
+export * from './hooks/useOnboarding'
 
 // Utils
-export * from './utils/validation';
-
-
-export * from './components'
+export * from './utils/validation'
 
 // Components
 export * from './components'

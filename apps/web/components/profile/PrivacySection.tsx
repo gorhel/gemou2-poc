@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { createClientSupabaseClient } from '../../lib/supabase-client'
+import { logger } from '../../lib/logger'
 import { Card, CardHeader, CardTitle, CardContent, Button, Toggle, Select, LoadingSpinner } from '../ui'
 import { UserSettings } from '../../../packages/database/types'
 
@@ -54,7 +55,7 @@ export default function PrivacySection({ userId, settings, onUpdate }: PrivacySe
         setFormData(prev => ({ ...prev, friends_list_public: data.friends_list_public || false }))
       }
     } catch (err) {
-      console.error('Error loading friends_list_public:', err)
+      logger.error('PrivacySection', err as Error, { action: 'loadFriendsListPublic' })
     }
   }
 
@@ -91,7 +92,7 @@ export default function PrivacySection({ userId, settings, onUpdate }: PrivacySe
       onUpdate?.()
       setTimeout(() => setSuccess(false), 3000)
     } catch (err: any) {
-      console.error('Error updating privacy settings:', err)
+      logger.error('PrivacySection', err, { action: 'updatePrivacySettings' })
       setError(err.message || 'Erreur lors de la mise à jour')
     } finally {
       setLoading(false)
@@ -252,4 +253,5 @@ export default function PrivacySection({ userId, settings, onUpdate }: PrivacySe
     </Card>
   )
 }
+
 

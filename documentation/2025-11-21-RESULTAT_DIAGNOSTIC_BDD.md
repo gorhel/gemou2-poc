@@ -155,3 +155,4 @@ SELECT create_marketplace_conversation(
 - **Script de vérification RPC** : `documentation/2025-11-21-VERIFICATION_FONCTION_RPC.sql` ⏳ À exécuter
 - **Comparaison des migrations** : `documentation/2025-11-21-COMPARAISON_MIGRATIONS_CONVERSATIONS.md`
 
+

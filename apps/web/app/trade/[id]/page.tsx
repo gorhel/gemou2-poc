@@ -38,9 +38,13 @@ export default function TradePage() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        // DEBUG: Log l'ID reçu
+        console.log('🔍 Trade page - ID reçu:', params.id);
+        
         // Récupérer l'utilisateur connecté
         const { data: { user } } = await supabase.auth.getUser();
         setUser(user);
+        console.log('👤 Utilisateur:', user ? user.email : 'Non connecté');
 
         // Récupérer l'annonce
         const { data, error: fetchError } = await supabase
@@ -49,8 +53,11 @@ export default function TradePage() {
           .eq('id', params.id)
           .single();
 
+        // DEBUG: Log le résultat
+        console.log('📦 Résultat requête:', { data, error: fetchError });
+
         if (fetchError) {
-          console.error('Error fetching trade:', fetchError);
+          console.error('❌ Error fetching trade:', fetchError);
           setError('Annonce introuvable');
           return;
         }
@@ -279,6 +286,29 @@ export default function TradePage() {
 
                   {/* Détails */}
                   <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b">
+                    {/* Vendeur */}
+                    <div className="col-span-2 sm:col-span-1">
+                      <p className="text-sm text-gray-500 mb-1">Vendeur</p>
+                      <Link
+                        href={`/profile/${item.seller_username || item.seller_id}`}
+                        className="flex items-center gap-3 group"
+                      >
+                        {item.seller_avatar ? (
+                          <img
+                            src={item.seller_avatar}
+                            alt={item.seller_username || 'Vendeur'}
+                            className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 group-hover:border-primary-400 transition-colors"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-secondary-400 flex items-center justify-center text-white font-semibold text-sm">
+                            {(item.seller_username || item.seller_full_name || 'U').charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <span className="font-medium text-gray-900 group-hover:text-primary-600 transition-colors">
+                          {item.seller_username || item.seller_full_name || 'Utilisateur'}
+                        </span>
+                      </Link>
+                    </div>
                     <div>
                       <p className="text-sm text-gray-500 mb-1">Jeu</p>
                       <p className="font-medium text-gray-900">{item.game_name || 'Non spécifié'}</p>

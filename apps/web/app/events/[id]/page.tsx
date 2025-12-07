@@ -1,15 +1,16 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { createClientSupabaseClient } from '../../../lib/supabase-client';
-import { useEventParticipantsCount } from '../../../hooks/useEventParticipantsCount';
-import { Button } from '../../../components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
-import { LoadingSpinner } from '../../../components/ui/Loading';
-import { ResponsiveLayout, PageHeader, PageFooter } from '../../../components/layout';
-import { ConfirmModal, SuccessModal, useModal } from '../../../components/ui';
+import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { createClientSupabaseClient } from '../../../lib/supabase-client'
+import { useEventParticipantsCount } from '../../../hooks/useEventParticipantsCount'
+import { Button } from '../../../components/ui/Button'
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card'
+import { LoadingSpinner } from '../../../components/ui/Loading'
+import { ResponsiveLayout, PageHeader, PageFooter } from '../../../components/layout'
+import { ConfirmModal, SuccessModal, useModal } from '../../../components/ui'
+import { logger } from '../../../lib/logger'
 
 interface Event {
   id: string;
@@ -163,20 +164,20 @@ export default function EventPageOptimized() {
 
       // Traiter les participants
       if (participantsResult.status === 'fulfilled') {
-        const { data: participantsData, error: participantsError } = participantsResult.value;
-        if (participantsError) throw participantsError;
-        setParticipants(participantsData || []);
+        const { data: participantsData, error: participantsError } = participantsResult.value
+        if (participantsError) throw participantsError
+        setParticipants(participantsData || [])
       } else {
-        console.error('Erreur lors du chargement des participants:', participantsResult.reason);
-        setParticipants([]);
+        logger.error('EventPage', participantsResult.reason as Error)
+        setParticipants([])
       }
 
-                  // Traiter les tags
+      // Traiter les tags
       if (tagsResult.status === 'fulfilled') {
-        const { data: tagsData, error: tagsError } = tagsResult.value;
+        const { data: tagsData, error: tagsError } = tagsResult.value
         if (tagsError) {
-          console.warn('Erreur lors du chargement des tags:', tagsError);
-          setEventTags([]);
+          logger.warn('EventPage', 'Erreur lors du chargement des tags')
+          setEventTags([])
         } else {
           // Formater les tags pour avoir une structure cohérente
           const formattedTags = (tagsData || []).map((et: any) => ({
@@ -184,67 +185,52 @@ export default function EventPageOptimized() {
             id: et.tag_id,
             name: et.tags?.name,
             tags: et.tags
-          }));
-          console.log('✅ Tags de l\'événement chargés:', formattedTags.length, formattedTags);
-          setEventTags(formattedTags);
+          }))
+          setEventTags(formattedTags)
         }
       } else {
-        console.warn('Erreur lors du chargement des tags:', tagsResult.reason);
-        setEventTags([]);
+        logger.warn('EventPage', 'Erreur lors du chargement des tags')
+        setEventTags([])
       }
 
       // Récupérer les jeux de l'événement et leurs tags
-      console.log('🔍 Récupération des jeux pour l\'événement:', eventId);
       const { data: gamesData, error: gamesError } = await supabase
         .from('event_games')
         .select('*')
-        .eq('event_id', eventId);
-
-      console.log('📦 Jeux récupérés:', { gamesData, gamesError, count: gamesData?.length || 0 });
+        .eq('event_id', eventId)
 
       if (!gamesError && gamesData && gamesData.length > 0) {
         // Récupérer les IDs des jeux depuis la table games
         const gameBggIds = gamesData
           .map(g => g.game_id)
-          .filter((id): id is string => !!id);
-        
-        console.log('🎮 BGG IDs des jeux:', gameBggIds);
+          .filter((id): id is string => !!id)
         
         if (gameBggIds.length > 0) {
           const { data: gamesInDb, error: gamesInDbError } = await supabase
             .from('games')
             .select('id, bgg_id, name, data')
-            .in('bgg_id', gameBggIds);
-          
-          console.log('🎯 Jeux trouvés dans la table games:', { gamesInDb, gamesInDbError, count: gamesInDb?.length || 0 });
+            .in('bgg_id', gameBggIds)
           
           if (!gamesInDbError && gamesInDb && gamesInDb.length > 0) {
             // Pour les jeux non trouvés par bgg_id, essayer par nom
             const missingGames = gamesData.filter(eg => 
               !gamesInDb.some(g => g.bgg_id === eg.game_id)
-            );
-            
-            console.log('🔍 Jeux non trouvés par bgg_id:', missingGames.length);
+            )
             
             if (missingGames.length > 0) {
-              const missingGameNames = missingGames.map(eg => eg.game_name);
+              const missingGameNames = missingGames.map(eg => eg.game_name)
               const { data: gamesByName, error: gamesByNameError } = await supabase
                 .from('games')
                 .select('id, bgg_id, name, data')
-                .in('name', missingGameNames);
-              
-              console.log('📝 Jeux trouvés par nom:', { gamesByName, gamesByNameError, count: gamesByName?.length || 0 });
+                .in('name', missingGameNames)
               
               if (!gamesByNameError && gamesByName) {
-                gamesInDb.push(...gamesByName);
+                gamesInDb.push(...gamesByName)
               }
             }
             
             // Extraire les tags depuis la colonne data JSONB
-            console.log('🆔 Extraction des tags depuis data JSONB pour', gamesInDb.length, 'jeu(x)');
-            
-            const extractedTags = extractGameTagsFromData(gamesInDb as GameWithData[]);
-            console.log('✅ Tags extraits depuis data:', extractedTags.length, extractedTags);
+            const extractedTags = extractGameTagsFromData(gamesInDb as GameWithData[])
             
             // Transformer en format compatible avec l'affichage existant
             const formattedTags = extractedTags.map(tag => ({
@@ -253,31 +239,28 @@ export default function EventPageOptimized() {
               name: tag.name,
               source: tag.source,
               gameId: tag.gameId
-            }));
+            }))
             
-            setGameTags(formattedTags);
+            setGameTags(formattedTags)
           } else {
-            console.warn('⚠️ Aucun jeu trouvé dans la table games pour cet événement');
-            setGameTags([]);
+            setGameTags([])
           }
         } else {
-          console.warn('⚠️ Aucun game_id (bgg_id) trouvé dans les jeux de l\'événement');
-          setGameTags([]);
+          setGameTags([])
         }
       } else {
-        console.warn('⚠️ Aucun jeu trouvé pour cet événement ou erreur:', gamesError);
-        setGameTags([]);
+        setGameTags([])
       }
 
     } catch (error: any) {
-      console.error('Erreur lors du chargement des participants:', error);
-      setParticipants([]);
-      setEventTags([]);
-      setGameTags([]);
+      logger.error('EventPage', error, { action: 'fetchParticipants' })
+      setParticipants([])
+      setEventTags([])
+      setGameTags([])
     } finally {
-      setLoadingParticipants(false);
+      setLoadingParticipants(false)
     }
-  }, [eventId, supabase]);
+  }, [eventId, supabase])
 
   const addParticipant = useCallback((participant: any) => {
     setParticipants(prev => [...prev, participant]);
@@ -326,8 +309,8 @@ export default function EventPageOptimized() {
         .single();
 
       if (eventError) {
-        console.error('Erreur lors de la récupération de l\'événement:', eventError);
-        throw eventError;
+        logger.error('EventPage', eventError as Error, { action: 'fetchEventDetails' })
+        throw eventError
       }
 
       if (!eventData) {
@@ -346,18 +329,18 @@ export default function EventPageOptimized() {
         .single();
 
       if (creatorError) {
-        console.error('Erreur lors de la récupération du créateur:', creatorError);
+        logger.error('EventPage', creatorError as Error, { action: 'fetchCreator' })
       } else {
-        setCreator(creatorData);
+        setCreator(creatorData)
       }
 
     } catch (error: any) {
-      console.error('Erreur lors du chargement de l\'événement:', error);
-      setError(error.message || 'Erreur lors du chargement de l\'événement');
+      logger.error('EventPage', error, { action: 'fetchEventDetails' })
+      setError(error.message || 'Erreur lors du chargement de l\'événement')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [eventId, supabase]);
+  }, [eventId, supabase])
 
   // Fonction pour vérifier la participation
   const checkParticipation = useCallback(async () => {
@@ -379,11 +362,10 @@ export default function EventPageOptimized() {
       if (error && error.code !== 'PGRST116') {
         // Erreur silencieuse pour les erreurs de réseau temporaires
         if (error.message?.includes('Failed to fetch')) {
-          console.warn('Erreur réseau temporaire lors de la vérification de participation');
-          return;
+          return
         }
-        console.error('Erreur lors de la vérification de participation:', error);
-        return;
+        logger.error('EventPage', error as Error, { action: 'checkParticipation' })
+        return
       }
 
       const participating = !!participation;
@@ -391,21 +373,28 @@ export default function EventPageOptimized() {
     } catch (error: any) {
       // Erreur silencieuse pour les erreurs de réseau
       if (error?.message?.includes('Failed to fetch')) {
-        console.warn('Erreur réseau temporaire');
-        return;
+        return
       }
-      console.error('Erreur lors de la vérification de participation:', error);
-      setIsParticipating(false);
+      logger.error('EventPage', error, { action: 'checkParticipation' })
+      setIsParticipating(false)
     }
-  }, [user, eventId, supabase]);
+  }, [user, eventId, supabase])
+
+  // Ref pour éviter les logs multiples
+  const hasLoggedMount = useRef(false)
 
   // Effect pour charger les détails de l'événement au montage
   useEffect(() => {
     if (eventId) {
-      fetchEventDetails();
-      fetchParticipants();
+      // Log unique au chargement de la page
+      if (!hasLoggedMount.current) {
+        logger.pageLoad('EventPage', { eventId })
+        hasLoggedMount.current = true
+      }
+      fetchEventDetails()
+      fetchParticipants()
     }
-  }, [eventId, fetchEventDetails, fetchParticipants]);
+  }, [eventId, fetchEventDetails, fetchParticipants])
 
   // Effect pour écouter les changements d'authentification
   useEffect(() => {
@@ -465,8 +454,8 @@ export default function EventPageOptimized() {
           .eq('user_id', currentUser.id);
 
         if (error) {
-          console.error('Erreur lors de la sortie:', error);
-          throw error;
+          logger.error('EventPage', error as Error, { action: 'leaveEvent' })
+          throw error
         }
 
         // Mettre à jour le compteur en base
@@ -478,13 +467,14 @@ export default function EventPageOptimized() {
           .eq('id', eventId);
 
         if (updateError) {
-          console.error('Erreur lors de la mise à jour du compteur:', updateError);
+          logger.error('EventPage', updateError as Error, { action: 'updateCounter' })
         }
 
         // Mettre à jour la liste des participants localement
-        removeParticipant(currentUser.id);
+        removeParticipant(currentUser.id)
 
-        // Sortie de l'événement réussie
+        // Log de l'action utilisateur
+        logger.userAction('EventPage', 'leaveEvent', { eventId })
 
       } else {
         // Vérifier si l'événement est complet
@@ -523,11 +513,11 @@ export default function EventPageOptimized() {
 
         if (error) {
           if (error.code === '23505') {
-            alert('Vous participez déjà à cet événement');
-            return;
+            alert('Vous participez déjà à cet événement')
+            return
           }
-          console.error('Erreur lors de l\'ajout:', error);
-          throw error;
+          logger.error('EventPage', error as Error, { action: 'joinEvent' })
+          throw error
         }
 
         // Mettre à jour le compteur en base
@@ -539,7 +529,7 @@ export default function EventPageOptimized() {
           .eq('id', eventId);
 
         if (updateError) {
-          console.error('Erreur lors de la mise à jour du compteur:', updateError);
+          logger.error('EventPage', updateError as Error, { action: 'updateCounter' })
         }
 
         // Mettre à jour la liste des participants localement
@@ -547,11 +537,12 @@ export default function EventPageOptimized() {
           const participantWithRole = {
             ...newParticipation,
             role: newParticipation.user_id === event?.creator_id ? 'host' : 'participant'
-          };
-          addParticipant(participantWithRole);
+          }
+          addParticipant(participantWithRole)
         }
 
-        // Ajout à l'événement réussi
+        // Log de l'action utilisateur
+        logger.userAction('EventPage', 'joinEvent', { eventId })
       }
 
       // Rafraîchir les données après l'action - optimisé
@@ -563,12 +554,12 @@ export default function EventPageOptimized() {
       ]);
 
     } catch (error: any) {
-      console.error('Erreur lors de l\'action:', error);
-      alert('Erreur lors de l\'action: ' + (error.message || 'Erreur inconnue'));
+      logger.error('EventPage', error, { action: 'handleJoinEvent' })
+      alert('Erreur lors de l\'action: ' + (error.message || 'Erreur inconnue'))
     } finally {
-      setIsLoadingAction(false);
+      setIsLoadingAction(false)
     }
-  };
+  }
 
   const handleDeleteEvent = async () => {
     if (!event || !user) return;
@@ -582,9 +573,9 @@ export default function EventPageOptimized() {
       });
 
       if (error) {
-        console.error('Error deleting event:', error);
-        alert('Erreur lors de la suppression de l\'événement');
-        return;
+        logger.error('EventPage', error as Error, { action: 'deleteEvent' })
+        alert('Erreur lors de la suppression de l\'événement')
+        return
       }
 
       // Fermer la modale de confirmation
@@ -598,12 +589,12 @@ export default function EventPageOptimized() {
         router.push('/events');
       }, 2000);
     } catch (err) {
-      console.error('Error:', err);
-      alert('Une erreur est survenue');
+      logger.error('EventPage', err as Error, { action: 'deleteEvent' })
+      alert('Une erreur est survenue')
     } finally {
-      setIsDeleting(false);
+      setIsDeleting(false)
     }
-  };
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

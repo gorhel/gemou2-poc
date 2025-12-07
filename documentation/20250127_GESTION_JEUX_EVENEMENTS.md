@@ -383,3 +383,4 @@ ON public.event_games FOR ALL USING (
 
 
 
+

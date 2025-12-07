@@ -3,8 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientSupabaseClient } from '../../lib/supabase-client';
+import { logger } from '../../lib/logger';
 import { Button, Card, CardHeader, CardTitle, CardContent, LoadingSpinner, Modal, useModal } from '../../components/ui';
-import { FriendsSlider, UserPreferences } from '../../components/users';
+import { FriendsSlider, UserPreferences, GamePreferencesEditor } from '../../components/users';
+import ProfileSettings from '../../components/profile/ProfileSettings';
+import ProfileInfoSection from '../../components/profile/ProfileInfoSection';
 import ResponsiveLayout from '../../components/layout/ResponsiveLayout';
 
 // Types pour les événements utilisateur
@@ -28,7 +31,7 @@ interface UserGame {
   max_players?: number;
 }
 
-type ProfileSection = 'informations' | 'jeux' | 'preferences' | 'evenements' | 'amis' | 'actions';
+type ProfileSection = 'informations' | 'jeux' | 'preferences' | 'preferences_jeu' | 'evenements' | 'amis' | 'actions' | 'compte';
 
 interface SectionItem {
   key: ProfileSection;
@@ -40,9 +43,11 @@ const sections: SectionItem[] = [
   { key: 'informations', label: 'Mes informations', icon: '👤' },
   { key: 'jeux', label: 'Mes jeux', icon: '🎮' },
   { key: 'preferences', label: 'Mes préférences', icon: '⭐' },
+  { key: 'preferences_jeu', label: 'Mes préférences de jeu', icon: '🎯' },
   { key: 'evenements', label: 'Mes événements', icon: '📅' },
   { key: 'amis', label: 'Mes amis', icon: '👥' },
-  { key: 'actions', label: 'Actions', icon: '⚙️' }
+  { key: 'compte', label: 'Mon compte', icon: '⚙️' },
+  { key: 'actions', label: 'Actions', icon: '🔧' }
 ];
 
 export default function ProfilePage() {
@@ -70,7 +75,7 @@ export default function ProfilePage() {
         // Charger les événements de l'utilisateur connecté
         await fetchUserEvents(user.id);
       } catch (error) {
-        console.error('Error:', error);
+        logger.error('ProfilePage', error as Error, { action: 'getUser' })
         router.push('/login');
       } finally {
         setLoading(false);
@@ -90,7 +95,7 @@ export default function ProfilePage() {
         .order('date_time', { ascending: false });
 
       if (organizedError) {
-        console.error('Error fetching organized events:', organizedError);
+        logger.error('ProfilePage', organizedError, { action: 'fetchOrganizedEvents' })
         return;
       }
 
@@ -106,7 +111,7 @@ export default function ProfilePage() {
         .order('joined_at', { ascending: false });
 
       if (participatedError) {
-        console.error('Error fetching participated events:', participatedError);
+        logger.error('ProfilePage', participatedError, { action: 'fetchParticipatedEvents' })
         return;
       }
 
@@ -137,7 +142,7 @@ export default function ProfilePage() {
 
       setUserEvents(allEvents);
     } catch (error) {
-      console.error('Error fetching user events:', error);
+      logger.error('ProfilePage', error as Error, { action: 'fetchUserEvents' })
     }
   };
 
@@ -157,7 +162,7 @@ export default function ProfilePage() {
       await supabase.auth.signOut();
       router.push('/login');
     } catch (error) {
-      console.error('Error logging out:', error);
+      logger.error('ProfilePage', error as Error, { action: 'logout' })
     }
   };
 
@@ -270,67 +275,22 @@ export default function ProfilePage() {
           title={activeSection ? sections.find(s => s.key === activeSection)?.label : ''}
           size="lg"
           footer={
-            <div className="flex justify-end space-x-3">
+            <>
               <Button variant="outline" onClick={handleModalClose}>
                 Annuler
               </Button>
               <Button onClick={handleValidate}>
                 Valider
               </Button>
-            </div>
+            </>
           }
         >
           {activeSection === 'informations' && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>👤 Informations du profil</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                            <span className="text-2xl">👤</span>
-                          </div>
-                          <div className="flex-1 text-center md:text-left">
-                            <h3 className="text-3xl font-bold text-gray-900 mb-2">{user.email}</h3>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-3">
-                          <div>
-                            <span className="font-medium text-gray-700">Email :</span>
-                            <span className="ml-2 text-gray-600">{user.email}</span>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-700">ID utilisateur :</span>
-                            <span className="ml-2 text-gray-600 text-xs font-mono">{user.id}</span>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-700">Membre depuis :</span>
-                            <span className="ml-2 text-gray-600">
-                              {new Date(user.created_at).toLocaleDateString('fr-FR')}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-700">Dernière connexion :</span>
-                            <span className="ml-2 text-gray-600">
-                              {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('fr-FR') : 'Maintenant'}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-700">Bio :</span>
-                            <span className="ml-2 text-gray-600">
-                              {user.bio || 'Aucune bio'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+            <ProfileInfoSection userId={user.id} inModal={true} />
           )}
 
           {activeSection === 'jeux' && (
-                  <Card>
+                  <Card padding="none">
                     <CardHeader>
                       <CardTitle className="text-xl font-bold">🎮 Mes jeux</CardTitle>
                     </CardHeader>
@@ -374,8 +334,12 @@ export default function ProfilePage() {
             </div>
           )}
 
+          {activeSection === 'preferences_jeu' && (
+            <GamePreferencesEditor userId={user.id} inModal={true} />
+          )}
+
           {activeSection === 'evenements' && (
-                  <Card>
+                  <Card padding="none">
                     <CardHeader>
                       <CardTitle className="text-xl font-bold">📅 Mes événements</CardTitle>
                     </CardHeader>
@@ -448,10 +412,14 @@ export default function ProfilePage() {
             </div>
           )}
 
+          {activeSection === 'compte' && (
+            <ProfileSettings userId={user.id} inModal={true} />
+          )}
+
           {activeSection === 'actions' && (
-                  <Card>
+                  <Card padding="none">
                     <CardHeader>
-                      <CardTitle>⚙️ Actions</CardTitle>
+                      <CardTitle>🔧 Actions</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">

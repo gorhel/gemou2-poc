@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Pressable } from 'react-native'
+import { router } from 'expo-router'
 import { FriendRequest } from './types'
 import { ConfirmationModal, ModalVariant } from '../ui'
 
@@ -8,13 +9,15 @@ interface FriendRequestCardProps {
   onAccept: (requestId: string, onSuccess?: () => void, onError?: (error: string) => void) => void
   onReject: (requestId: string, onSuccess?: () => void, onError?: (error: string) => void) => void
   loading?: boolean
+  onCloseModal?: () => void
 }
 
 export function FriendRequestCard({ 
   request, 
   onAccept, 
   onReject, 
-  loading = false 
+  loading = false,
+  onCloseModal
 }: FriendRequestCardProps) {
   const sender = request.sender
   const displayName = sender?.full_name || sender?.username || 'Utilisateur'
@@ -31,8 +34,23 @@ export function FriendRequestCard({
     message: ''
   })
 
+  const handleViewProfile = () => {
+    if (sender?.username) {
+      // Fermer la modale parente si disponible
+      onCloseModal?.()
+      // Naviguer vers le profil
+      router.push(`/profile/${sender.username}`)
+    }
+  }
+
   return (
-    <View style={styles.card}>
+    <Pressable
+      style={({ pressed }) => [
+        styles.card,
+        pressed && styles.cardPressed
+      ]}
+      onPress={handleViewProfile}
+    >
       <View style={styles.leftSection}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
@@ -42,6 +60,7 @@ export function FriendRequestCard({
         <View style={styles.info}>
           <Text style={styles.name}>{displayName}</Text>
           {username && <Text style={styles.username}>{username}</Text>}
+          <Text style={styles.viewProfileHint}>Voir le profil →</Text>
         </View>
       </View>
 
@@ -52,7 +71,8 @@ export function FriendRequestCard({
           <>
             <TouchableOpacity
               style={[styles.button, styles.acceptButton]}
-              onPress={() => {
+              onPress={(e) => {
+                e.stopPropagation()
                 onAccept(
                   request.id,
                   () => {
@@ -78,7 +98,8 @@ export function FriendRequestCard({
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, styles.rejectButton]}
-              onPress={() => {
+              onPress={(e) => {
+                e.stopPropagation()
                 onReject(
                   request.id,
                   () => {
@@ -113,7 +134,7 @@ export function FriendRequestCard({
         message={modalConfig.message}
         onClose={() => setModalVisible(false)}
       />
-    </View>
+    </Pressable>
   )
 }
 
@@ -131,6 +152,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  cardPressed: {
+    backgroundColor: '#f8fafc',
+    borderColor: '#3b82f6',
+    transform: [{ scale: 0.98 }],
   },
   leftSection: {
     flexDirection: 'row',
@@ -163,6 +191,12 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 14,
     color: '#6b7280',
+  },
+  viewProfileHint: {
+    fontSize: 12,
+    color: '#3b82f6',
+    marginTop: 4,
+    fontWeight: '500',
   },
   actions: {
     flexDirection: 'row',

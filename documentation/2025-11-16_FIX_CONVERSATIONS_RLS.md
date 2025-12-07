@@ -368,3 +368,4 @@ Après avoir exécuté le script SQL :
 **Prochaine étape** : Exécuter le script SQL dans Supabase Dashboard maintenant ! 🚀
 
 
+

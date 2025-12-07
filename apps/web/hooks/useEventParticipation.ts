@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { createClientSupabaseClient } from '../lib/supabase-client';
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { createClientSupabaseClient } from '../lib/supabase-client'
+import { logger } from '../lib/logger'
 
 interface UseEventParticipationProps {
   eventId: string;
@@ -28,10 +29,10 @@ export function useEventParticipation({ eventId, onSuccess, onError }: UseEventP
       setEventData(event);
       return event;
     } catch (error) {
-      console.error('Error fetching event data:', error);
-      return null;
+      logger.error('useEventParticipation', error as Error, { action: 'fetchEventData' })
+      return null
     }
-  }, [eventId, supabase]);
+  }, [eventId, supabase])
 
   // Fonction pour vérifier la participation
   const checkUserParticipation = useCallback(async () => {
@@ -56,17 +57,17 @@ export function useEventParticipation({ eventId, onSuccess, onError }: UseEventP
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error checking participation:', error);
-        return;
+        logger.error('useEventParticipation', error as Error, { action: 'checkParticipation' })
+        return
       }
 
-      setIsParticipating(!!participation);
+      setIsParticipating(!!participation)
     } catch (error) {
-      console.error('Error checking participation:', error);
+      logger.error('useEventParticipation', error as Error, { action: 'checkParticipation' })
     } finally {
-      setIsCheckingParticipation(false);
+      setIsCheckingParticipation(false)
     }
-  }, [eventId, supabase]);
+  }, [eventId, supabase])
 
   // Effect pour vérifier la participation au chargement et changement d'eventId
   useEffect(() => {
@@ -79,20 +80,23 @@ export function useEventParticipation({ eventId, onSuccess, onError }: UseEventP
   // Effect pour écouter les changements d'authentification
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
+      // Log uniquement pour les événements importants
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        logger.authEvent(event, { userId: session?.user?.id })
+      }
       
       if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
         if (eventId) {
-          checkUserParticipation();
-          fetchEventData();
+          checkUserParticipation()
+          fetchEventData()
         }
       }
-    });
+    })
 
     return () => {
-      subscription.unsubscribe();
-    };
-  }, [eventId, checkUserParticipation, fetchEventData, supabase.auth]);
+      subscription.unsubscribe()
+    }
+  }, [eventId, checkUserParticipation, fetchEventData, supabase.auth])
 
   const mutateParticipation = useCallback(async (shouldJoin: boolean) => {
     try {
@@ -157,14 +161,14 @@ export function useEventParticipation({ eventId, onSuccess, onError }: UseEventP
         });
       }
 
-      onSuccess?.();
+      onSuccess?.()
     } catch (error: any) {
-      console.error('Error updating participation:', error);
-      onError?.(error.message || 'Erreur lors de la mise à jour de la participation');
+      logger.error('useEventParticipation', error, { action: 'mutateParticipation' })
+      onError?.(error.message || 'Erreur lors de la mise à jour de la participation')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, [eventId, fetchEventData, isParticipating, onError, onSuccess, supabase]);
+  }, [eventId, fetchEventData, isParticipating, onError, onSuccess, supabase])
 
   const joinEvent = async () => {
     await mutateParticipation(true);

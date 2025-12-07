@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Pressable } from 'react-native'
+import { router } from 'expo-router'
 import { FriendRequest } from './types'
 import { ConfirmationModal, ModalVariant } from '../ui'
 
@@ -7,12 +8,14 @@ interface SentRequestCardProps {
   request: FriendRequest
   onCancel: (requestId: string, onSuccess?: () => void, onError?: (error: string) => void) => void
   loading?: boolean
+  onCloseModal?: () => void
 }
 
 export function SentRequestCard({ 
   request, 
   onCancel, 
-  loading = false 
+  loading = false,
+  onCloseModal
 }: SentRequestCardProps) {
   const receiver = request.receiver
   const displayName = receiver?.full_name || receiver?.username || 'Utilisateur'
@@ -29,8 +32,23 @@ export function SentRequestCard({
     message: ''
   })
 
+  const handleViewProfile = () => {
+    if (receiver?.username) {
+      // Fermer la modale parente si disponible
+      onCloseModal?.()
+      // Naviguer vers le profil
+      router.push(`/profile/${receiver.username}`)
+    }
+  }
+
   return (
-    <View style={styles.card}>
+    <Pressable
+      style={({ pressed }) => [
+        styles.card,
+        pressed && styles.cardPressed
+      ]}
+      onPress={handleViewProfile}
+    >
       <View style={styles.leftSection}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
@@ -43,6 +61,7 @@ export function SentRequestCard({
           <View style={styles.statusBadge}>
             <Text style={styles.statusText}>⏳ En attente</Text>
           </View>
+          <Text style={styles.viewProfileHint}>Voir le profil →</Text>
         </View>
       </View>
 
@@ -52,7 +71,8 @@ export function SentRequestCard({
         ) : (
           <TouchableOpacity
             style={[styles.button, styles.cancelButton]}
-            onPress={() => {
+            onPress={(e) => {
+              e.stopPropagation()
               onCancel(
                 request.id,
                 () => {
@@ -86,7 +106,7 @@ export function SentRequestCard({
         message={modalConfig.message}
         onClose={() => setModalVisible(false)}
       />
-    </View>
+    </Pressable>
   )
 }
 
@@ -104,6 +124,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  cardPressed: {
+    backgroundColor: '#f8fafc',
+    borderColor: '#3b82f6',
+    transform: [{ scale: 0.98 }],
   },
   leftSection: {
     flexDirection: 'row',
@@ -148,6 +175,12 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 12,
     color: '#92400e',
+  },
+  viewProfileHint: {
+    fontSize: 12,
+    color: '#3b82f6',
+    marginTop: 4,
+    fontWeight: '500',
   },
   actions: {
     flexDirection: 'row',

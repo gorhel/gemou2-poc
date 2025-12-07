@@ -1,22 +1,32 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { createClientSupabaseClient } from '../../lib/supabase-client'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Textarea, LoadingSpinner } from '../ui'
+import { logger } from '../../lib/logger'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Textarea, LoadingSpinner, Modal, useModal } from '../ui'
+import { LocationAutocomplete } from '../marketplace/LocationAutocomplete'
 import { Profile } from '../../../packages/database/types'
 
 interface ProfileInfoSectionProps {
   userId: string
   onUpdate?: () => void
+  inModal?: boolean
 }
 
-export default function ProfileInfoSection({ userId, onUpdate }: ProfileInfoSectionProps) {
+export default function ProfileInfoSection({ userId, onUpdate, inModal = false }: ProfileInfoSectionProps) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const supabase = createClientSupabaseClient()
+
+  // États pour la gestion de l'upload d'avatar avec confirmation
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null)
+  const [pendingAvatarPreview, setPendingAvatarPreview] = useState<string | null>(null)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
+  const avatarConfirmModal = useModal()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [formData, setFormData] = useState({
     username: '',
@@ -53,10 +63,10 @@ export default function ProfileInfoSection({ userId, onUpdate }: ProfileInfoSect
         last_name: data.last_name || '',
         bio: data.bio || '',
         city: data.city || '',
-        avatar_url: data.avatar_url || data.profile_photo_url || ''
+        avatar_url: data.avatar_url || ''
       })
     } catch (err: any) {
-      console.error('Error loading profile:', err)
+      logger.error('ProfileInfoSection', err, { action: 'loadProfile' })
       setError(err.message || 'Erreur lors du chargement du profil')
     } finally {
       setLoading(false)
@@ -108,14 +118,18 @@ export default function ProfileInfoSection({ userId, onUpdate }: ProfileInfoSect
       // Masquer le message de succès après 3 secondes
       setTimeout(() => setSuccess(false), 3000)
     } catch (err: any) {
-      console.error('Error updating profile:', err)
+      logger.error('ProfileInfoSection', err, { action: 'updateProfile' })
       setError(err.message || 'Erreur lors de la mise à jour du profil')
     } finally {
       setSaving(false)
     }
   }
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  /**
+   * Gère la sélection d'un fichier image pour l'avatar
+   * Crée une prévisualisation et ouvre la modale de confirmation
+   */
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -131,23 +145,51 @@ export default function ProfileInfoSection({ userId, onUpdate }: ProfileInfoSect
       return
     }
 
+    // Créer une prévisualisation
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setPendingAvatarPreview(reader.result as string)
+      setPendingAvatarFile(file)
+      avatarConfirmModal.open()
+    }
+    reader.readAsDataURL(file)
+    
+    // Reset l'input pour permettre la resélection du même fichier
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  /**
+   * Annule le changement d'avatar en cours
+   */
+  const handleCancelAvatarChange = () => {
+    setPendingAvatarFile(null)
+    setPendingAvatarPreview(null)
+    avatarConfirmModal.close()
+  }
+
+  /**
+   * Confirme et effectue l'upload de l'avatar
+   */
+  const handleConfirmAvatarUpload = async () => {
+    if (!pendingAvatarFile) return
+
     try {
-      setSaving(true)
+      setIsUploadingAvatar(true)
       setError(null)
 
       // Récupérer l'utilisateur connecté
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Utilisateur non authentifié')
 
-      const fileExt = file.name.split('.').pop()
+      const fileExt = pendingAvatarFile.name.split('.').pop()
       const fileName = `avatars/${user.id}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
 
-      // Upload vers Supabase Storage (on utilisera un bucket 'avatars' ou 'profile-images')
-      // Pour l'instant, on utilisera le bucket 'event-images' comme exemple
-      // TODO: Créer un bucket dédié pour les avatars
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('event-images') // Temporaire - à remplacer par 'avatars' ou 'profile-images'
-        .upload(fileName, file, {
+      // Upload vers Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('event-images')
+        .upload(fileName, pendingAvatarFile, {
           cacheControl: '3600',
           upsert: false
         })
@@ -159,32 +201,47 @@ export default function ProfileInfoSection({ userId, onUpdate }: ProfileInfoSect
         .from('event-images')
         .getPublicUrl(fileName)
 
-      setFormData(prev => ({ ...prev, avatar_url: publicUrl }))
-      
-      // Sauvegarder directement
-      await supabase
+      // Mettre à jour le profil en base de données
+      const { error: updateError } = await supabase
         .from('profiles')
         .update({ 
           avatar_url: publicUrl,
-          profile_photo_url: publicUrl,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId)
+
+      if (updateError) throw updateError
+
+      // Mettre à jour l'état local
+      setFormData(prev => ({ ...prev, avatar_url: publicUrl }))
+      
+      // Nettoyer les états temporaires
+      setPendingAvatarFile(null)
+      setPendingAvatarPreview(null)
+      avatarConfirmModal.close()
 
       setSuccess(true)
       onUpdate?.()
       setTimeout(() => setSuccess(false), 3000)
     } catch (err: any) {
-      console.error('Error uploading avatar:', err)
+      logger.error('ProfileInfoSection', err, { action: 'uploadAvatar' })
       setError(err.message || 'Erreur lors de l\'upload de l\'avatar')
     } finally {
-      setSaving(false)
+      setIsUploadingAvatar(false)
     }
+  }
+
+  const handleCityChange = (value: string, quarter?: string, cityName?: string) => {
+    // Stocker le nom de la ville (pas le district, quarter)
+    const cityToStore = cityName || value
+    setFormData(prev => ({ ...prev, city: cityToStore }))
+    if (error) setError(null)
+    if (success) setSuccess(false)
   }
 
   if (loading) {
     return (
-      <Card>
+      <Card padding={inModal ? 'none' : 'md'}>
         <CardHeader>
           <CardTitle>👤 Informations du profil</CardTitle>
         </CardHeader>
@@ -198,69 +255,75 @@ export default function ProfileInfoSection({ userId, onUpdate }: ProfileInfoSect
   }
 
   return (
-    <Card>
+    <Card padding={inModal ? 'none' : 'md'}>
       <CardHeader>
         <CardTitle>👤 Informations du profil</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Avatar */}
-          <div className="flex items-center space-x-6">
-            <div className="relative">
-              {formData.avatar_url ? (
-                <img
-                  src={formData.avatar_url}
-                  alt="Avatar"
-                  className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
-                />
-              ) : (
-                <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-300">
-                  <span className="text-4xl text-gray-400">
-                    {formData.full_name?.charAt(0) || formData.username?.charAt(0) || '👤'}
-                  </span>
-                </div>
-              )}
-              <label
-                htmlFor="avatar-upload"
-                className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-2 cursor-pointer hover:bg-blue-600 transition-colors"
-                title="Changer l'avatar"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+          {/* Avatar avec upload et prévisualisation */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-6">
+              <div className="relative group">
+                {formData.avatar_url ? (
+                  <img
+                    src={formData.avatar_url}
+                    alt="Avatar"
+                    className="w-24 h-24 rounded-full object-cover border-2 border-gray-200 transition-all group-hover:border-blue-400"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-300 transition-all group-hover:border-blue-400">
+                    <span className="text-4xl text-gray-400">
+                      {formData.full_name?.charAt(0) || formData.username?.charAt(0) || '👤'}
+                    </span>
+                  </div>
+                )}
+                <label
+                  htmlFor="avatar-upload"
+                  className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-2 cursor-pointer hover:bg-blue-600 transition-colors shadow-lg"
+                  title="Modifier la photo de profil"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              </label>
-              <input
-                id="avatar-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarUpload}
-                className="hidden"
-                disabled={saving}
-              />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm text-gray-600">
-                Cliquez sur l'icône pour changer votre photo de profil
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Formats acceptés : JPG, PNG, GIF, WebP (max 5MB)
-              </p>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                </label>
+                <input
+                  ref={fileInputRef}
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarSelect}
+                  className="hidden"
+                  disabled={saving || isUploadingAvatar}
+                />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-700 mb-1">
+                  Photo de profil
+                </p>
+                <p className="text-sm text-gray-600">
+                  Cliquez sur l'icône pour modifier votre photo
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Formats acceptés : JPG, PNG, GIF, WebP (max 5MB)
+                </p>
+              </div>
             </div>
           </div>
 
@@ -317,15 +380,12 @@ export default function ProfileInfoSection({ userId, onUpdate }: ProfileInfoSect
             helperText="Décrivez-vous en quelques mots (optionnel)"
           />
 
-          {/* Ville */}
-          <Input
+          {/* Ville avec autocomplétion depuis la table locations */}
+          <LocationAutocomplete
             label="Ville"
             value={formData.city}
-            onChange={(e) => handleInputChange('city', e.target.value)}
-            placeholder="Votre ville"
-            fullWidth
-            disabled={saving}
-            helperText="Votre localisation (optionnel)"
+            onChange={handleCityChange}
+            error={error && error.includes('ville') ? error : undefined}
           />
 
           {/* Messages d'erreur et de succès */}
@@ -363,7 +423,118 @@ export default function ProfileInfoSection({ userId, onUpdate }: ProfileInfoSect
           </div>
         </form>
       </CardContent>
+
+      {/* Modale de confirmation pour le changement de photo de profil */}
+      <Modal
+        isOpen={avatarConfirmModal.isOpen}
+        onClose={handleCancelAvatarChange}
+        title="Modifier la photo de profil"
+        size="md"
+        footer={
+          <>
+            <Button 
+              variant="outline" 
+              onClick={handleCancelAvatarChange}
+              disabled={isUploadingAvatar}
+            >
+              Annuler
+            </Button>
+            <Button 
+              onClick={handleConfirmAvatarUpload}
+              loading={isUploadingAvatar}
+              disabled={isUploadingAvatar}
+            >
+              {isUploadingAvatar ? 'Enregistrement...' : 'Confirmer le changement'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-6">
+          <p className="text-sm text-gray-600 text-center">
+            Êtes-vous sûr de vouloir remplacer votre photo de profil actuelle par cette nouvelle image ?
+          </p>
+
+          {/* Comparaison avant/après */}
+          <div className="flex items-center justify-center gap-8">
+            {/* Image actuelle */}
+            <div className="text-center">
+              <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+                Photo actuelle
+              </p>
+              <div className="relative">
+                {formData.avatar_url ? (
+                  <img
+                    src={formData.avatar_url}
+                    alt="Photo actuelle"
+                    className="w-28 h-28 rounded-full object-cover border-2 border-gray-200 opacity-60"
+                  />
+                ) : (
+                  <div className="w-28 h-28 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-300 opacity-60">
+                    <span className="text-4xl text-gray-400">
+                      {formData.full_name?.charAt(0) || formData.username?.charAt(0) || '👤'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Flèche */}
+            <div className="flex-shrink-0">
+              <svg 
+                className="w-8 h-8 text-blue-500" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M13 7l5 5m0 0l-5 5m5-5H6" 
+                />
+              </svg>
+            </div>
+
+            {/* Nouvelle image */}
+            <div className="text-center">
+              <p className="text-xs font-medium text-blue-600 mb-2 uppercase tracking-wide">
+                Nouvelle photo
+              </p>
+              <div className="relative">
+                {pendingAvatarPreview ? (
+                  <img
+                    src={pendingAvatarPreview}
+                    alt="Nouvelle photo"
+                    className="w-28 h-28 rounded-full object-cover border-2 border-blue-500 shadow-lg ring-4 ring-blue-100"
+                  />
+                ) : (
+                  <div className="w-28 h-28 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-300">
+                    <LoadingSpinner size="lg" />
+                  </div>
+                )}
+                <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white rounded-full p-1">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Informations sur le fichier */}
+          {pendingAvatarFile && (
+            <div className="bg-gray-50 rounded-lg p-3 text-center">
+              <p className="text-xs text-gray-500">
+                <span className="font-medium">{pendingAvatarFile.name}</span>
+                <span className="mx-2">•</span>
+                <span>{(pendingAvatarFile.size / 1024 / 1024).toFixed(2)} MB</span>
+              </p>
+            </div>
+          )}
+        </div>
+      </Modal>
     </Card>
   )
 }
+
 

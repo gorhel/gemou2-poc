@@ -33,3 +33,4 @@ COMMENT ON POLICY "Users can create conversations" ON public.conversations IS
 -- FIN DE LA MIGRATION
 -- =====================================================
 
+

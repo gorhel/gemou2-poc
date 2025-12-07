@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import {
   View,
   Text,
@@ -14,10 +14,12 @@ import {
   Image,
   Alert
 } from 'react-native'
-import { useLocalSearchParams, router } from 'expo-router'
-import { getConversationDetails, getConversationMessages, sendMessage } from '@gemou2/database'
-import { supabase } from '../../lib'
+import { useLocalSearchParams, router, useFocusEffect } from 'expo-router'
+import { getConversationDetails, getConversationMessages, getConversationMembers, sendMessage } from '@gemou2/database'
+import { supabase, useUnreadMessages } from '../../lib'
 import { PageLayout } from '../../components/layout'
+import { TopHeader } from '../../components/TopHeader'
+import MachiColors from '../../theme/colors'
 
 interface Message {
   id: string
@@ -31,6 +33,15 @@ interface Message {
     full_name: string
     avatar_url: string | null
   }
+}
+
+interface ConversationMember {
+  user_id: string
+  role: string
+  joined_at: string
+  username: string | null
+  full_name: string | null
+  avatar_url: string | null
 }
 
 interface ConversationDetails {
@@ -63,11 +74,15 @@ export default function ConversationPage() {
 
   const [user, setUser] = useState<any>(null)
   const [conversation, setConversation] = useState<ConversationDetails | null>(null)
+  const [members, setMembers] = useState<ConversationMember[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
   const [messageText, setMessageText] = useState('')
   const [sending, setSending] = useState(false)
   const flatListRef = useRef<FlatList>(null)
+  
+  // Hook pour les messages non lus
+  const { markAsRead } = useUnreadMessages()
 
   useEffect(() => {
     loadConversation()
@@ -85,6 +100,8 @@ export default function ConversationPage() {
         },
         (payload) => {
           loadMessages()
+          // Marquer comme lu quand un nouveau message arrive (l'utilisateur voit les messages)
+          markAsRead(id)
         }
       )
       .subscribe()
@@ -92,7 +109,16 @@ export default function ConversationPage() {
     return () => {
       subscription.unsubscribe()
     }
-  }, [id])
+  }, [id, markAsRead])
+
+  // Marquer la conversation comme lue quand l'écran obtient le focus
+  useFocusEffect(
+    useCallback(() => {
+      if (id && user) {
+        markAsRead(id)
+      }
+    }, [id, user, markAsRead])
+  )
 
   const loadConversation = async () => {
     try {
@@ -144,8 +170,20 @@ export default function ConversationPage() {
       
       setConversation(convData)
 
+      // Charger les membres de la conversation
+      const { members: membersData, error: membersError } = await getConversationMembers(supabase, id)
+      if (!membersError && membersData) {
+        setMembers(membersData)
+        console.log('[ConversationPage] Members loaded:', membersData.length)
+      }
+
       // Charger les messages
       await loadMessages()
+      
+      // Marquer la conversation comme lue après chargement
+      if (user) {
+        markAsRead(id)
+      }
     } catch (error) {
       console.error('[ConversationPage] Exception:', error)
     } finally {
@@ -205,6 +243,65 @@ export default function ConversationPage() {
       .join('')
       .toUpperCase()
       .slice(0, 2)
+  }
+
+  // Obtenir l'interlocuteur (l'autre membre de la conversation pour les conversations marketplace)
+  const getInterlocutor = (): ConversationMember | null => {
+    if (!user || members.length === 0) return null
+    // Trouver le membre qui n'est pas l'utilisateur courant
+    return members.find(m => m.user_id !== user.id) || null
+  }
+
+  // Obtenir le titre du header (pseudo de l'interlocuteur + nom de l'annonce/event)
+  const getHeaderTitle = (): string => {
+    if (!conversation) return 'Conversation'
+    
+    const interlocutor = getInterlocutor()
+    const interlocutorName = interlocutor?.full_name || interlocutor?.username || ''
+    
+    if (conversation.type === 'marketplace' && conversation.marketplace_items) {
+      const itemTitle = conversation.marketplace_items.title
+      if (interlocutorName) {
+        return `${interlocutorName} • ${itemTitle}`
+      }
+      return itemTitle
+    }
+    
+    if (conversation.type === 'event' && conversation.events) {
+      return conversation.events.title
+    }
+    
+    return 'Conversation'
+  }
+
+  // Obtenir l'image de la vignette (annonce ou event)
+  const getVignetteImage = (): string | null => {
+    if (!conversation) return null
+    
+    if (conversation.type === 'marketplace' && conversation.marketplace_items?.images?.length) {
+      return conversation.marketplace_items.images[0]
+    }
+    
+    if (conversation.type === 'event' && conversation.events?.image_url) {
+      return conversation.events.image_url
+    }
+    
+    return null
+  }
+
+  // Obtenir le titre de l'item (annonce ou event)
+  const getItemTitle = (): string => {
+    if (!conversation) return ''
+    
+    if (conversation.type === 'marketplace' && conversation.marketplace_items) {
+      return conversation.marketplace_items.title
+    }
+    
+    if (conversation.type === 'event' && conversation.events) {
+      return conversation.events.title
+    }
+    
+    return ''
   }
 
   const renderMessage = ({ item }: { item: Message }) => {
@@ -268,33 +365,114 @@ export default function ConversationPage() {
     )
   }
 
+  const interlocutor = getInterlocutor()
+  const vignetteImage = getVignetteImage()
+  const itemTitle = getItemTitle()
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>← Retour</Text>
+      {/* TopHeader avec titre dynamique */}
+      <TopHeader 
+        dynamicTitle={getHeaderTitle()}
+        overrideShowBackButton={true}
+      />
+
+      {/* Vignette avec image et info interlocuteur */}
+      <View style={styles.vignetteContainer}>
+        {/* Image de l'annonce/event à gauche */}
+        <TouchableOpacity
+          style={styles.vignetteImageContainer}
+          onPress={() => {
+            if (conversation.type === 'event' && conversation.event_id) {
+              router.push(`/events/${conversation.event_id}`)
+            } else if (conversation.type === 'marketplace' && conversation.marketplace_item_id) {
+              router.push(`/trade/${conversation.marketplace_item_id}`)
+            }
+          }}
+        >
+          {vignetteImage ? (
+            <Image
+              source={{ uri: vignetteImage }}
+              style={styles.vignetteImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.vignetteImagePlaceholder}>
+              <Text style={styles.vignetteImageEmoji}>
+                {conversation.type === 'marketplace' ? '🛒' : '🎮'}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
-        <View style={styles.headerInfo}>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            {conversation.type === 'marketplace' 
-              ? (conversation.marketplace_items?.title || 'Annonce')
-              : (conversation.events?.title || 'Conversation')}
-          </Text>
-          {conversation.type === 'event' && conversation.event_id && (
-            <TouchableOpacity onPress={() => router.push(`/events/${conversation.event_id}`)}>
-              <Text style={styles.headerSubtitle}>Voir l'événement →</Text>
+
+        {/* Infos interlocuteur à droite */}
+        <View style={styles.vignetteInfo}>
+          {conversation.type === 'marketplace' && interlocutor ? (
+            <TouchableOpacity 
+              style={styles.interlocutorRow}
+              onPress={() => router.push(`/profile/${interlocutor.username}`)}
+            >
+              {interlocutor.avatar_url ? (
+                <Image
+                  source={{ uri: interlocutor.avatar_url }}
+                  style={styles.interlocutorAvatar}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={[styles.interlocutorAvatarFallback, { backgroundColor: MachiColors.primary }]}>
+                  <Text style={styles.interlocutorAvatarInitials}>
+                    {getInitials(interlocutor.full_name || interlocutor.username || 'U')}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.interlocutorTextContainer}>
+                {interlocutor.full_name && (
+                  <Text style={styles.interlocutorName} numberOfLines={1}>
+                    {interlocutor.full_name}
+                  </Text>
+                )}
+                <Text style={styles.interlocutorUsername} numberOfLines={1}>
+                  @{interlocutor.username || 'utilisateur'}
+                </Text>
+              </View>
             </TouchableOpacity>
+          ) : (
+            <View style={styles.interlocutorRow}>
+              <View style={[styles.interlocutorAvatarFallback, { backgroundColor: MachiColors.primary }]}>
+                <Text style={styles.interlocutorAvatarInitials}>👥</Text>
+              </View>
+              <View style={styles.interlocutorTextContainer}>
+                <Text style={styles.interlocutorName} numberOfLines={1}>
+                  Groupe
+                </Text>
+                <Text style={styles.interlocutorUsername} numberOfLines={1}>
+                  {members.length} participants
+                </Text>
+              </View>
+            </View>
           )}
-          {conversation.type === 'marketplace' && conversation.marketplace_item_id && (
-            <TouchableOpacity onPress={() => router.push(`/trade/${conversation.marketplace_item_id}`)}>
-              <Text style={styles.headerSubtitle}>Voir l'annonce →</Text>
-            </TouchableOpacity>
-          )}
+          
+          {/* Titre de l'annonce/event */}
+          <TouchableOpacity
+            onPress={() => {
+              if (conversation.type === 'event' && conversation.event_id) {
+                router.push(`/events/${conversation.event_id}`)
+              } else if (conversation.type === 'marketplace' && conversation.marketplace_item_id) {
+                router.push(`/trade/${conversation.marketplace_item_id}`)
+              }
+            }}
+          >
+            <Text style={styles.vignetteItemTitle} numberOfLines={1}>
+              {itemTitle}
+            </Text>
+            <Text style={styles.vignetteItemLink}>
+              {conversation.type === 'event' ? 'Voir l\'événement →' : 'Voir l\'annonce →'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -386,32 +564,83 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold'
   },
-  header: {
+  // Vignette styles
+  vignetteContainer: {
     backgroundColor: 'white',
-    padding: 16,
-    paddingTop: Platform.select({ ios: 60, android: 16, web: 16 }),
+    flexDirection: 'row',
+    padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb'
+    borderBottomColor: '#e5e7eb',
+    alignItems: 'center'
   },
-  backBtn: {
-    marginBottom: 8
+  vignetteImageContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginRight: 12
   },
-  backBtnText: {
-    fontSize: 16,
-    color: '#3b82f6',
-    fontWeight: '500'
+  vignetteImage: {
+    width: '100%',
+    height: '100%'
   },
-  headerInfo: {
-    flexDirection: 'column'
+  vignetteImagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#f3f4f6',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 4
+  vignetteImageEmoji: {
+    fontSize: 28
   },
-  headerSubtitle: {
+  vignetteInfo: {
+    flex: 1
+  },
+  interlocutorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6
+  },
+  interlocutorAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8
+  },
+  interlocutorAvatarFallback: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  interlocutorAvatarInitials: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold'
+  },
+  interlocutorTextContainer: {
+    flex: 1
+  },
+  interlocutorName: {
     fontSize: 14,
+    fontWeight: '600',
+    color: '#1f2937'
+  },
+  interlocutorUsername: {
+    fontSize: 12,
+    color: '#6b7280'
+  },
+  vignetteItemTitle: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 2
+  },
+  vignetteItemLink: {
+    fontSize: 12,
     color: '#3b82f6',
     fontWeight: '500'
   },

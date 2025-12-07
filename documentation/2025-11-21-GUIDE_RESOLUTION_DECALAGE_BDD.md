@@ -167,3 +167,4 @@ Si vous rencontrez des problèmes :
 2. Consultez le script de diagnostic pour identifier les problèmes spécifiques
 3. Vérifiez que toutes les migrations nécessaires ont été appliquées dans le bon ordre
 
+

@@ -673,3 +673,4 @@ function extractGameTagsFromData(games: GameWithData[]): GameDataTag[] {
 - [Styles complets](/apps/mobile/app/(tabs)/events/[id].tsx#L924-L1326)
 
 
+

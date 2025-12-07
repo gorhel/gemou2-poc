@@ -446,3 +446,4 @@ Le bouton de retour apparaît maintenant **intelligemment** quand il est pertine
 **Date** : 16 novembre 2025
 
 
+

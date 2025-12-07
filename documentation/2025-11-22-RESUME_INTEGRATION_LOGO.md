@@ -87,3 +87,4 @@ Le logo représente un **dé de jeu stylisé** avec la lettre "M" intégrée, é
 
 Le slogan "Trouve ton game" accompagne le nom "Machi" pour une identité de marque claire et moderne.
 
+

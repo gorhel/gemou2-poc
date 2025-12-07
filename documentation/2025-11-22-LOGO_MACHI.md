@@ -147,3 +147,4 @@ Le logo peut évoluer avec :
 - Versions simplifiées pour très petits formats
 - Adaptations pour thèmes sombres
 
+

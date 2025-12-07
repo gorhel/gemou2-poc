@@ -105,3 +105,4 @@ COMMENT ON COLUMN public.event_games.experience_level IS 'Niveau d''expérience 
 
 
 
+

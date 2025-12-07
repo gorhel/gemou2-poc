@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClientSupabaseClient } from '../../../lib/supabase-client';
+import { logger } from '../../../lib/logger';
 import { Button } from '../../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
 import { LoadingSpinner } from '../../../components/ui/Loading';
@@ -96,7 +97,7 @@ export default function UserProfilePage() {
           .single();
 
         if (friendshipError && friendshipError.code !== 'PGRST116') { // PGRST116 = no rows returned
-          console.error('Error checking friendship status:', friendshipError);
+          logger.error('UserProfilePage', friendshipError, { action: 'checkFriendshipStatus' })
         } else {
           friendshipData = friendship;
           setIsFriend(!!friendship);
@@ -111,7 +112,7 @@ export default function UserProfilePage() {
         .order('added_at', { ascending: false });
 
       if (gamesError) {
-        console.error('Error fetching user games:', gamesError);
+        logger.error('UserProfilePage', gamesError, { action: 'fetchUserGames' })
         setUserGames([]);
       } else {
         const formattedGames: UserGame[] = (gamesData || []).map(game => ({
@@ -136,7 +137,7 @@ export default function UserProfilePage() {
           .order('date_time', { ascending: false });
 
         if (organizedError) {
-          console.error('Error fetching organized events:', organizedError);
+          logger.error('UserProfilePage', organizedError, { action: 'fetchOrganizedEvents' })
         }
 
         // Récupérer les événements participés
@@ -151,7 +152,7 @@ export default function UserProfilePage() {
           .order('joined_at', { ascending: false });
 
         if (participatedError) {
-          console.error('Error fetching participated events:', participatedError);
+          logger.error('UserProfilePage', participatedError, { action: 'fetchParticipatedEvents' })
         }
 
         // Combiner et formater les événements
@@ -186,7 +187,7 @@ export default function UserProfilePage() {
       }
 
     } catch (error: any) {
-      console.error('Error fetching user profile:', error);
+      logger.error('UserProfilePage', error, { action: 'fetchUserProfile' })
       setError(error.message || 'Erreur lors du chargement du profil');
     } finally {
       setLoading(false);
@@ -197,10 +198,9 @@ export default function UserProfilePage() {
     setIsLoadingAction(true);
     try {
       // TODO: Implémenter l'envoi de message
-      console.log('Send message to:', profile?.username);
       alert('Fonctionnalité de messagerie à venir !');
     } catch (error) {
-      console.error('Error sending message:', error);
+      logger.error('UserProfilePage', error as Error, { action: 'sendMessage', username: profile?.username })
     } finally {
       setIsLoadingAction(false);
     }
@@ -210,11 +210,10 @@ export default function UserProfilePage() {
     setIsLoadingAction(true);
     try {
       // TODO: Implémenter l'ajout d'ami
-      console.log('Add friend:', profile?.username);
       setIsFriend(!isFriend);
       alert(isFriend ? 'Ami retiré !' : 'Ami ajouté !');
     } catch (error) {
-      console.error('Error adding friend:', error);
+      logger.error('UserProfilePage', error as Error, { action: 'addFriend', username: profile?.username })
     } finally {
       setIsLoadingAction(false);
     }
